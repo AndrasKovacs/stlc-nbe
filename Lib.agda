@@ -4,6 +4,16 @@ module Lib where
 
 open import Level
 
+infix 3 _∋_
+_∋_ : ∀ {α}(A : Set α) → A → A
+A ∋ a = a
+
+_∘_ : ∀ {a b c}
+        {A : Set a} {B : A → Set b} {C : {x : A} → B x → Set c} →
+        (∀ {x} (y : B x) → C y) → (g : (x : A) → B x) →
+        ((x : A) → C (g x))
+f ∘ g = λ x → f (g x)
+
 data _≡_ {i}{A : Set i} (x : A) : A → Set i where
   refl : x ≡ x
 infix 4 _≡_
@@ -59,7 +69,7 @@ record Σ {i j} (A : Set i) (B : A → Set j) : Set (i ⊔ j) where
   field
     proj₁ : A
     proj₂ : B proj₁
-infixl 5 _,_
+infixr 5 _,_
 
 open Σ public
 
