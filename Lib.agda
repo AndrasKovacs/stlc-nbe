@@ -23,11 +23,11 @@ infix 4 _≡_
 
 _◾_ : ∀{i}{A : Set i}{x y z : A} → x ≡ y → y ≡ z → x ≡ z
 refl ◾ refl = refl
-infixl 4 _◾_
+infixr 4 _◾_
 
 _⁻¹ : ∀{i}{A : Set i}{x y : A} → x ≡ y → y ≡ x
 refl ⁻¹ = refl
-infix 5 _⁻¹
+infix 6 _⁻¹
 
 _≡⟨_⟩_ : ∀{i}{A : Set i}(x : A){y z : A} → x ≡ y → y ≡ z → x ≡ z
 x ≡⟨ x≡y ⟩ y≡z = x≡y ◾ y≡z
