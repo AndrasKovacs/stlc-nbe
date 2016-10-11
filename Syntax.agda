@@ -14,9 +14,9 @@ data Con : Set where
 
 data _∈_ (A : Ty) : Con → Set where
   vz : ∀ {Γ} → A ∈ (Γ , A)
-  vs : ∀ {B Γ} → A ∈ Γ → A ∈ (Γ , B)
+  vs : ∀ {B Γ} → (v : A ∈ Γ) → A ∈ (Γ , B)
 
 data Tm Γ : Ty → Set where
-  var : ∀ {A} → A ∈ Γ → Tm Γ A
+  var : ∀ {A} → (v : A ∈ Γ) → Tm Γ A
   lam : ∀ {A B} → Tm (Γ , A) B → Tm Γ (A ⇒ B)
-  app : ∀ {A B} → Tm Γ (A ⇒ B) → Tm Γ A → Tm Γ B
+  app : ∀ {A B} → (f : Tm Γ (A ⇒ B)) → (a : Tm Γ A) → Tm Γ B
