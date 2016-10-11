@@ -147,3 +147,6 @@ uCon (Γ , A) = ≈ₛᵣ wk (uCon Γ) , u A (var vz)
 norm₂ : ∀ {Γ A} (t t' : Tm Γ A) → t ~ t' → Norm₂ t t'
 norm₂ t t' t~t' = q _ (coe (_≈_ & idₛTm t ⊗ idₛTm t') (⟦~⟧ t~t' (uCon _)))
 
+nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
+nf t = proj₁ (norm₂ t t ~refl)
+
