@@ -23,15 +23,6 @@ infix 3 _~_
 infixl 4 _~◾_
 infix 6 _~⁻¹
 
-mutual
-  ⌜⌝Neᵣ : ∀ {Γ Δ A}(n : Ne Γ A)(σ : Ren Δ Γ) → ⌜ n [ σ ]ₙₑᵣ ⌝Ne ≡ ⌜ n ⌝Ne [ σ ]ᵣ
-  ⌜⌝Neᵣ (var v)  σ = refl
-  ⌜⌝Neᵣ (f $ₙ a) σ = app & ⌜⌝Neᵣ f σ ⊗ ⌜⌝ᵣ a σ
-
-  ⌜⌝ᵣ : ∀ {Γ Δ A}(n : Nf Γ A)(σ : Ren Δ Γ) → ⌜ n [ σ ]ₙᵣ ⌝ ≡ ⌜ n ⌝ [ σ ]ᵣ
-  ⌜⌝ᵣ (ne n)  σ = ⌜⌝Neᵣ n σ
-  ⌜⌝ᵣ (lam n) σ = lam & ⌜⌝ᵣ n (keep σ)
-
 ~ᵣ : ∀ {Γ Δ A}{t t' : Tm Γ A}(σ : Ren Δ Γ) → t ~ t' → t [ σ ]ᵣ ~ t' [ σ ]ᵣ
 ~ᵣ σ (η t)    =
   coe ((λ t' → t [ σ ]ᵣ ~ lam (app t' (var vz))) &

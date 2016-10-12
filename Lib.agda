@@ -75,7 +75,7 @@ open Σ public
 
 _×_ : ∀{i j} → Set i → Set j → Set (i ⊔ j)
 A × B = Σ A λ _ → B
-infix 4 _×_
+infixr 4 _×_
 
 record ⊤ : Set where
   constructor tt
@@ -104,4 +104,11 @@ record Reveal_·_is_ {a b} {A : Set a} {B : A → Set b}
 inspect : ∀ {a b} {A : Set a} {B : A → Set b}
           (f : (x : A) → B x) (x : A) → Reveal f · x is f x
 inspect f x = pack refl
+
+postulate
+  funext  : ∀{i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x}
+          → ((x : A) → f x  ≡ g x) → _≡_ f g
+          
+  funexti : ∀{i j}{A : Set i}{B : A → Set j}{f g : {x : A} → B x}
+          → ((x : A) → f {x} ≡ g {x}) → _≡_ {A = {x : A} → B x} f g
 

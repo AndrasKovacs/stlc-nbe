@@ -7,48 +7,48 @@ open import Syntax
 open import Renaming
 open import Nf
 
-infixr 6 _*∘ᵣ_
-infixl 8 _*[_]ᵣ
+infixr 6 _ᴺ∘ᵣ_
+infixl 8 _ᴺ[_]ᵣ
 
-Tm* : Con → Ty → Set
-Tm* Γ ι       = Nf Γ ι
-Tm* Γ (A ⇒ B) = ∀ Δ → Ren Δ Γ → Tm* Δ A → Tm* Δ B
+Tmᴺ : Con → Ty → Set
+Tmᴺ Γ ι       = Nf Γ ι
+Tmᴺ Γ (A ⇒ B) = ∀ Δ → Ren Δ Γ → Tmᴺ Δ A → Tmᴺ Δ B
 
-data Tms* (Γ : Con) : Con → Set where
-  ∙   : Tms* Γ ∙
-  _,_ : ∀ {A Δ} (σ : Tms* Γ Δ)(t : Tm* Γ A) → Tms* Γ (Δ , A)
+data Tmsᴺ (Γ : Con) : Con → Set where
+  ∙   : Tmsᴺ Γ ∙
+  _,_ : ∀ {A Δ} (σ : Tmsᴺ Γ Δ)(t : Tmᴺ Γ A) → Tmsᴺ Γ (Δ , A)
 infixr 5 _,_
 
-_*[_]ᵣ : ∀ {A Γ Δ} → Tm* Γ A → Ren Δ Γ → Tm* Δ A
-_*[_]ᵣ {ι}     = _[_]ₙᵣ
-_*[_]ᵣ {A ⇒ B} = λ f* σ Σ δ → f* Σ (σ ∘ᵣ δ)
+_ᴺ[_]ᵣ : ∀ {A Γ Δ} → Tmᴺ Γ A → Ren Δ Γ → Tmᴺ Δ A
+_ᴺ[_]ᵣ {ι}     = _[_]ₙᵣ
+_ᴺ[_]ᵣ {A ⇒ B} = λ f* σ Σ δ → f* Σ (σ ∘ᵣ δ)
 
-_*∘ᵣ_ : ∀ {Γ Δ Σ} → Tms* Δ Σ → Ren Γ Δ → Tms* Γ Σ
-∙       *∘ᵣ δ = ∙
-(σ , t) *∘ᵣ δ = (σ *∘ᵣ δ) , (t *[ δ ]ᵣ)
+_ᴺ∘ᵣ_ : ∀ {Γ Δ Σ} → Tmsᴺ Δ Σ → Ren Γ Δ → Tmsᴺ Γ Σ
+∙       ᴺ∘ᵣ δ = ∙
+(σ , t) ᴺ∘ᵣ δ = (σ ᴺ∘ᵣ δ) , (t ᴺ[ δ ]ᵣ)
 
-∈↑ : ∀ {Γ A} → A ∈ Γ → ∀ {Δ} → Tms* Δ Γ → Tm* Δ A
-∈↑ vz     (σ , t) = t
-∈↑ (vs v) (σ , t) = ∈↑ v σ
+∈↑ᴺ : ∀ {Γ A} → A ∈ Γ → ∀ {Δ} → Tmsᴺ Δ Γ → Tmᴺ Δ A
+∈↑ᴺ vz     (σ , t) = t
+∈↑ᴺ (vs v) (σ , t) = ∈↑ᴺ v σ
 
-Tm↑ : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Tms* Δ Γ → Tm* Δ A
-Tm↑ (var v)   σ = ∈↑ v σ
-Tm↑ (lam t)   σ = λ Σ δ a → Tm↑ t (σ *∘ᵣ δ , a)
-Tm↑ (app f a) σ = Tm↑ f σ _ idᵣ (Tm↑ a σ)
+Tm↑ᴺ : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Tmsᴺ Δ Γ → Tmᴺ Δ A
+Tm↑ᴺ (var v)   σ = ∈↑ᴺ v σ
+Tm↑ᴺ (lam t)   σ = λ Σ δ a → Tm↑ᴺ t (σ ᴺ∘ᵣ δ , a)
+Tm↑ᴺ (app f a) σ = Tm↑ᴺ f σ _ idᵣ (Tm↑ᴺ a σ)
 
 mutual
-  q : ∀ A {Γ} → Tm* Γ A → Nf Γ A
-  q ι       t = t
-  q (A ⇒ B) t = lam (q B (t _ wk (u A (var vz))))
+  qᴺ : ∀ A {Γ} → Tmᴺ Γ A → Nf Γ A
+  qᴺ ι       t = t
+  qᴺ (A ⇒ B) t = lam (qᴺ B (t _ wk (uᴺ A (var vz))))
 
-  u : ∀ A {Γ} → Ne Γ A → Tm* Γ A
-  u ι       n = ne n
-  u (A ⇒ B) n = λ Δ σ a → u B (n [ σ ]ₙₑᵣ $ₙ q A a)
+  uᴺ : ∀ A {Γ} → Ne Γ A → Tmᴺ Γ A
+  uᴺ ι       n = ne n
+  uᴺ (A ⇒ B) n = λ Δ σ a → uᴺ B (app (n [ σ ]ₙₑᵣ) (qᴺ A a))
 
-uCon : ∀ Γ → Tms* Γ Γ
-uCon ∙       = ∙
-uCon (Γ , t) = uCon Γ *∘ᵣ wk , u _ (var vz)
+idᴺₛ : ∀ {Γ} → Tmsᴺ Γ Γ
+idᴺₛ {∙}     = ∙
+idᴺₛ {Γ , t} = idᴺₛ {Γ} ᴺ∘ᵣ wk , uᴺ _ (var vz)
 
 nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
-nf t = q _ (Tm↑ t (uCon _))
+nf t = qᴺ _ (Tm↑ᴺ t idᴺₛ)
 
