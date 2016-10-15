@@ -9,39 +9,41 @@ open import Substitution
 open import Conversion
 open import Nf
 open import Normalization
--- open import Naturality
+open import Naturality
+
+
 
 -- infixl 8 _ᶜ[_]ᵣ
 
-ιˢ : ∀ {Γ A} → Tm Γ A → Tm Γ A → Set
-ιˢ t t' = (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t' ⌝) × (⌜ nf t ⌝ ≡ ⌜ nf t' ⌝)
--- (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t ⌝) 
+-- ιˢ : ∀ {Γ A} → Tm Γ A → Tm Γ A → Set
+-- ιˢ t t' = (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t' ⌝) × (⌜ nf t ⌝ ≡ ⌜ nf t' ⌝)
+-- -- (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t ⌝) 
 
-Tmˢ : ∀ {Γ A} → Tm Γ A → Tm Γ A → Set
-Tmˢ {Γ}{ι}     t t' = (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t' ⌝) × (⌜ nf t ⌝ ≡ ⌜ nf t' ⌝)
-Tmˢ {Γ}{A ⇒ B} t t' =
-  ∀ {Δ}(σ : Ren Δ Γ){a a'} → Tmˢ {Δ}{A} a a' → Tmˢ (app (t [ σ ]ᵣ) a) (app (t' [ σ ]ᵣ) a')
+-- Tmˢ : ∀ {Γ A} → Tm Γ A → Tm Γ A → Set
+-- Tmˢ {Γ}{ι}     t t' = (t ~ ⌜ nf t ⌝) × (t' ~ ⌜ nf t' ⌝) × (⌜ nf t ⌝ ≡ ⌜ nf t' ⌝)
+-- Tmˢ {Γ}{A ⇒ B} t t' =
+--   ∀ {Δ}(σ : Ren Δ Γ){a a'} → Tmˢ {Δ}{A} a a' → Tmˢ (app (t [ σ ]ᵣ) a) (app (t' [ σ ]ᵣ) a')
 
-data Tmsˢ : ∀ {Γ Δ} → Tms Γ Δ → Tms Γ Δ → Set where
-  ∙   : ∀ {Γ} → Tmsˢ {Γ} ∙ ∙
-  _,_ : ∀ {A Γ Δ σ δ t t'} → Tmsˢ {Γ}{Δ} σ δ → Tmˢ {Γ}{A} t t' → Tmsˢ (σ , t) (δ , t')
+-- data Tmsˢ : ∀ {Γ Δ} → Tms Γ Δ → Tms Γ Δ → Set where
+--   ∙   : ∀ {Γ} → Tmsˢ {Γ} ∙ ∙
+--   _,_ : ∀ {A Γ Δ σ δ t t'} → Tmsˢ {Γ}{Δ} σ δ → Tmˢ {Γ}{A} t t' → Tmsˢ (σ , t) (δ , t')
 
-_ˢ[_]ᵣ : ∀ {Γ Δ A t t'} → Tmˢ {Γ}{A} t t' → (σ : Ren Δ Γ) → Tmˢ (t [ σ ]ᵣ) (t' [ σ ]ᵣ)
-_ˢ[_]ᵣ {A = ι}     (t~n , t'~n' , n≡n') σ = coe {!!} (~ᵣ σ t~n) , coe {!!} (~ᵣ σ t'~n') , {!!}
-_ˢ[_]ᵣ {A = A ⇒ B} t-t' σ δ {a}{a'} a-a' =
-  coe ((λ t t' → Tmˢ (app t a) (app t' a')) & (∘ᵣTm _ σ δ ⁻¹) ⊗ ((∘ᵣTm _ σ δ ⁻¹)))(t-t' (σ ∘ᵣ δ) a-a')
+-- _ˢ[_]ᵣ : ∀ {Γ Δ A t t'} → Tmˢ {Γ}{A} t t' → (σ : Ren Δ Γ) → Tmˢ (t [ σ ]ᵣ) (t' [ σ ]ᵣ)
+-- _ˢ[_]ᵣ {A = ι}     (t~n , t'~n' , n≡n') σ = coe {!!} (~ᵣ σ t~n) , coe {!!} (~ᵣ σ t'~n') , {!!}
+-- _ˢ[_]ᵣ {A = A ⇒ B} t-t' σ δ {a}{a'} a-a' =
+--   coe ((λ t t' → Tmˢ (app t a) (app t' a')) & (∘ᵣTm _ σ δ ⁻¹) ⊗ ((∘ᵣTm _ σ δ ⁻¹)))(t-t' (σ ∘ᵣ δ) a-a')
 
-_ˢ∘ᵣ_ : ∀ {Σ Γ Δ}{δ ν : Tms Γ Σ} → Tmsˢ δ ν → (σ : Ren Δ Γ) → Tmsˢ (δ ₛ∘ᵣ σ) (ν ₛ∘ᵣ σ)
-∙            ˢ∘ᵣ σ = ∙
-(δ-ν , t-t') ˢ∘ᵣ σ = (δ-ν ˢ∘ᵣ σ) , (t-t' ˢ[ σ ]ᵣ)
+-- _ˢ∘ᵣ_ : ∀ {Σ Γ Δ}{δ ν : Tms Γ Σ} → Tmsˢ δ ν → (σ : Ren Δ Γ) → Tmsˢ (δ ₛ∘ᵣ σ) (ν ₛ∘ᵣ σ)
+-- ∙            ˢ∘ᵣ σ = ∙
+-- (δ-ν , t-t') ˢ∘ᵣ σ = (δ-ν ˢ∘ᵣ σ) , (t-t' ˢ[ σ ]ᵣ)
 
-_ˢ⁻¹ : ∀ {Γ A}{t t' : Tm Γ A} → Tmˢ t t' → Tmˢ t' t
-_ˢ⁻¹ {A = ι}     (t~n , t'~n' , n≡n') = t'~n' , t~n , n≡n' ⁻¹
-_ˢ⁻¹ {A = A ⇒ B} t-t' = {!!}
+-- _ˢ⁻¹ : ∀ {Γ A}{t t' : Tm Γ A} → Tmˢ t t' → Tmˢ t' t
+-- _ˢ⁻¹ {A = ι}     (t~n , t'~n' , n≡n') = t'~n' , t~n , n≡n' ⁻¹
+-- _ˢ⁻¹ {A = A ⇒ B} t-t' = {!!}
 
-_ˢ◾_ : ∀ {A Γ}{t t' t'' : Tm Γ A} → Tmˢ t t' → Tmˢ t' t'' → Tmˢ t t''
-_ˢ◾_ {ι} (p , q , r) (p' , q' , r') = p , q' , (r ◾ r')
-_ˢ◾_ {A ⇒ A₁} t-t' t'-t'' = {!!}
+-- _ˢ◾_ : ∀ {A Γ}{t t' t'' : Tm Γ A} → Tmˢ t t' → Tmˢ t' t'' → Tmˢ t t''
+-- _ˢ◾_ {ι} (p , q , r) (p' , q' , r') = p , q' , (r ◾ r')
+-- _ˢ◾_ {A ⇒ A₁} t-t' t'-t'' = {!!}
 
 
 -- _≈⁻¹ : ∀ {A Γ}{t t' : Tm Γ A} → t ≈ t' → t' ≈ t
@@ -71,20 +73,20 @@ _ˢ◾_ {A ⇒ A₁} t-t' t'-t'' = {!!}
 -- _≈~◾_ : ∀ {A Γ}{t t' t'' : Tm Γ A} → t ≈ t' → t' ~ t'' → t ≈ t''
 -- p ≈~◾ q = (q ~⁻¹ ~≈◾ p ≈⁻¹) ≈⁻¹
 
-Tm↑ˢ : ∀ {Γ Δ A}(t : Tm Γ A){σ δ : Tms Δ Γ} → Tmsˢ σ δ → Tmˢ (t [ σ ]) (t [ δ ])
-Tm↑ˢ (var v)   σ-δ = {!!}
-Tm↑ˢ (lam t)   σ-δ = {!!}
-Tm↑ˢ (app f a) σ-δ = {!!}
+-- Tm↑ˢ : ∀ {Γ Δ A}(t : Tm Γ A){σ δ : Tms Δ Γ} → Tmsˢ σ δ → Tmˢ (t [ σ ]) (t [ δ ])
+-- Tm↑ˢ (var v)   σ-δ = {!!}
+-- Tm↑ˢ (lam t)   σ-δ = {!!}
+-- Tm↑ˢ (app f a) σ-δ = {!!}
 
-~↑ˢ : ∀ {Γ Δ A t t'} → t ~ t' → ∀ {σ δ : Tms Δ Γ} → Tmsˢ σ δ → Tmˢ {Δ}{A} (t [ σ ]) (t' [ δ ])
-~↑ˢ (η t)           σ-δ = {!!}
-~↑ˢ (β t t')        σ-δ = {!!}
-~↑ˢ (lam t~t')      σ-δ = {!!}
-~↑ˢ (app₁ t~t')     σ-δ = {!!}
-~↑ˢ (app₂ t~t')     σ-δ = {!!}
-~↑ˢ ~refl           σ-δ = {!!}
-~↑ˢ (t~t' ~⁻¹)      σ-δ = {!!}
-~↑ˢ (t~t' ~◾ t~t'') σ-δ = {!!}
+-- ~↑ˢ : ∀ {Γ Δ A t t'} → t ~ t' → ∀ {σ δ : Tms Δ Γ} → Tmsˢ σ δ → Tmˢ {Δ}{A} (t [ σ ]) (t' [ δ ])
+-- ~↑ˢ (η t)           σ-δ = {!!}
+-- ~↑ˢ (β t t')        σ-δ = {!!}
+-- ~↑ˢ (lam t~t')      σ-δ = {!!}
+-- ~↑ˢ (app₁ t~t')     σ-δ = {!!}
+-- ~↑ˢ (app₂ t~t')     σ-δ = {!!}
+-- ~↑ˢ ~refl           σ-δ = {!!}
+-- ~↑ˢ (t~t' ~⁻¹)      σ-δ = {!!}
+-- ~↑ˢ (t~t' ~◾ t~t'') σ-δ = {!!}
 
 
 

@@ -9,14 +9,14 @@ open import Substitution
 open import Conversion
 open import Nf
 open import Normalization
-open import Naturality
+open import Functoriality
 
 stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈↑ᴺ v idᴺₛ ≡ uᴺ A (var v)
 stab∈ vz     = refl
 stab∈ (vs v) =
-    ∈↑-nat v idᴺₛ wk
+    ∈↑ᴺ-nat v idᴺₛ wk
   ◾ (_ᴺ[ wk ]ᵣ) & stab∈ v
-  ◾ u-nat (var v) wk
+  ◾ uᴺ-nat (var v) wk
   ◾ (λ x → uᴺ _ (var (vs x))) & idᵣ∈ v
 
 mutual

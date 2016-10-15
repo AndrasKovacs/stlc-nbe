@@ -44,24 +44,38 @@ mutual
   ⌜⌝ᵣ (ne n)  σ = ⌜⌝Neᵣ n σ
   ⌜⌝ᵣ (lam n) σ = lam & ⌜⌝ᵣ n (keep σ)
 
-app-≡-elim :
-  ∀ {Γ A A' B}{f : Tm Γ (A ⇒ B)}{f' : Tm Γ (A' ⇒ B)}{a a'}
-  → (Tm Γ B ∋ app f a) ≡ app f' a'
-  → Σ (A ≡ A') λ p → (coe ((Tm Γ ∘ (_⇒ B)) & p) f ≡ f') × (coe (Tm Γ & p) a ≡ a')
-app-≡-elim refl = refl , refl , refl
-
-lam-inj : ∀ {Γ A B}{t t' : Tm (Γ , A) B} → (Tm Γ (A ⇒ B) ∋ lam t) ≡ lam t' → t ≡ t'
-lam-inj refl = refl
-
 mutual
-  ⌜⌝-inj : ∀ {Γ A}{n n' : Nf Γ A} → ⌜ n ⌝ ≡ ⌜ n' ⌝ → n ≡ n'
-  ⌜⌝-inj {n = ne n}   {ne n'} p = ne & ⌜⌝Ne-inj p
-  ⌜⌝-inj {n = lam n} {lam n'} p = lam & ⌜⌝-inj (lam-inj p)
+  ∘ᵣNf :
+    ∀ {Γ Δ Σ A}(t : Nf Σ A)(σ : Ren Δ Σ)(δ : Ren Γ Δ)
+    → t [ σ ]ₙᵣ [ δ ]ₙᵣ ≡ t [ σ ∘ᵣ δ ]ₙᵣ
+  ∘ᵣNf (ne n)  σ δ = ne & ∘ᵣNe n σ δ
+  ∘ᵣNf (lam t) σ δ = lam & ∘ᵣNf t (keep σ) (keep δ)  
+    
+  ∘ᵣNe :
+    ∀ {Γ Δ Σ A}(t : Ne Σ A)(σ : Ren Δ Σ)(δ : Ren Γ Δ)
+    → t [ σ ]ₙₑᵣ [ δ ]ₙₑᵣ ≡ t [ σ ∘ᵣ δ ]ₙₑᵣ
+  ∘ᵣNe (var v)   σ δ = var & ∘ᵣ∈ v σ δ
+  ∘ᵣNe (app f a) σ δ = app & ∘ᵣNe f σ δ ⊗ ∘ᵣNf a σ δ
 
-  ⌜⌝Ne-inj : ∀ {Γ A}{n n' : Ne Γ A} → ⌜ n ⌝Ne ≡ ⌜ n' ⌝Ne → n ≡ n'
-  ⌜⌝Ne-inj {n = var v} {var .v} refl = refl
-  ⌜⌝Ne-inj {n = app f a} {app f' a'} p with app-≡-elim p
-  ... | refl , p2 , p3 = app & ⌜⌝Ne-inj p2 ⊗ ⌜⌝-inj p3
-  ⌜⌝Ne-inj {n = var _} {app _ _} ()
-  ⌜⌝Ne-inj {n = app _ _} {var _} ()
+
+-- app-≡-elim :
+--   ∀ {Γ A A' B}{f : Tm Γ (A ⇒ B)}{f' : Tm Γ (A' ⇒ B)}{a a'}
+--   → (Tm Γ B ∋ app f a) ≡ app f' a'
+--   → Σ (A ≡ A') λ p → (coe ((Tm Γ ∘ (_⇒ B)) & p) f ≡ f') × (coe (Tm Γ & p) a ≡ a')
+-- app-≡-elim refl = refl , refl , refl
+
+-- lam-inj : ∀ {Γ A B}{t t' : Tm (Γ , A) B} → (Tm Γ (A ⇒ B) ∋ lam t) ≡ lam t' → t ≡ t'
+-- lam-inj refl = refl
+
+-- mutual
+--   ⌜⌝-inj : ∀ {Γ A}{n n' : Nf Γ A} → ⌜ n ⌝ ≡ ⌜ n' ⌝ → n ≡ n'
+--   ⌜⌝-inj {n = ne n}   {ne n'} p = ne & ⌜⌝Ne-inj p
+--   ⌜⌝-inj {n = lam n} {lam n'} p = lam & ⌜⌝-inj (lam-inj p)
+
+--   ⌜⌝Ne-inj : ∀ {Γ A}{n n' : Ne Γ A} → ⌜ n ⌝Ne ≡ ⌜ n' ⌝Ne → n ≡ n'
+--   ⌜⌝Ne-inj {n = var v} {var .v} refl = refl
+--   ⌜⌝Ne-inj {n = app f a} {app f' a'} p with app-≡-elim p
+--   ... | refl , p2 , p3 = app & ⌜⌝Ne-inj p2 ⊗ ⌜⌝-inj p3
+--   ⌜⌝Ne-inj {n = var _} {app _ _} ()
+--   ⌜⌝Ne-inj {n = app _ _} {var _} ()
 
