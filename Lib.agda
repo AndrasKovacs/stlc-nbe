@@ -73,6 +73,10 @@ infixr 5 _,_
 
 open Σ public
 
+,Σ= : ∀{i j}{A : Set i}{B : A → Set j}{a a' : A}{b : B a}{b' : B a'}
+     (p : a ≡ a') → coe (B & p) b ≡ b' → _≡_ {A = Σ A B} (a , b) (a' , b')
+,Σ= refl refl = refl
+
 _×_ : ∀{i j} → Set i → Set j → Set (i ⊔ j)
 A × B = Σ A λ _ → B
 infixr 4 _×_

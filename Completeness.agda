@@ -9,8 +9,6 @@ open import Substitution
 open import Conversion
 open import Nf
 open import Normalization
-open import Functoriality
-
 
 -- Tmᶜ : ∀ {Γ A} → Tmᴺ Γ A → 
 

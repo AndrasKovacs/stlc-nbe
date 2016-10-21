@@ -23,24 +23,24 @@ infix 3 _~_
 infixl 4 _~◾_
 infix 6 _~⁻¹
 
-~ᵣ : ∀ {Γ Δ A}{t t' : Tm Γ A}(σ : Ren Δ Γ) → t ~ t' → t [ σ ]ᵣ ~ t' [ σ ]ᵣ
-~ᵣ σ (η t)    =
-  coe ((λ t' → t [ σ ]ᵣ ~ lam (app t' (var vz))) &
-      (∘ᵣTm t σ wk
-    ◾ ((t [_]ᵣ) ∘ drop) & (idrᵣ σ ◾ idlᵣ σ ⁻¹)
-    ◾ ∘ᵣTm t wk (keep σ) ⁻¹))
-  (η (t [ σ ]ᵣ))
+-- ~ᵣ : ∀ {Γ Δ A}{t t' : Tm Γ A}(σ : Ren Δ Γ) → t ~ t' → t [ σ ]ᵣ ~ t' [ σ ]ᵣ
+-- ~ᵣ σ (η t)    =
+--   coe ((λ t' → t [ σ ]ᵣ ~ lam (app t' (var vz))) &
+--       (∘ᵣTm t σ wk
+--     ◾ ((t [_]ᵣ) ∘ drop) & (idrᵣ σ ◾ idlᵣ σ ⁻¹)
+--     ◾ ∘ᵣTm t wk (keep σ) ⁻¹))
+--   (η (t [ σ ]ᵣ))
 
-~ᵣ σ (β t t') =
-  coe ((app (lam (t [ keep σ ]ᵣ)) (t' [ σ ]ᵣ) ~_) &
-      (ᵣ∘ₛTm t (keep σ) (idₛ , (t' [ σ ]ᵣ))
-    ◾ (λ δ → t [ δ , (t' [ σ ]ᵣ)]) & (idrᵣₛ σ ◾ idlₛᵣ σ ⁻¹)
-    ◾ ₛ∘ᵣTm t (idₛ , t') σ ⁻¹))
-  (β (t [ keep σ ]ᵣ) (t' [ σ ]ᵣ))
+-- ~ᵣ σ (β t t') =
+--   coe ((app (lam (t [ keep σ ]ᵣ)) (t' [ σ ]ᵣ) ~_) &
+--       (ᵣ∘ₛTm t (keep σ) (idₛ , (t' [ σ ]ᵣ))
+--     ◾ (λ δ → t [ δ , (t' [ σ ]ᵣ)]) & (idrᵣₛ σ ◾ idlₛᵣ σ ⁻¹)
+--     ◾ ₛ∘ᵣTm t (idₛ , t') σ ⁻¹))
+--   (β (t [ keep σ ]ᵣ) (t' [ σ ]ᵣ))
 
-~ᵣ σ (lam t~t')       = lam (~ᵣ (keep σ) t~t')
-~ᵣ σ (app₁ t~t')      = app₁ (~ᵣ σ t~t')
-~ᵣ σ (app₂ t~t')      = app₂ (~ᵣ σ t~t')
-~ᵣ σ ~refl            = ~refl
-~ᵣ σ (t~t' ~⁻¹)       = ~ᵣ σ t~t' ~⁻¹
-~ᵣ σ (t~t' ~◾ t'~t'') = ~ᵣ σ t~t' ~◾ ~ᵣ σ t'~t''
+-- ~ᵣ σ (lam t~t')       = lam (~ᵣ (keep σ) t~t')
+-- ~ᵣ σ (app₁ t~t')      = app₁ (~ᵣ σ t~t')
+-- ~ᵣ σ (app₂ t~t')      = app₂ (~ᵣ σ t~t')
+-- ~ᵣ σ ~refl            = ~refl
+-- ~ᵣ σ (t~t' ~⁻¹)       = ~ᵣ σ t~t' ~⁻¹
+-- ~ᵣ σ (t~t' ~◾ t'~t'') = ~ᵣ σ t~t' ~◾ ~ᵣ σ t'~t''
