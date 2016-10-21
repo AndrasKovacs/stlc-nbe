@@ -31,24 +31,27 @@ _ᴺ∘ᵣ_ : ∀ {Γ Δ Σ} → Tmsᴺ Δ Σ → Ren Γ Δ → Tmsᴺ Γ Σ
 ∈↑ᴺ vz     (σ , t) = t
 ∈↑ᴺ (vs v) (σ , t) = ∈↑ᴺ v σ
 
+appᴺ : ∀ {Γ A B} → Tmᴺ Γ (A ⇒ B) → Tmᴺ Γ A → Tmᴺ Γ B
+appᴺ f a = f _ idᵣ a
+
 Tm↑ᴺ : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Tmsᴺ Δ Γ → Tmᴺ Δ A
 Tm↑ᴺ (var v)   σ = ∈↑ᴺ v σ
 Tm↑ᴺ (lam t)   σ = λ Σ δ a → Tm↑ᴺ t (σ ᴺ∘ᵣ δ , a)
-Tm↑ᴺ (app f a) σ = Tm↑ᴺ f σ _ idᵣ (Tm↑ᴺ a σ)
+Tm↑ᴺ (app f a) σ = appᴺ (Tm↑ᴺ f σ) (Tm↑ᴺ a σ)
 
 mutual
-  qᴺ : ∀ A {Γ} → Tmᴺ Γ A → Nf Γ A
-  qᴺ ι       t = t
-  qᴺ (A ⇒ B) t = lam (qᴺ B (t _ wk (uᴺ A (var vz))))
+  qᴺ : ∀ {Γ A} → Tmᴺ Γ A → Nf Γ A
+  qᴺ {A = ι}     t = t
+  qᴺ {A = A ⇒ B} t = lam (qᴺ (t _ wk (uᴺ (var vz))))
 
-  uᴺ : ∀ A {Γ} → Ne Γ A → Tmᴺ Γ A
-  uᴺ ι       n = ne n
-  uᴺ (A ⇒ B) n = λ Δ σ a → uᴺ B (app (n [ σ ]ₙₑᵣ) (qᴺ A a))
+  uᴺ : ∀ {Γ A} → Ne Γ A → Tmᴺ Γ A
+  uᴺ {A = ι}     n = ne n
+  uᴺ {A = A ⇒ B} n = λ Δ σ a → uᴺ (app (n [ σ ]ₙₑᵣ) (qᴺ a))
 
 idᴺₛ : ∀ {Γ} → Tmsᴺ Γ Γ
 idᴺₛ {∙}     = ∙
-idᴺₛ {Γ , t} = idᴺₛ {Γ} ᴺ∘ᵣ wk , uᴺ _ (var vz)
+idᴺₛ {Γ , t} = idᴺₛ {Γ} ᴺ∘ᵣ wk , uᴺ (var vz)
 
 nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
-nf t = qᴺ _ (Tm↑ᴺ t idᴺₛ)
+nf t = qᴺ (Tm↑ᴺ t idᴺₛ)
 
