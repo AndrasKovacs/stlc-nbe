@@ -14,6 +14,11 @@ _∘_ : ∀ {a b c}
         ((x : A) → C (g x))
 f ∘ g = λ x → f (g x)
 
+_$_ : ∀ {a b} {A : Set a} {B : A → Set b} →
+      ((x : A) → B x) → ((x : A) → B x)
+f $ x = f x
+infixr 0 _$_
+
 data _≡_ {i}{A : Set i} (x : A) : A → Set i where
   refl : x ≡ x
 infix 4 _≡_
