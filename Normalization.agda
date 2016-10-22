@@ -127,7 +127,7 @@ _ₛ∘ᴺ_ : ∀ {Γ Δ Σ} → Tms Γ Δ → Tmsᴺ Σ Γ → Tmsᴺ Σ Δ
 (σ , t) ₛ∘ᴺ δ = (σ ₛ∘ᴺ δ) , Tm↑ᴺ t δ
 
 idᵣTmᴺ : ∀ {Γ A}(t : Tmᴺ Γ A) → t ᴺ[ idᵣ ]ᵣ ≡ t
-idᵣTmᴺ {A = ι}     t = ⌜⌝-inj (⌜⌝ᵣ t idᵣ ◾ idᵣTm ⌜ t ⌝)
+idᵣTmᴺ {A = ι}     t = idᵣNf t
 idᵣTmᴺ {A = A ⇒ B} t = ⇒ᴺ= λ σ aᴺ → (λ x → proj₁ t x aᴺ) & idlᵣ σ
 
 idrᴺᵣ : ∀ {Γ Δ}(σ : Tmsᴺ Γ Δ) → σ ᴺ∘ᵣ idᵣ ≡ σ

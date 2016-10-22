@@ -26,5 +26,5 @@ mutual
   stabNe (app f a) =
       (λ x → proj₁ x idᵣ (Tm↑ᴺ ⌜ a ⌝ idᴺₛ)) & stabNe f
     ◾ (λ x → uᴺ (app (f [ idᵣ ]ₙₑᵣ) x)) & stab a
-    ◾ (λ x → uᴺ (app x a)) & ⌜⌝Ne-inj (⌜⌝Neᵣ f idᵣ ◾ idᵣTm ⌜ f ⌝Ne)
+    ◾ (λ x → uᴺ (app x a)) & idᵣNe f
 

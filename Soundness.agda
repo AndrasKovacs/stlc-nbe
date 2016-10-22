@@ -91,10 +91,10 @@ mutual
   u≈ {A = ι}     p = ne & p
   u≈ {A = A ⇒ B} p = λ σ a≈a' → u≈ (app & ((_[ σ ∘ᵣ idᵣ ]ₙₑᵣ) & p) ⊗ q≈ a≈a')
 
-idₛTmsᴺ : ∀ {Γ} → idᴺₛ {Γ} ≈ₛ idᴺₛ
-idₛTmsᴺ {∙}     = ∙
-idₛTmsᴺ {Γ , A} = ≈ₛᵣ wk idₛTmsᴺ , u≈ refl
+id≈ₛ : ∀ {Γ} → idᴺₛ {Γ} ≈ₛ idᴺₛ
+id≈ₛ {∙}     = ∙
+id≈ₛ {Γ , A} = ≈ₛᵣ wk id≈ₛ , u≈ refl
 
 sound : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
-sound t~t' = q≈ (⟦~⟧ t~t' idₛTmsᴺ)
+sound t~t' = q≈ (⟦~⟧ t~t' id≈ₛ)
 
