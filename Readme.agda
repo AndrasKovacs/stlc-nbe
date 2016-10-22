@@ -1,5 +1,16 @@
 module Readme where
 
+{-
+
+Full correctness proof of normalization-by-evaluation for simply typed
+lambda calculus.
+
+We use function extensionality and Axiom K, but no other postulates,
+holes or unsafe pragmas. Also, the use of Axiom K could be eliminated with
+a moderate amount of work.
+
+-}
+
 -- Order in which you probably want to view modules
 ------------------------------------------------------------
 
@@ -26,7 +37,7 @@ open Conversion
 nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
 nf = Normalization.nf
 
-stability : ∀ {Γ A}(n : Nf Γ A) → nf (⌜ n ⌝) ≡ n
+stability : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝ ≡ n
 stability = Stability.stab
 
 soundness : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
