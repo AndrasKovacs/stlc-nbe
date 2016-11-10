@@ -6,7 +6,7 @@ open import Lib
 open import Syntax
 open import Embedding
 
-infixr  6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
+infixr 6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
 
 data Sub (Γ : Con) : Con → Set where
   ∙   : Sub Γ ∙
@@ -129,47 +129,53 @@ assₛₛₑ :
 assₛₛₑ ∙       δ ν = refl
 assₛₛₑ (σ , t) δ ν = _,_ & assₛₛₑ σ δ ν ⊗ (Tm-ₛ∘ₑ δ ν t ⁻¹)
 
--- ∘ₛ∈ :
---   ∀ {Γ Δ Σ A}(v : A ∈ Σ)(σ : Sub Δ Σ)(δ : Sub Γ Δ)
---   → v [ σ ]∈ [ δ ] ≡ v [ σ ∘ₛ δ ]∈
--- ∘ₛ∈ vz     (σ , _) δ = refl
--- ∘ₛ∈ (vs v) (σ , t) δ = ∘ₛ∈ v σ δ
+∈-∘ₛ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : Sub Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ∘ₛ δ) v ≡ Tmₛ δ (∈ₛ σ v)
+∈-∘ₛ (σ , _) δ vz     = refl
+∈-∘ₛ (σ , _) δ (vs v) = ∈-∘ₛ σ δ v
 
--- ∘ₛTm :
---   ∀ {Γ Δ Σ A}(t : Tm Σ A)(σ : Sub Δ Σ)(δ : Sub Γ Δ)
---   → t [ σ ] [ δ ] ≡ t [ σ ∘ₛ δ ]
--- ∘ₛTm (var v)   σ δ = ∘ₛ∈ v σ δ
--- ∘ₛTm (lam t)   σ δ =
---   lam & (
---       ∘ₛTm t (keepₛ σ) (keepₛ δ)
---     ◾ (λ σ → t [ σ , var vz ]) &
---         (assₛₑₛ σ wk (keepₛ δ)
---       ◾ (σ ∘ₛ_) & idlₑₛ (δ ₛ∘ₑ wk) ◾ assₛₛₑ σ δ wk ⁻¹))
--- ∘ₛTm (app f a) σ δ = app & ∘ₛTm f σ δ ⊗ ∘ₛTm a σ δ
+Tm-∘ₛ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : Sub Γ Δ)(t : Tm Σ A) → Tmₛ (σ ∘ₛ δ) t ≡ Tmₛ δ (Tmₛ σ t)
+Tm-∘ₛ σ δ (var v)   = ∈-∘ₛ σ δ v
+Tm-∘ₛ σ δ (lam t)   =
+  lam &
+      ((λ x → Tmₛ (x , var vz) t) &
+          (assₛₛₑ σ δ wk
+        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
+    ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) t)
+Tm-∘ₛ σ δ (app f a) = app & Tm-∘ₛ σ δ f ⊗ Tm-∘ₛ σ δ a
 
--- idₛ∈ : ∀ {Γ A}(v : A ∈ Γ) → v [ idₛ ]∈ ≡ var v
--- idₛ∈ vz     = refl
--- idₛ∈ (vs v) = ₛ∘ₑ∈ v idₛ wk ⁻¹ ◾ (_[ wk ]ₑ) & idₛ∈ v ◾ (var ∘ vs) & idₑ∈ v
+∈-idₛ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₛ idₛ v ≡ var v
+∈-idₛ vz     = refl
+∈-idₛ (vs v) = ∈-ₛ∘ₑ idₛ wk v ◾ Tmₑ wk & ∈-idₛ v ◾ (var ∘ vs) & ∈-idₑ v
 
--- idₛTm : ∀ {Γ A}(t : Tm Γ A) → t [ idₛ ] ≡ t
--- idₛTm (var v)   = idₛ∈ v
--- idₛTm (lam t)   = lam & idₛTm t
--- idₛTm (app f x) = app & idₛTm f ⊗ idₛTm x
+Tm-idₛ : ∀ {A Γ}(t : Tm Γ A) → Tmₛ idₛ t ≡ t
+Tm-idₛ (var v)   = ∈-idₛ v
+Tm-idₛ (lam t)   = lam & Tm-idₛ t
+Tm-idₛ (app f a) = app & Tm-idₛ f ⊗ Tm-idₛ a
 
--- idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
--- idrₛ ∙       = refl
--- idrₛ (σ , t) = _,_ & idrₛ σ ⊗ idₛTm t
+idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
+idrₛ ∙       = refl
+idrₛ (σ , t) = _,_ & idrₛ σ ⊗ Tm-idₛ t
 
--- -- Misc lemma used in soundness proof
--- βₑₛ :
---   ∀ {Γ Δ Σ A B}(σ : Sub Δ Γ)(ν : OPE Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
---   → t [ keepₛ σ ] [ keep ν ]ₑ [ idₛ , a ] ≡ t [ (σ ₛ∘ₑ ν) , a ]
--- βₑₛ σ ν t a =
---     ₑ∘ₛTm (t [ keepₛ σ ]) (keep ν) (idₛ , a)
---   ◾ ∘ₛTm t (keepₛ σ) ((ν ₑ∘ₛ idₛ) , a)
---   ◾ ((t [_]) ∘ (_, a)) & (
---       assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a)
---     ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ)
---     ◾ assₛₑₛ σ ν idₛ ⁻¹
---     ◾ idrₛ (σ ₛ∘ₑ ν))
+idlₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → idₛ ∘ₛ σ ≡ σ
+idlₛ ∙       = refl
+idlₛ (σ , t) = (_, t) & (assₛₑₛ idₛ wk (σ , t) ◾ (idₛ ∘ₛ_) & idlₑₛ σ ◾ idlₛ σ)
+
+assₛ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Δ Σ)(ν : Sub Γ Δ)
+  → (σ ∘ₛ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ∘ₛ ν)
+assₛ ∙       δ ν = refl
+assₛ (σ , t) δ ν = _,_ & assₛ σ δ ν ⊗ (Tm-∘ₛ δ ν t ⁻¹)
+
+-- Misc lemma
+βₑₛ :
+  ∀ {Γ Δ Σ A B}(σ : Sub Δ Γ)(ν : OPE Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
+  → Tmₛ (σ ₛ∘ₑ ν , a) t ≡ Tmₛ (idₛ , a) (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))
+βₑₛ σ ν t a =
+    (λ x → Tmₛ (x , a) t) &
+       (idrₛ (σ ₛ∘ₑ ν) ⁻¹
+      ◾ assₛₑₛ σ ν idₛ
+      ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ) ⁻¹
+      ◾ assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a) ⁻¹)
+  ◾ Tm-∘ₛ (keepₛ σ) (keep ν ₑ∘ₛ (idₛ , a)) t
+  ◾ Tm-ₑ∘ₛ (keep ν) (idₛ , a) (Tmₛ (keepₛ σ) t)
 
