@@ -4,9 +4,9 @@ module Nf where
 
 open import Lib
 open import Syntax
-open import Renaming
+open import Embedding
 
-infixl 8 _[_]ₙᵣ _[_]ₙₑᵣ
+infixl 8 _[_]Nfₑ _[_]Neₑ
 
 mutual
   data Nf (Γ : Con) : Ty → Set where
@@ -18,14 +18,15 @@ mutual
     app : ∀ {A B} → Ne Γ (A ⇒ B) → Nf Γ A → Ne Γ B
 
 mutual
-  _[_]ₙᵣ : ∀ {Γ Δ A} → Nf Δ A → Ren Γ Δ → Nf Γ A
-  ne  n [ σ ]ₙᵣ = ne (n [ σ ]ₙₑᵣ)
-  lam n [ σ ]ₙᵣ = lam (n [ keep σ ]ₙᵣ)
+  _[_]Nfₑ : ∀ {Γ Δ A} → Nf Δ A → OPE Γ Δ → Nf Γ A
+  ne  n [ σ ]Nfₑ = ne (n [ σ ]Neₑ)
+  lam n [ σ ]Nfₑ = lam (n [ keep σ ]Nfₑ)
 
-  _[_]ₙₑᵣ : ∀ {Γ Δ A} → Ne Δ A → Ren Γ Δ → Ne Γ A
-  var v     [ σ ]ₙₑᵣ = var (v [ σ ]∈ᵣ)
-  (app f a) [ σ ]ₙₑᵣ = app (f [ σ ]ₙₑᵣ) (a [ σ ]ₙᵣ)
+  _[_]Neₑ : ∀ {Γ Δ A} → Ne Δ A → OPE Γ Δ → Ne Γ A
+  var v     [ σ ]Neₑ = var (v [ σ ]∈ₑ)
+  (app f a) [ σ ]Neₑ = app (f [ σ ]Neₑ) (a [ σ ]Nfₑ)
 
+-- natural embedding into Tm
 mutual
   ⌜_⌝ : ∀ {Γ A} → Nf Γ A → Tm Γ A
   ⌜ ne n  ⌝ = ⌜ n ⌝Ne
@@ -36,33 +37,34 @@ mutual
   ⌜ app n t ⌝Ne = app ⌜ n ⌝Ne ⌜ t ⌝
 
 mutual
-  ⌜⌝Neᵣ : ∀ {Γ Δ A}(n : Ne Γ A)(σ : Ren Δ Γ) → ⌜ n [ σ ]ₙₑᵣ ⌝Ne ≡ ⌜ n ⌝Ne [ σ ]ᵣ
-  ⌜⌝Neᵣ (var v)   σ = refl
-  ⌜⌝Neᵣ (app f a) σ = app & ⌜⌝Neᵣ f σ ⊗ ⌜⌝ᵣ a σ
+  ⌜⌝Neₑ-nat : ∀ {Γ Δ A}(n : Ne Γ A)(σ : OPE Δ Γ) → ⌜ n [ σ ]Neₑ ⌝Ne ≡ ⌜ n ⌝Ne [ σ ]ₑ
+  ⌜⌝Neₑ-nat (var v)   σ = refl
+  ⌜⌝Neₑ-nat (app f a) σ = app & ⌜⌝Neₑ-nat f σ ⊗ ⌜⌝Nfₑ-nat a σ
 
-  ⌜⌝ᵣ : ∀ {Γ Δ A}(n : Nf Γ A)(σ : Ren Δ Γ) → ⌜ n [ σ ]ₙᵣ ⌝ ≡ ⌜ n ⌝ [ σ ]ᵣ
-  ⌜⌝ᵣ (ne n)  σ = ⌜⌝Neᵣ n σ
-  ⌜⌝ᵣ (lam n) σ = lam & ⌜⌝ᵣ n (keep σ)
+  ⌜⌝Nfₑ-nat : ∀ {Γ Δ A}(n : Nf Γ A)(σ : OPE Δ Γ) → ⌜ n [ σ ]Nfₑ ⌝ ≡ ⌜ n ⌝ [ σ ]ₑ
+  ⌜⌝Nfₑ-nat (ne n)  σ = ⌜⌝Neₑ-nat n σ
+  ⌜⌝Nfₑ-nat (lam n) σ = lam & ⌜⌝Nfₑ-nat n (keep σ)
 
+-- (Ne _ A) and (Nf _ A) are presheaves on OPE
 mutual
-  ∘ᵣNf :
-    ∀ {Γ Δ Σ A}(t : Nf Σ A)(σ : Ren Δ Σ)(δ : Ren Γ Δ)
-    → t [ σ ]ₙᵣ [ δ ]ₙᵣ ≡ t [ σ ∘ᵣ δ ]ₙᵣ
-  ∘ᵣNf (ne n)  σ δ = ne & ∘ᵣNe n σ δ
-  ∘ᵣNf (lam t) σ δ = lam & ∘ᵣNf t (keep σ) (keep δ)  
+  ∘ₑNf :
+    ∀ {Γ Δ Σ A}(t : Nf Σ A)(σ : OPE Δ Σ)(δ : OPE Γ Δ)
+    → t [ σ ∘ₑ δ ]Nfₑ ≡ t [ σ ]Nfₑ [ δ ]Nfₑ
+  ∘ₑNf (ne n)  σ δ = ne & ∘ₑNe n σ δ
+  ∘ₑNf (lam t) σ δ = lam & ∘ₑNf t (keep σ) (keep δ)  
     
-  ∘ᵣNe :
-    ∀ {Γ Δ Σ A}(t : Ne Σ A)(σ : Ren Δ Σ)(δ : Ren Γ Δ)
-    → t [ σ ]ₙₑᵣ [ δ ]ₙₑᵣ ≡ t [ σ ∘ᵣ δ ]ₙₑᵣ
-  ∘ᵣNe (var v)   σ δ = var & ∘ᵣ∈ v σ δ
-  ∘ᵣNe (app f a) σ δ = app & ∘ᵣNe f σ δ ⊗ ∘ᵣNf a σ δ
+  ∘ₑNe :
+    ∀ {Γ Δ Σ A}(t : Ne Σ A)(σ : OPE Δ Σ)(δ : OPE Γ Δ)
+    →  t [ σ ∘ₑ δ ]Neₑ ≡ t [ σ ]Neₑ [ δ ]Neₑ
+  ∘ₑNe (var v)   σ δ = var & ∘ₑ∈ v σ δ
+  ∘ₑNe (app f a) σ δ = app & ∘ₑNe f σ δ ⊗ ∘ₑNf a σ δ
 
 mutual
-  idᵣNf : ∀ {Γ A}(n : Nf Γ A) → n [ idᵣ ]ₙᵣ ≡ n
-  idᵣNf (ne n)  = ne & idᵣNe n
-  idᵣNf (lam n) = lam & idᵣNf n
+  idₑNf : ∀ {Γ A}(n : Nf Γ A) → n [ idₑ ]Nfₑ ≡ n
+  idₑNf (ne n)  = ne & idₑNe n
+  idₑNf (lam n) = lam & idₑNf n
 
-  idᵣNe : ∀ {Γ A}(n : Ne Γ A) → n [ idᵣ ]ₙₑᵣ ≡ n
-  idᵣNe (var v)   = var & idᵣ∈ v
-  idᵣNe (app f a) = app & idᵣNe f ⊗ idᵣNf a
+  idₑNe : ∀ {Γ A}(n : Ne Γ A) → n [ idₑ ]Neₑ ≡ n
+  idₑNe (var v)   = var & idₑ∈ v
+  idₑNe (app f a) = app & idₑNe f ⊗ idₑNf a
 

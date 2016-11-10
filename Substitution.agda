@@ -4,180 +4,172 @@ module Substitution where
 
 open import Lib
 open import Syntax
-open import Renaming
+open import Embedding
 
--- (Satisfies the category-with-families equations except the β and η conversions)
+infixr  6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
 
-infixr  6 _ᵣ∘ₛ_ _ₛ∘ᵣ_
-infixl 8 _[_] _[_]∈
+data Sub (Γ : Con) : Con → Set where
+  ∙   : Sub Γ ∙
+  _,_ : ∀ {A Δ} → Sub Γ Δ → Tm Γ A → Sub Γ (Δ , A)
 
-data Tms (Γ : Con) : Con → Set where
-  ∙   : Tms Γ ∙
-  _,_ : ∀ {A Δ} → Tms Γ Δ → Tm Γ A → Tms Γ (Δ , A)
+-- Left and right compositions with embedding
+_ₛ∘ₑ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → OPE Γ Δ → Sub Γ Σ
+∙       ₛ∘ₑ δ = ∙
+(σ , t) ₛ∘ₑ δ = σ ₛ∘ₑ δ , Tmₑ δ t
 
-_ₛ∘ᵣ_ : ∀ {Γ Δ Σ} → Tms Δ Σ → Ren Γ Δ → Tms Γ Σ
-∙       ₛ∘ᵣ δ = ∙
-(σ , t) ₛ∘ᵣ δ = σ ₛ∘ᵣ δ , t [ δ ]ᵣ
+_ₑ∘ₛ_ : ∀ {Γ Δ Σ} → OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
+∙      ₑ∘ₛ δ       = δ
+drop σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ
+keep σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ , t
 
-_ᵣ∘ₛ_ : ∀ {Γ Δ Σ} → Ren Δ Σ → Tms Γ Δ → Tms Γ Σ
-∙      ᵣ∘ₛ δ       = δ
-drop σ ᵣ∘ₛ (δ , t) = σ ᵣ∘ₛ δ
-keep σ ᵣ∘ₛ (δ , t) = σ ᵣ∘ₛ δ , t
+-- Inject OPE into Sub
+dropₛ : ∀ {A Γ Δ} → Sub Γ Δ → Sub (Γ , A) Δ
+dropₛ σ = σ ₛ∘ₑ wk
 
-dropₛ : ∀ {A Γ Δ} → Tms Γ Δ → Tms (Γ , A) Δ
-dropₛ σ = σ ₛ∘ᵣ wk
-
-keepₛ : ∀ {A Γ Δ} → Tms Γ Δ → Tms (Γ , A) (Δ , A)
+keepₛ : ∀ {A Γ Δ} → Sub Γ Δ → Sub (Γ , A) (Δ , A)
 keepₛ σ = dropₛ σ , var vz
 
-idₛ : ∀ {Γ} → Tms Γ Γ
+⌜_⌝ᵒᵖᵉ : ∀ {Γ Δ} → OPE Γ Δ → Sub Γ Δ
+⌜ ∙      ⌝ᵒᵖᵉ = ∙
+⌜ drop σ ⌝ᵒᵖᵉ = dropₛ ⌜ σ ⌝ᵒᵖᵉ
+⌜ keep σ ⌝ᵒᵖᵉ = keepₛ ⌜ σ ⌝ᵒᵖᵉ
+
+-- Action on ∈ and Tm
+∈ₛ : ∀ {A Γ Δ} → Sub Γ Δ → A ∈ Δ → Tm Γ A
+∈ₛ (σ , t) vz     = t
+∈ₛ (σ  , t)(vs v) = ∈ₛ σ v
+
+Tmₛ : ∀ {A Γ Δ} → Sub Γ Δ → Tm Δ A → Tm Γ A
+Tmₛ σ (var v)   = ∈ₛ σ v
+Tmₛ σ (lam t)   = lam (Tmₛ (keepₛ σ) t)
+Tmₛ σ (app f a) = app (Tmₛ σ f) (Tmₛ σ a)
+
+-- Identity and composition
+idₛ : ∀ {Γ} → Sub Γ Γ
 idₛ {∙}     = ∙
-idₛ {Γ , A} = keepₛ {A} idₛ
+idₛ {Γ , A} = keepₛ idₛ
 
-_[_]∈ : ∀ {Γ Δ A} → A ∈ Δ → Tms Γ Δ → Tm Γ A
-vz   [ σ , t ]∈ = t
-vs v [ σ , _ ]∈ = v [ σ ]∈
-
-_[_] : ∀ {Γ Δ A} → Tm Δ A → Tms Γ Δ → Tm Γ A
-var v   [ σ ] = v [ σ ]∈
-lam t   [ σ ] = lam (t [ keepₛ σ ])
-app f a [ σ ] = app (f [ σ ]) (a [ σ ])
-
-_∘ₛ_ : ∀ {Γ Δ Σ} → Tms Δ Σ → Tms Γ Δ → Tms Γ Σ
+_∘ₛ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 ∙       ∘ₛ δ = ∙
-(σ , t) ∘ₛ δ = σ ∘ₛ δ , t [ δ ]
+(σ , t) ∘ₛ δ = σ ∘ₛ δ , Tmₛ δ t
 
-assₛᵣᵣ :
-  ∀ {Γ Δ Σ Ξ}(σ : Tms Σ Ξ)(δ : Ren Δ Σ)(ν : Ren Γ Δ)
-  → (σ ₛ∘ᵣ δ) ₛ∘ᵣ ν ≡ σ ₛ∘ᵣ (δ ∘ᵣ ν)
-assₛᵣᵣ ∙       δ ν = refl
-assₛᵣᵣ (σ , t) δ ν = _,_ & assₛᵣᵣ σ δ ν ⊗ ∘ᵣTm t δ ν
+-- Sub category laws and functor laws for (Tm _ A) and (A ∈ _).
+-- We need a number of different identity and associativity
+-- lemmas depending on which parameters are embeddings or substitutions
+assₛₑₑ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Δ Σ)(ν : OPE Γ Δ)
+  → (σ ₛ∘ₑ δ) ₛ∘ₑ ν ≡ σ ₛ∘ₑ (δ ∘ₑ ν)
+assₛₑₑ ∙       δ ν = refl
+assₛₑₑ (σ , t) δ ν = _,_ & assₛₑₑ σ δ ν ⊗ (Tm-∘ₑ δ ν t ⁻¹)
 
-assᵣₛᵣ :
-  ∀ {Γ Δ Σ Ξ}(σ : Ren Σ Ξ)(δ : Tms Δ Σ)(ν : Ren Γ Δ)
-  → (σ ᵣ∘ₛ δ) ₛ∘ᵣ ν ≡ σ ᵣ∘ₛ (δ ₛ∘ᵣ ν)
-assᵣₛᵣ ∙        δ       ν = refl
-assᵣₛᵣ (drop σ) (δ , t) ν = assᵣₛᵣ σ δ ν
-assᵣₛᵣ (keep σ) (δ , t) ν = (_, t [ ν ]ᵣ) & assᵣₛᵣ σ δ ν
+assₑₛₑ :
+  ∀ {Γ Δ Σ Ξ}(σ : OPE Σ Ξ)(δ : Sub Δ Σ)(ν : OPE Γ Δ)
+  → (σ ₑ∘ₛ δ) ₛ∘ₑ ν ≡ σ ₑ∘ₛ (δ ₛ∘ₑ ν)
+assₑₛₑ ∙        δ       ν = refl
+assₑₛₑ (drop σ) (δ , t) ν = assₑₛₑ σ δ ν
+assₑₛₑ (keep σ) (δ , t) ν = (_, Tmₑ ν t) & assₑₛₑ σ δ ν
 
-⌜_⌝ʳ : ∀ {Γ Δ} → Ren Γ Δ → Tms Γ Δ
-⌜ ∙      ⌝ʳ = ∙
-⌜ drop σ ⌝ʳ = dropₛ ⌜ σ ⌝ʳ
-⌜ keep σ ⌝ʳ = keepₛ ⌜ σ ⌝ʳ
+idlₑₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → idₑ ₑ∘ₛ σ ≡ σ
+idlₑₛ ∙       = refl
+idlₑₛ (σ , t) = (_, t) & idlₑₛ σ
 
-idlᵣₛ : ∀ {Γ Δ}(σ : Tms Γ Δ) → idᵣ ᵣ∘ₛ σ ≡ σ
-idlᵣₛ ∙       = refl
-idlᵣₛ (σ , t) = (_, t) & idlᵣₛ σ
-
-idlₛᵣ : ∀ {Γ Δ}(σ : Ren Γ Δ) → idₛ ₛ∘ᵣ σ ≡ ⌜ σ ⌝ʳ
-idlₛᵣ ∙        = refl
-idlₛᵣ (drop σ) =
-      ((idₛ ₛ∘ᵣ_) ∘ drop) & idrᵣ σ ⁻¹
-    ◾ assₛᵣᵣ idₛ σ wk ⁻¹
-    ◾ dropₛ & idlₛᵣ σ
-idlₛᵣ (keep σ) =
+idlₛₑ : ∀ {Γ Δ}(σ : OPE Γ Δ) → idₛ ₛ∘ₑ σ ≡ ⌜ σ ⌝ᵒᵖᵉ
+idlₛₑ ∙        = refl
+idlₛₑ (drop σ) =
+      ((idₛ ₛ∘ₑ_) ∘ drop) & idrₑ σ ⁻¹
+    ◾ assₛₑₑ idₛ σ wk ⁻¹
+    ◾ dropₛ & idlₛₑ σ
+idlₛₑ (keep σ) =
   (_, var vz) &
-      (assₛᵣᵣ idₛ wk (keep σ)
-    ◾ ((idₛ ₛ∘ᵣ_) ∘ drop) & (idlᵣ σ ◾ idrᵣ σ ⁻¹)
-    ◾ assₛᵣᵣ idₛ σ wk ⁻¹
-    ◾ (_ₛ∘ᵣ wk) & idlₛᵣ σ )
+      (assₛₑₑ idₛ wk (keep σ)
+    ◾ ((idₛ ₛ∘ₑ_) ∘ drop) & (idlₑ σ ◾ idrₑ σ ⁻¹)
+    ◾ assₛₑₑ idₛ σ wk ⁻¹
+    ◾ (_ₛ∘ₑ wk) & idlₛₑ σ )
 
-idrᵣₛ : ∀ {Γ Δ}(σ : Ren Γ Δ) → σ ᵣ∘ₛ idₛ ≡ ⌜ σ ⌝ʳ
-idrᵣₛ ∙        = refl
-idrᵣₛ (drop σ) = assᵣₛᵣ σ idₛ wk ⁻¹ ◾ dropₛ & idrᵣₛ σ
-idrᵣₛ (keep σ) = (_, var vz) & (assᵣₛᵣ σ idₛ wk ⁻¹ ◾ (_ₛ∘ᵣ wk) & idrᵣₛ σ)
+idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
+idrₑₛ ∙        = refl
+idrₑₛ (drop σ) = assₑₛₑ σ idₛ wk ⁻¹ ◾ dropₛ & idrₑₛ σ
+idrₑₛ (keep σ) = (_, var vz) & (assₑₛₑ σ idₛ wk ⁻¹ ◾ (_ₛ∘ₑ wk) & idrₑₛ σ)
 
-ᵣ∘ₛ∈ :
-  ∀ {Γ Δ Σ A}(v : A ∈ Σ)(σ : Ren Δ Σ)(δ : Tms Γ Δ)
-  → v [ σ ]∈ᵣ [ δ ]∈ ≡ v [ σ ᵣ∘ₛ δ ]∈
-ᵣ∘ₛ∈ v      ∙        δ       = refl
-ᵣ∘ₛ∈ v      (drop σ) (δ , t) = ᵣ∘ₛ∈ v σ δ
-ᵣ∘ₛ∈ vz     (keep σ) (δ , t) = refl
-ᵣ∘ₛ∈ (vs v) (keep σ) (δ , t) = ᵣ∘ₛ∈ v σ δ
+∈-ₑ∘ₛ : ∀ {A Γ Δ Σ}(σ : OPE Δ Σ)(δ : Sub Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₑ∘ₛ δ) v ≡ ∈ₛ δ (∈ₑ σ v)
+∈-ₑ∘ₛ ∙        δ       v      = refl
+∈-ₑ∘ₛ (drop σ) (δ , t) v      = ∈-ₑ∘ₛ σ δ v
+∈-ₑ∘ₛ (keep σ) (δ , t) vz     = refl
+∈-ₑ∘ₛ (keep σ) (δ , t) (vs v) = ∈-ₑ∘ₛ σ δ v
 
-ᵣ∘ₛTm :
-  ∀ {Γ Δ Σ A}(t : Tm Σ A)(σ : Ren Δ Σ)(δ : Tms Γ Δ)
-  → t [ σ ]ᵣ [ δ ] ≡ t [ σ ᵣ∘ₛ δ ]
-ᵣ∘ₛTm (var v)   σ δ = ᵣ∘ₛ∈ v σ δ
-ᵣ∘ₛTm (lam t)   σ δ =
+Tm-ₑ∘ₛ : ∀ {A Γ Δ Σ}(σ : OPE Δ Σ)(δ : Sub Γ Δ)(t : Tm Σ A) → Tmₛ (σ ₑ∘ₛ δ) t ≡ Tmₛ δ (Tmₑ σ t)
+Tm-ₑ∘ₛ σ δ (var v)   = ∈-ₑ∘ₛ σ δ v
+Tm-ₑ∘ₛ σ δ (lam t)   = lam & ((λ x → Tmₛ (x , var vz) t) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) t)
+Tm-ₑ∘ₛ σ δ (app f a) = app & Tm-ₑ∘ₛ σ δ f ⊗ Tm-ₑ∘ₛ σ δ a
+
+∈-ₛ∘ₑ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : OPE Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₛ∘ₑ δ) v ≡ Tmₑ δ (∈ₛ σ v)
+∈-ₛ∘ₑ (σ , _) δ vz     = refl
+∈-ₛ∘ₑ (σ , _) δ (vs v) = ∈-ₛ∘ₑ σ δ v
+
+Tm-ₛ∘ₑ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : OPE Γ Δ)(t : Tm Σ A) → Tmₛ (σ ₛ∘ₑ δ) t ≡ Tmₑ δ (Tmₛ σ t)
+Tm-ₛ∘ₑ σ δ (var v)   = ∈-ₛ∘ₑ σ δ v
+Tm-ₛ∘ₑ σ δ (lam t)   =
   lam &
-      (ᵣ∘ₛTm t (keep σ) (keepₛ δ)
-    ◾ (λ σ → t [ σ , var vz ]) & (assᵣₛᵣ σ δ wk ⁻¹))
-ᵣ∘ₛTm (app f a) σ δ = app & ᵣ∘ₛTm f σ δ ⊗ ᵣ∘ₛTm a σ δ
+      ((λ x → Tmₛ (x , var vz) t) &
+          (assₛₑₑ σ δ wk
+        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
+        ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
+    ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) t)
+Tm-ₛ∘ₑ σ δ (app f a) = app & Tm-ₛ∘ₑ σ δ f ⊗ Tm-ₛ∘ₑ σ δ a
 
-ₛ∘ᵣ∈ :
-  ∀ {Γ Δ Σ A}(v : A ∈ Σ)(σ : Tms Δ Σ)(δ : Ren Γ Δ)
-  → v [ σ ]∈ [ δ ]ᵣ ≡ v [ σ ₛ∘ᵣ δ ]∈
-ₛ∘ᵣ∈ vz     (σ , _) δ = refl
-ₛ∘ᵣ∈ (vs v) (σ , _) δ = ₛ∘ᵣ∈ v σ δ
+assₛₑₛ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Δ Σ)(ν : Sub Γ Δ)
+  → (σ ₛ∘ₑ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ₑ∘ₛ ν)
+assₛₑₛ ∙       δ ν = refl
+assₛₑₛ (σ , t) δ ν = _,_ & assₛₑₛ σ δ ν ⊗ (Tm-ₑ∘ₛ δ ν t ⁻¹)
 
-ₛ∘ᵣTm :
-  ∀ {Γ Δ Σ A}(t : Tm Σ A)(σ : Tms Δ Σ)(δ : Ren Γ Δ)
-  → t [ σ ] [ δ ]ᵣ ≡ t [ σ ₛ∘ᵣ δ ]
-ₛ∘ᵣTm (var v)   σ δ = ₛ∘ᵣ∈ v σ δ
-ₛ∘ᵣTm (lam t)   σ δ =
-  lam & (
-      ₛ∘ᵣTm t (keepₛ σ) (keep δ)
-    ◾ (λ σ → t [ σ , var vz ]) &
-        (assₛᵣᵣ σ wk (keep δ)
-      ◾ ((λ δ → σ ₛ∘ᵣ (drop δ)) &
-          idlᵣ δ
-        ◾ (λ δ → σ ₛ∘ᵣ drop δ) & (idrᵣ δ ⁻¹)
-        ◾ assₛᵣᵣ σ δ wk ⁻¹)))
-ₛ∘ᵣTm (app f a) σ δ = app & ₛ∘ᵣTm f σ δ ⊗ ₛ∘ᵣTm a σ δ
+assₛₛₑ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Δ Σ)(ν : OPE Γ Δ)
+  → (σ ∘ₛ δ) ₛ∘ₑ ν ≡ σ ∘ₛ (δ ₛ∘ₑ ν)
+assₛₛₑ ∙       δ ν = refl
+assₛₛₑ (σ , t) δ ν = _,_ & assₛₛₑ σ δ ν ⊗ (Tm-ₛ∘ₑ δ ν t ⁻¹)
 
-assₛᵣₛ :
-  ∀ {Γ Δ Σ Ξ}(σ : Tms Σ Ξ)(δ : Ren Δ Σ)(ν : Tms Γ Δ)
-  → (σ ₛ∘ᵣ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ᵣ∘ₛ ν)
-assₛᵣₛ ∙       δ ν = refl
-assₛᵣₛ (σ , t) δ ν = _,_ & assₛᵣₛ σ δ ν ⊗ ᵣ∘ₛTm t δ ν
+-- ∘ₛ∈ :
+--   ∀ {Γ Δ Σ A}(v : A ∈ Σ)(σ : Sub Δ Σ)(δ : Sub Γ Δ)
+--   → v [ σ ]∈ [ δ ] ≡ v [ σ ∘ₛ δ ]∈
+-- ∘ₛ∈ vz     (σ , _) δ = refl
+-- ∘ₛ∈ (vs v) (σ , t) δ = ∘ₛ∈ v σ δ
 
-assₛₛᵣ :
-  ∀ {Γ Δ Σ Ξ}(σ : Tms Σ Ξ)(δ : Tms Δ Σ)(ν : Ren Γ Δ)
-  → (σ ∘ₛ δ) ₛ∘ᵣ ν ≡ σ ∘ₛ (δ ₛ∘ᵣ ν)
-assₛₛᵣ ∙       δ ν = refl
-assₛₛᵣ (σ , t) δ ν = _,_ & assₛₛᵣ σ δ ν ⊗ ₛ∘ᵣTm t δ ν
+-- ∘ₛTm :
+--   ∀ {Γ Δ Σ A}(t : Tm Σ A)(σ : Sub Δ Σ)(δ : Sub Γ Δ)
+--   → t [ σ ] [ δ ] ≡ t [ σ ∘ₛ δ ]
+-- ∘ₛTm (var v)   σ δ = ∘ₛ∈ v σ δ
+-- ∘ₛTm (lam t)   σ δ =
+--   lam & (
+--       ∘ₛTm t (keepₛ σ) (keepₛ δ)
+--     ◾ (λ σ → t [ σ , var vz ]) &
+--         (assₛₑₛ σ wk (keepₛ δ)
+--       ◾ (σ ∘ₛ_) & idlₑₛ (δ ₛ∘ₑ wk) ◾ assₛₛₑ σ δ wk ⁻¹))
+-- ∘ₛTm (app f a) σ δ = app & ∘ₛTm f σ δ ⊗ ∘ₛTm a σ δ
 
-∘ₛ∈ :
-  ∀ {Γ Δ Σ A}(v : A ∈ Σ)(σ : Tms Δ Σ)(δ : Tms Γ Δ)
-  → v [ σ ]∈ [ δ ] ≡ v [ σ ∘ₛ δ ]∈
-∘ₛ∈ vz     (σ , _) δ = refl
-∘ₛ∈ (vs v) (σ , t) δ = ∘ₛ∈ v σ δ
+-- idₛ∈ : ∀ {Γ A}(v : A ∈ Γ) → v [ idₛ ]∈ ≡ var v
+-- idₛ∈ vz     = refl
+-- idₛ∈ (vs v) = ₛ∘ₑ∈ v idₛ wk ⁻¹ ◾ (_[ wk ]ₑ) & idₛ∈ v ◾ (var ∘ vs) & idₑ∈ v
 
-∘ₛTm :
-  ∀ {Γ Δ Σ A}(t : Tm Σ A)(σ : Tms Δ Σ)(δ : Tms Γ Δ)
-  → t [ σ ] [ δ ] ≡ t [ σ ∘ₛ δ ]
-∘ₛTm (var v)   σ δ = ∘ₛ∈ v σ δ
-∘ₛTm (lam t)   σ δ =
-  lam & (
-      ∘ₛTm t (keepₛ σ) (keepₛ δ)
-    ◾ (λ σ → t [ σ , var vz ]) &
-        (assₛᵣₛ σ wk (keepₛ δ)
-      ◾ (σ ∘ₛ_) & idlᵣₛ (δ ₛ∘ᵣ wk) ◾ assₛₛᵣ σ δ wk ⁻¹))
-∘ₛTm (app f a) σ δ = app & ∘ₛTm f σ δ ⊗ ∘ₛTm a σ δ
+-- idₛTm : ∀ {Γ A}(t : Tm Γ A) → t [ idₛ ] ≡ t
+-- idₛTm (var v)   = idₛ∈ v
+-- idₛTm (lam t)   = lam & idₛTm t
+-- idₛTm (app f x) = app & idₛTm f ⊗ idₛTm x
 
-idₛ∈ : ∀ {Γ A}(v : A ∈ Γ) → v [ idₛ ]∈ ≡ var v
-idₛ∈ vz     = refl
-idₛ∈ (vs v) = ₛ∘ᵣ∈ v idₛ wk ⁻¹ ◾ (_[ wk ]ᵣ) & idₛ∈ v ◾ (var ∘ vs) & idᵣ∈ v
+-- idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
+-- idrₛ ∙       = refl
+-- idrₛ (σ , t) = _,_ & idrₛ σ ⊗ idₛTm t
 
-idₛTm : ∀ {Γ A}(t : Tm Γ A) → t [ idₛ ] ≡ t
-idₛTm (var v)   = idₛ∈ v
-idₛTm (lam t)   = lam & idₛTm t
-idₛTm (app f x) = app & idₛTm f ⊗ idₛTm x
-
-idrₛ : ∀ {Γ Δ}(σ : Tms Γ Δ) → σ ∘ₛ idₛ ≡ σ
-idrₛ ∙       = refl
-idrₛ (σ , t) = _,_ & idrₛ σ ⊗ idₛTm t
-
-βᵣ :
-  ∀ {Γ Δ Σ A B}(σ : Tms Δ Γ)(ν : Ren Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
-  → t [ keepₛ σ ] [ keep ν ]ᵣ [ idₛ , a ] ≡ t [ (σ ₛ∘ᵣ ν) , a ]
-βᵣ σ ν t a =
-    ᵣ∘ₛTm (t [ keepₛ σ ]) (keep ν) (idₛ , a)
-  ◾ ∘ₛTm t (keepₛ σ) ((ν ᵣ∘ₛ idₛ) , a)
-  ◾ ((t [_]) ∘ (_, a)) & (
-      assₛᵣₛ σ wk ((ν ᵣ∘ₛ idₛ) , a)
-    ◾ (σ ∘ₛ_) & idlᵣₛ (ν ᵣ∘ₛ idₛ)
-    ◾ assₛᵣₛ σ ν idₛ ⁻¹
-    ◾ idrₛ (σ ₛ∘ᵣ ν))
+-- -- Misc lemma used in soundness proof
+-- βₑₛ :
+--   ∀ {Γ Δ Σ A B}(σ : Sub Δ Γ)(ν : OPE Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
+--   → t [ keepₛ σ ] [ keep ν ]ₑ [ idₛ , a ] ≡ t [ (σ ₛ∘ₑ ν) , a ]
+-- βₑₛ σ ν t a =
+--     ₑ∘ₛTm (t [ keepₛ σ ]) (keep ν) (idₛ , a)
+--   ◾ ∘ₛTm t (keepₛ σ) ((ν ₑ∘ₛ idₛ) , a)
+--   ◾ ((t [_]) ∘ (_, a)) & (
+--       assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a)
+--     ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ)
+--     ◾ assₛₑₛ σ ν idₛ ⁻¹
+--     ◾ idrₛ (σ ₛ∘ₑ ν))
 

@@ -4,9 +4,9 @@ module Stability where
 
 open import Lib
 open import Syntax
-open import Renaming
+open import Embedding
 open import Nf
-open import Normalization
+open import PresheafModel
 
 stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈↑ᴺ v idᴺₛ ≡ uᴺ (var v)
 stab∈ vz     = refl

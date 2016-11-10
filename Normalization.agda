@@ -4,7 +4,7 @@ module Normalization where
 open import Lib
 open import UIP
 open import Syntax
-open import Renaming
+open import Embedding
 open import Substitution
 open import Nf
 

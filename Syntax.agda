@@ -20,3 +20,5 @@ data Tm Γ : Ty → Set where
   var : ∀ {A} → (v : A ∈ Γ) → Tm Γ A
   lam : ∀ {A B} → Tm (Γ , A) B → Tm Γ (A ⇒ B)
   app : ∀ {A B} → (f : Tm Γ (A ⇒ B)) → (a : Tm Γ A) → Tm Γ B
+
+

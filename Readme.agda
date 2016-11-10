@@ -15,7 +15,7 @@ a moderate amount of work.
 ------------------------------------------------------------
 
 import Syntax
-import Renaming
+import Embedding
 import Nf
 import Substitution
 import Conversion
