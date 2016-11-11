@@ -24,7 +24,7 @@ mutual
   Neₑ σ (var v)   = var (∈ₑ σ v)
   Neₑ σ (app f a) = app (Neₑ σ f) (Nfₑ σ a)
 
--- natural embedding into Tm
+-- Natural embedding into Tm
 mutual
   ⌜_⌝ : ∀ {Γ A} → Nf Γ A → Tm Γ A
   ⌜ ne n  ⌝ = ⌜ n ⌝Ne
@@ -44,25 +44,25 @@ mutual
   ⌜⌝Nfₑ-nat (lam n) σ = lam & ⌜⌝Nfₑ-nat n (keep σ)
 
 -- (Ne _ A) and (Nf _ A) are presheaves on OPE
--- mutual
---   ∘ₑNf :
---     ∀ {Γ Δ Σ A}(t : Nf Σ A)(σ : OPE Δ Σ)(δ : OPE Γ Δ)
---     → t [ σ ∘ₑ δ ]Nfₑ ≡ t [ σ ]Nfₑ [ δ ]Nfₑ
---   ∘ₑNf (ne n)  σ δ = ne & ∘ₑNe n σ δ
---   ∘ₑNf (lam t) σ δ = lam & ∘ₑNf t (keep σ) (keep δ)  
+mutual
+  Nf-∘ₑ :
+    ∀ {Γ Δ Σ A}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(t : Nf Σ A)
+    → Nfₑ (σ ∘ₑ δ) t ≡ Nfₑ δ (Nfₑ σ t)
+  Nf-∘ₑ  σ δ (ne n)  = ne & Ne-∘ₑ σ δ n
+  Nf-∘ₑ  σ δ (lam t) = lam & Nf-∘ₑ (keep σ) (keep δ) t
     
---   ∘ₑNe :
---     ∀ {Γ Δ Σ A}(t : Ne Σ A)(σ : OPE Δ Σ)(δ : OPE Γ Δ)
---     →  t [ σ ∘ₑ δ ]Neₑ ≡ t [ σ ]Neₑ [ δ ]Neₑ
---   ∘ₑNe (var v)   σ δ = var & ∘ₑ∈ v σ δ
---   ∘ₑNe (app f a) σ δ = app & ∘ₑNe f σ δ ⊗ ∘ₑNf a σ δ
+  Ne-∘ₑ :
+    ∀ {Γ Δ Σ A}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(t : Ne Σ A)
+    → Neₑ (σ ∘ₑ δ) t ≡ Neₑ δ (Neₑ σ t)
+  Ne-∘ₑ σ δ (var v)   = var & ∈-∘ₑ σ δ v
+  Ne-∘ₑ σ δ (app f a) = app & Ne-∘ₑ σ δ f ⊗ Nf-∘ₑ σ δ a
 
--- mutual
---   idₑNf : ∀ {Γ A}(n : Nf Γ A) → n [ idₑ ]Nfₑ ≡ n
---   idₑNf (ne n)  = ne & idₑNe n
---   idₑNf (lam n) = lam & idₑNf n
+mutual
+  Nf-idₑ : ∀ {Γ A}(t : Nf Γ A) → Nfₑ idₑ t ≡ t
+  Nf-idₑ (ne n)  = ne & Ne-idₑ n
+  Nf-idₑ (lam t) = lam & Nf-idₑ t
 
---   idₑNe : ∀ {Γ A}(n : Ne Γ A) → n [ idₑ ]Neₑ ≡ n
---   idₑNe (var v)   = var & idₑ∈ v
---   idₑNe (app f a) = app & idₑNe f ⊗ idₑNf a
+  Ne-idₑ : ∀ {Γ A}(t : Ne Γ A) → Neₑ idₑ t ≡ t
+  Ne-idₑ (var v)   = var & ∈-idₑ v
+  Ne-idₑ (app f a) = app & Ne-idₑ f ⊗ Nf-idₑ a
 
