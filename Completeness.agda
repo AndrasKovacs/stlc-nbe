@@ -6,61 +6,62 @@ open import Lib
 open import Syntax
 open import Nf
 open import Normalization
-open import Renaming
+open import Presheaf
+open import Embedding
 open import Substitution
 open import Conversion
 
-_≈_ : ∀ {Γ A} → Tm Γ A → Tmᴺ Γ A → Set
-_≈_ {Γ}{ι}     t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝
-_≈_ {Γ}{A ⇒ B} t tᴺ =
-  ∀ {Δ}(σ : Ren Δ Γ){a aᴺ} → a ≈ aᴺ → app (t [ σ ]ᵣ) a ≈ proj₁ tᴺ σ aᴺ
+_≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
+_≈_ {ι}        t tᴺ       = t ~ ⌜ qᴺ tᴺ ⌝
+_≈_ {A ⇒ B}{Γ} t (tᴺ , _) = ∀ {Δ}(σ : OPE Δ Γ){a aᴺ} → a ≈ aᴺ → app (Tmₑ σ t) a ≈ tᴺ σ aᴺ
 
-infix 3 _≈_ _≈ₛ_
+infix 3 _≈_ _≈*_
 
-data _≈ₛ_ {Γ} : ∀ {Δ} → Tms Γ Δ → Tmsᴺ Γ Δ → Set where
-  ∙   : _≈ₛ_ ∙ ∙
-  _,_ : ∀ {A Δ σ δ}{t : Tm Γ A}{t' : Tmᴺ Γ A} → _≈ₛ_ {Γ}{Δ} σ δ → t ≈ t' → (σ , t) ≈ₛ (δ , t')
+data _≈*_ {Γ} : ∀ {Δ} → Sub Γ Δ → Conᴺ Δ Γ → Set where
+  ∙   : _≈*_ ∙ ∙
+  _,_ : ∀ {A Δ σ δ}{t : Tm Γ A}{t' : Tyᴺ A Γ} → _≈*_ {Γ}{Δ} σ δ → t ≈ t' → (σ , t) ≈* (δ , t')
 
-≈ᵣ : ∀ {Γ Δ A}(σ : Ren Δ Γ){t}{t' : Tmᴺ Γ A} → t ≈ t' → t [ σ ]ᵣ ≈ t' ᴺ[ σ ]ᵣ
-≈ᵣ {A = ι}     σ {t}{t'} t≈t' = coe ((_ ~_) & (⌜⌝ᵣ t' σ ⁻¹)) (~ᵣ σ t≈t')
-≈ᵣ {A = A ⇒ B} σ {t}{t'} t≈t' δ rewrite ∘ᵣTm t σ δ = t≈t' (σ ∘ᵣ δ)
+≈ₑ : ∀ {A Γ Δ}(σ : OPE Δ Γ){t}{t' : Tyᴺ A Γ} → t ≈ t' → Tmₑ σ t ≈ Tyᴺₑ σ t'
+≈ₑ {ι}     σ {t}{tᴺ} t≈tᴺ = coe ((_ ~_) & (⌜⌝Nf-nat σ tᴺ ⁻¹)) (~ₑ σ t≈tᴺ)
+≈ₑ {A ⇒ B} σ {t}{tᴺ} t≈tᴺ δ rewrite Tm-∘ₑ σ δ t ⁻¹ = t≈tᴺ (σ ∘ₑ δ)
 
-≈ₛᵣ : ∀ {Γ Δ Σ}(σ : Ren Σ Γ){δ}{ν : Tmsᴺ Γ Δ} → δ ≈ₛ ν → (δ ₛ∘ᵣ σ) ≈ₛ (ν ᴺ∘ᵣ σ)
-≈ₛᵣ σ ∙          = ∙
-≈ₛᵣ σ (p , t≈t') = (≈ₛᵣ σ p) , ≈ᵣ σ t≈t'
+≈*ₑ : ∀ {Γ Δ Σ}(σ : OPE Σ Γ){δ}{νᴺ : Conᴺ Δ Γ} → δ ≈* νᴺ → δ ₛ∘ₑ σ ≈* Conᴺₑ σ νᴺ
+≈*ₑ σ ∙              = ∙
+≈*ₑ σ (δ≈*νᴺ , t≈tᴺ) = ≈*ₑ σ δ≈*νᴺ , ≈ₑ σ t≈tᴺ
 
-_~≈◾_ : ∀ {Γ A}{t t'}{tᴺ : Tmᴺ Γ A} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
+_~≈◾_ : ∀ {Γ A}{t t'}{tᴺ : Tyᴺ A Γ} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
 _~≈◾_ {A = ι}     p q = p ~◾ q
-_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app₁ (~ᵣ σ p) ~≈◾ q σ a≈aᴺ
+_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app₁ (~ₑ σ p) ~≈◾ q σ a≈aᴺ
 
-⟦∈⟧ : ∀ {Γ Δ A}(v : A ∈ Γ){σ}{δ : Tmsᴺ Δ Γ} → σ ≈ₛ δ → v [ σ ]∈ ≈ ∈↑ᴺ v δ
-⟦∈⟧ vz     (σ≈δ , t≈t') = t≈t'
-⟦∈⟧ (vs v) (σ≈δ , _   ) = ⟦∈⟧ v σ≈δ
+⟦∈⟧ : ∀ {Γ Δ A}(v : A ∈ Γ){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈* δᴺ → ∈ₛ σ v ≈ ∈ᴺ v δᴺ
+⟦∈⟧ vz     (σ≈δᴺ , t≈tᴺ) = t≈tᴺ
+⟦∈⟧ (vs v) (σ≈δᴺ , _   ) = ⟦∈⟧ v σ≈δᴺ
 
-⟦Tm⟧ : ∀ {Γ Δ A}(t : Tm Γ A){σ}{δ : Tmsᴺ Δ Γ} → σ ≈ₛ δ → t [ σ ] ≈ Tm↑ᴺ t δ
-⟦Tm⟧ (var v)   σ≈δ = ⟦∈⟧ v σ≈δ
+⟦Tm⟧ : ∀ {Γ Δ A}(t : Tm Γ A){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈* δᴺ → Tmₛ σ t ≈ Tmᴺ t δᴺ
+⟦Tm⟧ (var v) σ≈δᴺ = ⟦∈⟧ v σ≈δᴺ
 
-⟦Tm⟧ (lam t) {σ} {δ} σ≈δ ν {a} {aᴺ} a≈aᴺ
-  = coe ((app (lam (t [ keepₛ σ ] [ keep ν ]ᵣ)) a ~_) & βᵣ σ ν t a) (β _ _)
-  ~≈◾ ⟦Tm⟧ t (≈ₛᵣ ν σ≈δ , a≈aᴺ)
+⟦Tm⟧ (lam t) {σ} {δ} σ≈δᴺ ν {a} {aᴺ} a≈aᴺ
+  = coe ((app (lam (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))) a ~_ ) & (βₑₛ σ ν t a ⁻¹))
+    (β (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t)) a)
+  ~≈◾ ⟦Tm⟧ t (≈*ₑ ν σ≈δᴺ , a≈aᴺ)
 
-⟦Tm⟧ (app f a) {σ} {δ} σ≈δ
-  rewrite idᵣTm (f [ σ ]) ⁻¹ = ⟦Tm⟧ f σ≈δ idᵣ (⟦Tm⟧ a σ≈δ)
+⟦Tm⟧ (app f a) {σ} {δ} σ≈δᴺ
+  rewrite Tm-idₑ (Tmₛ σ f) ⁻¹ = ⟦Tm⟧ f σ≈δᴺ idₑ (⟦Tm⟧ a σ≈δᴺ)
 
 mutual
-  qᶜ : ∀ {Γ A}{t}{tᴺ : Tmᴺ Γ A} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝
-  qᶜ {A = ι}     t≈tᴺ = t≈tᴺ
-  qᶜ {A = A ⇒ B} t≈tᴺ = η _ ~◾ lam (qᶜ (t≈tᴺ wk (uᶜ (var vz))))
+  q≈ : ∀ {Γ A}{t}{tᴺ : Tyᴺ A Γ} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝
+  q≈ {A = ι}     t≈tᴺ = t≈tᴺ
+  q≈ {A = A ⇒ B} t≈tᴺ = η _ ~◾ lam (q≈ (t≈tᴺ wk (u≈ (var vz))))
 
-  uᶜ : ∀ {Γ A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
-  uᶜ {A = ι}     n = ~refl
-  uᶜ {A = A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
-    rewrite ⌜⌝Neᵣ n σ ⁻¹ = app₂ (qᶜ a≈aᴺ) ~≈◾ uᶜ (app (n [ σ ]ₙₑᵣ) (qᴺ aᴺ))
+  u≈ : ∀ {Γ A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
+  u≈ {A = ι}     n = ~refl
+  u≈ {A = A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
+    rewrite ⌜⌝Ne-nat σ n ⁻¹ = app₂ (q≈ a≈aᴺ) ~≈◾ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
 
-id≈ₛ : ∀ {Γ} → idₛ {Γ} ≈ₛ idᴺₛ
-id≈ₛ {∙}     = ∙
-id≈ₛ {Γ , A} = ≈ₛᵣ wk id≈ₛ , uᶜ (var vz)
+u≈*  : ∀ {Γ} → idₛ {Γ} ≈* uConᴺ
+u≈* {∙}     = ∙
+u≈* {Γ , A} = ≈*ₑ wk u≈* , u≈ (var vz)
 
 complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝
-complete t = coe ((_~ ⌜ qᴺ (Tm↑ᴺ t idᴺₛ) ⌝) & idₛTm t) (qᶜ (⟦Tm⟧ t id≈ₛ))
+complete t = coe ((_~ ⌜ qᴺ (Tmᴺ t uConᴺ) ⌝) & Tm-idₛ t) (q≈ (⟦Tm⟧ t u≈*))
 

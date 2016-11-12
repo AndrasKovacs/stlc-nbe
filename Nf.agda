@@ -35,13 +35,13 @@ mutual
   ⌜ app n t ⌝Ne = app ⌜ n ⌝Ne ⌜ t ⌝
 
 mutual
-  ⌜⌝Neₑ-nat : ∀ {Γ Δ A}(n : Ne Γ A)(σ : OPE Δ Γ) → ⌜ Neₑ σ n ⌝Ne ≡ Tmₑ σ ⌜ n ⌝Ne
-  ⌜⌝Neₑ-nat (var v)   σ = refl
-  ⌜⌝Neₑ-nat (app f a) σ = app & ⌜⌝Neₑ-nat f σ ⊗ ⌜⌝Nfₑ-nat a σ
+  ⌜⌝Ne-nat : ∀ {Γ Δ A}(σ : OPE Δ Γ)(n : Ne Γ A) → ⌜ Neₑ σ n ⌝Ne ≡ Tmₑ σ ⌜ n ⌝Ne
+  ⌜⌝Ne-nat σ (var v)   = refl
+  ⌜⌝Ne-nat σ (app f a) = app & ⌜⌝Ne-nat σ f ⊗ ⌜⌝Nf-nat σ a
 
-  ⌜⌝Nfₑ-nat : ∀ {Γ Δ A}(n : Nf Γ A)(σ : OPE Δ Γ) → ⌜ Nfₑ σ n ⌝ ≡ Tmₑ σ ⌜ n ⌝
-  ⌜⌝Nfₑ-nat (ne n)  σ = ⌜⌝Neₑ-nat n σ
-  ⌜⌝Nfₑ-nat (lam n) σ = lam & ⌜⌝Nfₑ-nat n (keep σ)
+  ⌜⌝Nf-nat : ∀ {Γ Δ A}(σ : OPE Δ Γ)(n : Nf Γ A) → ⌜ Nfₑ σ n ⌝ ≡ Tmₑ σ ⌜ n ⌝
+  ⌜⌝Nf-nat σ (ne n)  = ⌜⌝Ne-nat σ n
+  ⌜⌝Nf-nat σ (lam n) = lam & ⌜⌝Nf-nat (keep σ) n
 
 -- (Ne _ A) and (Nf _ A) are presheaves on OPE
 mutual

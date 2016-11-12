@@ -20,6 +20,7 @@ import Nf
 import Substitution
 import Conversion
 
+import Presheaf
 import Normalization
 import Stability
 import Completeness
@@ -45,12 +46,4 @@ soundness = Soundness.sound
 
 completeness : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝
 completeness = Completeness.complete
-
-
-
-foo : Tm ∙ (ι ⇒ ι)
-foo = app (lam (var vz)) (lam (var vz))
-
-foo' : Nf ∙ (ι ⇒ ι)
-foo' = nf foo
 

@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module PresheafModel where
+module Presheaf where
 
 open import Lib
 open import UIP
@@ -16,20 +16,20 @@ mutual
   Tyᴺ ι       Γ = Nf Γ ι
   Tyᴺ (A ⇒ B) Γ =  
     Σ (∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ) λ fᴺ →
-    ∀ {Δ Σ}(σ : OPE Δ Γ)(δ : OPE Σ Δ) aᴺ → Tyᴺₑ δ (fᴺ σ aᴺ) ≡ fᴺ (σ ∘ₑ δ) (Tyᴺₑ δ aᴺ)
+    ∀ {Δ Σ}(σ : OPE Δ Γ)(δ : OPE Σ Δ) aᴺ → fᴺ (σ ∘ₑ δ) (Tyᴺₑ δ aᴺ) ≡ Tyᴺₑ δ (fᴺ σ aᴺ)
 
   Tyᴺₑ : ∀ {A Γ Δ} → OPE Δ Γ → Tyᴺ A Γ → Tyᴺ A Δ
   Tyᴺₑ {ι}     σ tᴺ            = Nfₑ σ tᴺ
   Tyᴺₑ {A ⇒ B} σ (tᴺ , tᴺ-nat) =
     (λ δ → tᴺ (σ ∘ₑ δ)) ,
-    (λ δ ν aᴺ → tᴺ-nat (σ ∘ₑ δ) ν aᴺ ◾ (λ x → tᴺ x (Tyᴺₑ ν aᴺ)) & assₑ σ δ ν)
+    (λ δ ν aᴺ → (λ x → tᴺ x (Tyᴺₑ ν aᴺ)) & (assₑ σ δ ν ⁻¹) ◾ tᴺ-nat (σ ∘ₑ δ) ν aᴺ)
 
 ⇒ᴺ≡ :
   ∀ {Γ A B}{f f' : Tyᴺ (A ⇒ B) Γ}
   → (∀ {Δ}(σ : OPE Δ Γ) a → proj₁ f σ a ≡ proj₁ f' σ a)
   → f ≡ f'
 ⇒ᴺ≡ {f = f}{f'} eq = ,Σ=
-  (funexti λ Δ → funext λ σ → funext λ aᴺ → eq σ aᴺ )
+  (funexti λ _ → funext λ σ → funext λ aᴺ → eq σ aᴺ )
   (funexti λ _ → funexti λ _ → funext λ _ → funext λ _ → funext λ _ → UIP _ _)
 
 Tyᴺ-idₑ : ∀ {Γ A}(tᴺ : Tyᴺ A Γ) → Tyᴺₑ idₑ tᴺ ≡ tᴺ
@@ -80,8 +80,8 @@ mutual
   Tmᴺ (var v)   σᴺ = ∈ᴺ v σᴺ
   Tmᴺ (lam t)   σᴺ =
     (λ δ aᴺ → Tmᴺ t (Conᴺₑ δ σᴺ , aᴺ)) ,
-    (λ δ ν aᴺ → Tmᴺ-nat t ν (Conᴺₑ δ σᴺ , aᴺ) ⁻¹
-              ◾ (λ x → Tmᴺ t (x , Tyᴺₑ ν aᴺ)) & (Conᴺ-∘ₑ δ ν σᴺ ⁻¹))
+    (λ δ ν aᴺ → (λ x → Tmᴺ t (x , Tyᴺₑ ν aᴺ)) & (Conᴺ-∘ₑ δ ν σᴺ ⁻¹) ⁻¹
+              ◾ Tmᴺ-nat t ν (Conᴺₑ δ σᴺ , aᴺ))
   Tmᴺ (app f a) σᴺ = proj₁ (Tmᴺ f σᴺ) idₑ (Tmᴺ a σᴺ)
 
   Tmᴺ-nat : ∀ {Γ Δ Σ A}(t : Tm Γ A)(σ : OPE Σ Δ) δᴺ → Tmᴺ t (Conᴺₑ σ δᴺ) ≡ Tyᴺₑ σ (Tmᴺ t δᴺ)
@@ -89,7 +89,7 @@ mutual
   Tmᴺ-nat (lam t)   σ δᴺ = ⇒ᴺ≡ λ ν aᴺ → (λ x → Tmᴺ t (x , aᴺ)) & Conᴺ-∘ₑ σ ν δᴺ ⁻¹
   Tmᴺ-nat (app f a) σ δᴺ rewrite Tmᴺ-nat f σ δᴺ | Tmᴺ-nat a σ δᴺ =
       (λ x → proj₁ (Tmᴺ f δᴺ) x (Tyᴺₑ σ (Tmᴺ a δᴺ))) & (idrₑ σ ◾ idlₑ σ ⁻¹)
-    ◾ proj₂ (Tmᴺ f δᴺ) idₑ σ (Tmᴺ a δᴺ) ⁻¹
+    ◾ proj₂ (Tmᴺ f δᴺ) idₑ σ (Tmᴺ a δᴺ)
 
 -- OPEᴺ {Γ}{Δ} σ : PSh(Conᴺ Γ, Conᴺ Δ)
 --------------------------------------------------------------------------------
@@ -102,6 +102,18 @@ OPEᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : OPE Γ Δ)(δ : OPE Ξ Σ) νᴺ → OPEᴺ 
 OPEᴺ-nat ∙        δ νᴺ        = refl
 OPEᴺ-nat (drop σ) δ (νᴺ , tᴺ) = OPEᴺ-nat σ δ νᴺ
 OPEᴺ-nat (keep σ) δ (νᴺ , tᴺ) = (_, Tyᴺₑ δ tᴺ) & OPEᴺ-nat σ δ νᴺ
+
+OPEᴺ-idₑ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → OPEᴺ idₑ σᴺ ≡ σᴺ
+OPEᴺ-idₑ ∙         = refl
+OPEᴺ-idₑ (σᴺ , tᴺ) = (_, tᴺ) & OPEᴺ-idₑ σᴺ
+
+-- OPEᴺ-∘ₛ :
+--   ∀ {Γ Δ Σ Ξ}(σ : OPE Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
+--   → OPEᴺ (σ ∘ₑ δ) νᴺ ≡ OPEᴺ σ (OPEᴺ δ νᴺ)
+-- OPEᴺ-∘ₛ σ        ∙        νᴺ        = refl
+-- OPEᴺ-∘ₛ σ        (drop δ) (νᴺ , tᴺ) = OPEᴺ-∘ₛ σ δ νᴺ
+-- OPEᴺ-∘ₛ (drop σ) (keep δ) (νᴺ , tᴺ) = OPEᴺ-∘ₛ σ δ νᴺ
+-- OPEᴺ-∘ₛ (keep σ) (keep δ) (νᴺ , tᴺ) = (_, tᴺ) & OPEᴺ-∘ₛ σ δ νᴺ  
 
 ∈ₑᴺ :
  ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
@@ -129,66 +141,38 @@ Subᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) νᴺ → Subᴺ 
 Subᴺ-nat ∙       δ νᴺ = refl
 Subᴺ-nat (σ , t) δ νᴺ = _,_ & Subᴺ-nat σ δ νᴺ ⊗ Tmᴺ-nat t δ νᴺ
 
+Subᴺ-ₛ∘ₑ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
+  → Subᴺ (σ ₛ∘ₑ δ) νᴺ ≡ Subᴺ σ (OPEᴺ δ νᴺ)
+Subᴺ-ₛ∘ₑ ∙       δ νᴺ = refl
+Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ  
+
 ∈ₛᴺ :
  ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
  → Tmᴺ (∈ₛ σ v) δᴺ ≡ ∈ᴺ v (Subᴺ σ δᴺ)
-∈ₛᴺ = {!!}
+∈ₛᴺ (σ , t) vz     δᴺ = refl
+∈ₛᴺ (σ , _) (vs v) δᴺ = ∈ₛᴺ σ v δᴺ
 
 Tmₛᴺ :
  ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(t : Tm Γ A)(δᴺ : Conᴺ Δ Σ)
  → Tmᴺ (Tmₛ σ t) δᴺ ≡ Tmᴺ t (Subᴺ σ δᴺ)
-Tmₛᴺ = {!!} 
+Tmₛᴺ σ (var v)   δᴺ = ∈ₛᴺ σ v δᴺ
+Tmₛᴺ σ (lam t)   δᴺ = ⇒ᴺ≡ λ ν aᴺ →
+    Tmₛᴺ (keepₛ σ) t (Conᴺₑ ν δᴺ , aᴺ)
+  ◾ (λ x → Tmᴺ t (x , aᴺ)) &
+      (Subᴺ-ₛ∘ₑ σ wk (Conᴺₑ ν δᴺ , aᴺ)
+    ◾ Subᴺ σ & OPEᴺ-idₑ (Conᴺₑ ν δᴺ)
+    ◾ Subᴺ-nat σ ν δᴺ)
+Tmₛᴺ σ (app f a) δᴺ rewrite Tmₛᴺ σ f δᴺ | Tmₛᴺ σ a δᴺ = refl
 
+-- Subᴺ-∘ₛ :
+--   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Γ Σ)(νᴺ : Conᴺ Γ Δ)
+--   → Subᴺ (σ ∘ₛ δ) νᴺ ≡ Subᴺ σ (Subᴺ δ νᴺ)
+-- Subᴺ-∘ₛ ∙       δ νᴺ = refl
+-- Subᴺ-∘ₛ (σ , t) δ νᴺ = _,_ & Subᴺ-∘ₛ σ δ νᴺ ⊗ Tmₛᴺ δ t νᴺ
 
--- -- ₛ∘ᴺ∈↑ :
--- --   ∀ {Γ Δ Σ A}(v : A ∈ Δ)(σ : Tms Γ Δ)(δ : Tmsᴺ Σ Γ)
--- --   → Tm↑ᴺ (v [ σ ]∈) δ ≡ ∈↑ᴺ v (σ ₛ∘ᴺ δ)
--- -- ₛ∘ᴺ∈↑ vz     (σ , t) δ = refl
--- -- ₛ∘ᴺ∈↑ (vs v) (σ , t) δ = ₛ∘ᴺ∈↑ v σ δ
+Subᴺ-idₛ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → Subᴺ idₛ σᴺ ≡ σᴺ
+Subᴺ-idₛ ∙         = refl
+Subᴺ-idₛ (σᴺ , tᴺ) =
+  (_, tᴺ) & (Subᴺ-ₛ∘ₑ idₛ wk (σᴺ , tᴺ) ◾ Subᴺ-idₛ (OPEᴺ idₑ σᴺ) ◾ OPEᴺ-idₑ σᴺ)
 
--- -- ₛ∘ᴺ↑ :
--- --   ∀ {Γ Δ Σ A}(t : Tm Δ A)(σ : Tms Γ Δ)(δ : Tmsᴺ Σ Γ)
--- --   → Tm↑ᴺ (t [ σ ]) δ ≡ Tm↑ᴺ t (σ ₛ∘ᴺ δ)
--- -- ₛ∘ᴺ↑ (var v)   σ δ = ₛ∘ᴺ∈↑ v σ δ
--- -- ₛ∘ᴺ↑ (lam t)   σ δ = ⇒ᴺ= λ ν aᴺ → 
--- --     ₛ∘ᴺ↑ t (keepₛ σ) (δ ᴺ∘ₑ ν , aᴺ)
--- --   ◾ (λ x → Tm↑ᴺ t ((x , aᴺ))) &
--- --       (assₛₑᴺ σ wk (δ ᴺ∘ₑ ν , aᴺ)
--- --     ◾ (σ ₛ∘ᴺ_) & idlᴺₑ (δ ᴺ∘ₑ ν)
--- --     ◾ assₛᴺₑ σ δ ν ⁻¹)
--- -- ₛ∘ᴺ↑ (app f a) σ δ
--- --   rewrite ₛ∘ᴺ↑ f σ δ | ₛ∘ᴺ↑ a σ δ = refl
-
--- -- mutual
--- --   qᴺ : ∀ {Γ A} → Tmᴺ Γ A → Nf Γ A
--- --   qᴺ {A = ι}     t = t
--- --   qᴺ {A = A ⇒ B} t = lam (qᴺ (proj₁ t wk (uᴺ (var vz))))
-
--- --   qᴺ-nat : ∀ {A Γ Δ}(tᴺ : Tmᴺ Γ A)(σ : OPE Δ Γ) → qᴺ tᴺ [ σ ]Nfₑ ≡ qᴺ (tᴺ ᴺ[ σ ]ₑ)
--- --   qᴺ-nat {ι}     tᴺ        σ = refl
--- --   qᴺ-nat {A ⇒ B} (f , nat) σ = lam &
--- --       (qᴺ-nat (f wk (uᴺ (var vz))) (keep σ)
--- --     ◾ qᴺ &
--- --         (nat (drop idₑ) (keep σ) (uᴺ (var vz))
--- --       ◾ (λ x → f (drop x) (uᴺ (var vz) ᴺ[ keep σ ]ₑ)) & (idlₑ σ ◾ idrₑ σ ⁻¹)
--- --       ◾ f (drop (σ ∘ₑ idₑ)) & uᴺ-nat (var vz) (keep σ)))
-
--- --   uᴺ : ∀ {Γ A} → Ne Γ A → Tmᴺ Γ A
--- --   uᴺ {A = ι}     n = ne n
--- --   uᴺ {A = A ⇒ B} n =
--- --     (λ δ aᴺ → uᴺ (app (n [ δ ]Neₑ) (qᴺ aᴺ))) ,
--- --     (λ σ δ aᴺ →
--- --         uᴺ-nat (app (n [ σ ]Neₑ) (qᴺ aᴺ)) δ
--- --       ◾ (λ x → uᴺ (app x (qᴺ aᴺ [ δ ]Nfₑ))) & ∘ₑNe n σ δ
--- --       ◾ (λ x → uᴺ (app (n [ σ ∘ₑ δ ]Neₑ) x)) & qᴺ-nat aᴺ δ)
-
--- --   uᴺ-nat : ∀ {A Γ Δ} → (n : Ne Γ A) → (σ : OPE Δ Γ) → uᴺ n ᴺ[ σ ]ₑ ≡ uᴺ (n [ σ ]Neₑ)
--- --   uᴺ-nat {ι}     n σ = refl
--- --   uᴺ-nat {A ⇒ B} n σ = ⇒ᴺ= (λ δ aᴺ → (λ x → uᴺ (app x (qᴺ aᴺ))) & ∘ₑNe n σ δ ⁻¹)
-
--- -- idᴺₛ : ∀ {Γ} → Tmsᴺ Γ Γ
--- -- idᴺₛ {∙}     = ∙
--- -- idᴺₛ {Γ , t} = idᴺₛ {Γ} ᴺ∘ₑ wk , uᴺ (var vz)
-
--- -- nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
--- -- nf t = qᴺ (Tm↑ᴺ t idᴺₛ)
