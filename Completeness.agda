@@ -6,14 +6,13 @@ open import Lib
 open import Syntax
 open import Nf
 open import Normalization
-open import Presheaf
 open import Embedding
 open import Substitution
 open import Conversion
 
 _≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
-_≈_ {ι}        t tᴺ       = t ~ ⌜ qᴺ tᴺ ⌝
-_≈_ {A ⇒ B}{Γ} t (tᴺ , _) = ∀ {Δ}(σ : OPE Δ Γ){a aᴺ} → a ≈ aᴺ → app (Tmₑ σ t) a ≈ tᴺ σ aᴺ
+_≈_ {ι}        t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝
+_≈_ {A ⇒ B}{Γ} t tᴺ = ∀ {Δ}(σ : OPE Δ Γ){a aᴺ} → a ≈ aᴺ → app (Tmₑ σ t) a ≈ tᴺ σ aᴺ
 
 infix 3 _≈_ _≈*_
 

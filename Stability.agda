@@ -6,7 +6,6 @@ open import Lib
 open import Syntax
 open import Embedding
 open import Nf
-open import Presheaf
 open import Normalization
 
 stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uConᴺ ≡ uᴺ (var v)
@@ -24,8 +23,8 @@ mutual
 
   stabNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uConᴺ ≡ uᴺ n
   stabNe (var v)   = stab∈ v
-  stabNe (app f a) =
-      (λ x → proj₁ x idₑ (Tmᴺ ⌜ a ⌝ uConᴺ)) & stabNe f
+  stabNe (app f a) = 
+      (λ x → x idₑ (Tmᴺ ⌜ a ⌝ uConᴺ)) & stabNe f
     ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stab a
     ◾ (λ x → uᴺ (app x a)) & Ne-idₑ f
 
