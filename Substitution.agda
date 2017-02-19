@@ -159,17 +159,6 @@ idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
 idrₛ ∙       = refl
 idrₛ (σ , t) = _,_ & idrₛ σ ⊗ Tm-idₛ t
 
--- idlₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → idₛ ∘ₛ σ ≡ σ
--- idlₛ ∙       = refl
--- idlₛ (σ , t) = (_, t) & (assₛₑₛ idₛ wk (σ , t) ◾ (idₛ ∘ₛ_) & idlₑₛ σ ◾ idlₛ σ)
-
--- assₛ :
---   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Δ Σ)(ν : Sub Γ Δ)
---   → (σ ∘ₛ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ∘ₛ ν)
--- assₛ ∙       δ ν = refl
--- assₛ (σ , t) δ ν = _,_ & assₛ σ δ ν ⊗ (Tm-∘ₛ δ ν t ⁻¹)
-
--- Misc lemma
 βₑₛ :
   ∀ {Γ Δ Σ A B}(σ : Sub Δ Γ)(ν : OPE Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
   → Tmₛ (σ ₛ∘ₑ ν , a) t ≡ Tmₛ (idₛ , a) (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))
