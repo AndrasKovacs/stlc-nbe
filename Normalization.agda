@@ -69,7 +69,7 @@ Conᴺ-idₑ (σᴺ , t) = _,_ & Conᴺ-idₑ σᴺ ⊗ Tyᴺ-idₑ t
 
 Conᴺ-∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(ν : Conᴺ Ξ Σ)
-  → Conᴺₑ (σ ∘ₑ δ) ν ≡ Conᴺₑ δ (Conᴺₑ σ ν)  
+  → Conᴺₑ (σ ∘ₑ δ) ν ≡ Conᴺₑ δ (Conᴺₑ σ ν)
 Conᴺ-∘ₑ σ δ ∙       = refl
 Conᴺ-∘ₑ σ δ (ν , t) = _,_ & Conᴺ-∘ₑ σ δ ν ⊗ Tyᴺ-∘ₑ t σ δ
 
@@ -132,7 +132,7 @@ mutual
     lam & (qᴺ-nat (keep σ) (tᴺ wk (uᴺ (var vz))) taᴾ
          ◾ qᴺ & (tᴺ-nat (keep σ) ⁻¹
                ◾ tᴺ & (drop & (idlₑ σ ◾ idrₑ σ ⁻¹)) ⊗ uᴺ-nat (keep σ) (var vz)))
-  
+
   uᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(n : Ne Γ A) → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
   uᴺ-nat {ι}     σ n = refl
   uᴺ-nat {A ⇒ B} σ n = funexti λ Σ → funext λ δ → funext λ aᴺ →
@@ -174,9 +174,6 @@ Tmₑᴺ σ (lam t)   δᴺ = funexti λ Ξ → funext λ ν → funext λ aᴺ 
   Tmₑᴺ (keep σ) t (Conᴺₑ ν δᴺ , aᴺ) ◾ (λ x → Tmᴺ t (x , aᴺ)) & OPEᴺ-nat σ ν δᴺ
 Tmₑᴺ σ (app f a) δᴺ rewrite Tmₑᴺ σ f δᴺ | Tmₑᴺ σ a δᴺ = refl
 
---------------------------------------------------------------------------------
-
-
 -- Subᴺ {Γ}{Δ} σ : PSh(Conᴺ Γ, Conᴺ Δ)
 --------------------------------------------------------------------------------
 Subᴺ : ∀ {Γ Δ} → Sub Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
@@ -191,32 +188,16 @@ Subᴺ-ₛ∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
   → Subᴺ (σ ₛ∘ₑ δ) νᴺ ≡ Subᴺ σ (OPEᴺ δ νᴺ)
 Subᴺ-ₛ∘ₑ ∙       δ νᴺ = refl
-Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ  
+Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ
 
--- ∈ₛᴺ :
---  ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
---  → Tmᴺ (∈ₛ σ v) δᴺ ≡ ∈ᴺ v (Subᴺ σ δᴺ)
--- ∈ₛᴺ (σ , t) vz     δᴺ = refl
--- ∈ₛᴺ (σ , _) (vs v) δᴺ = ∈ₛᴺ σ v δᴺ
+∈ₛᴺ :
+ ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
+ → Tmᴺ (∈ₛ σ v) δᴺ ≡ ∈ᴺ v (Subᴺ σ δᴺ)
+∈ₛᴺ (σ , t) vz     δᴺ = refl
+∈ₛᴺ (σ , _) (vs v) δᴺ = ∈ₛᴺ σ v δᴺ
 
 Subᴺ-idₛ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → Subᴺ idₛ σᴺ ≡ σᴺ
 Subᴺ-idₛ ∙         = refl
 Subᴺ-idₛ (σᴺ , tᴺ) =
   (_, tᴺ) & (Subᴺ-ₛ∘ₑ idₛ wk (σᴺ , tᴺ) ◾ Subᴺ-idₛ (OPEᴺ idₑ σᴺ) ◾ OPEᴺ-idₑ σᴺ)
-
--- Tmₛᴺ :
---  ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(t : Tm Γ A)(δᴺ : Conᴺ Δ Σ)
---  → Conᴾ δᴺ
---  → Tmᴺ (Tmₛ σ t) δᴺ ≡ Tmᴺ t (Subᴺ σ δᴺ)
--- Tmₛᴺ σ (var v)   δᴺ δᴾ = ∈ₛᴺ σ v δᴺ
--- Tmₛᴺ σ (lam t)   δᴺ δᴾ = {!Tmᴾ (lam t) δ!}
---   -- funexti λ Ξ → funext λ ν → funext λ aᴺ →
---   --   Tmₛᴺ (keepₛ σ) t (Conᴺₑ ν δᴺ , aᴺ) (Conᴾₑ ν δᴾ , {!!})
---   -- ◾ (λ x → Tmᴺ t (x , aᴺ)) & (
---   --      (Subᴺ-ₛ∘ₑ σ wk (Conᴺₑ ν δᴺ , aᴺ))
---   --    ◾ Subᴺ σ & OPEᴺ-idₑ (Conᴺₑ ν δᴺ)
---   --    ◾ Subᴺ-nat σ ν δᴺ δᴾ)     
--- Tmₛᴺ σ (app f a) δᴺ δᴾ rewrite Tmₛᴺ σ f δᴺ δᴾ | Tmₛᴺ σ a δᴺ δᴾ = refl
-
-
 

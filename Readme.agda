@@ -21,7 +21,6 @@ import Nf
 import Substitution
 import Conversion
 
-import Presheaf
 import Normalization
 import Stability
 import Completeness
