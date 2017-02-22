@@ -48,7 +48,6 @@ uConᴺ {Γ , tᴺ} = Conᴺₑ wk uConᴺ , uᴺ (var vz)
 nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
 nf t = qᴺ (Tmᴺ t uConᴺ)
 
--- Trying to extend to PSh
 --------------------------------------------------------------------------------
 
 open import Lib
@@ -73,74 +72,74 @@ Conᴺ-∘ₑ :
 Conᴺ-∘ₑ σ δ ∙       = refl
 Conᴺ-∘ₑ σ δ (ν , t) = _,_ & Conᴺ-∘ₑ σ δ ν ⊗ Tyᴺ-∘ₑ t σ δ
 
-∈ᴺ-nat : ∀ {Γ Δ Σ A}(v : A ∈ Γ)(σ : OPE Σ Δ) Γᴺ → ∈ᴺ v (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (∈ᴺ v Γᴺ)
-∈ᴺ-nat vz     σ (Γᴺ , _) = refl
-∈ᴺ-nat (vs v) σ (Γᴺ , _) = ∈ᴺ-nat v σ Γᴺ
+-- ∈ᴺ-nat : ∀ {Γ Δ Σ A}(v : A ∈ Γ)(σ : OPE Σ Δ) Γᴺ → ∈ᴺ v (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (∈ᴺ v Γᴺ)
+-- ∈ᴺ-nat vz     σ (Γᴺ , _) = refl
+-- ∈ᴺ-nat (vs v) σ (Γᴺ , _) = ∈ᴺ-nat v σ Γᴺ
 
 --------------------------------------------------------------------------------
 
-Tyᴾ : ∀ {Γ A} → Tyᴺ A Γ → Set
-Tyᴾ {Γ} {ι}     tᴺ = ⊤
-Tyᴾ {Γ} {A ⇒ B} tᴺ =
-  ∀ {Δ}(σ : OPE Δ Γ) {aᴺ : Tyᴺ A Δ} → Tyᴾ aᴺ
-  → (∀ {Σ} (δ : OPE Σ Δ) → tᴺ (σ ∘ₑ δ) (Tyᴺₑ δ aᴺ) ≡ Tyᴺₑ δ (tᴺ σ aᴺ))
-    × Tyᴾ (tᴺ σ aᴺ)
+-- Tyᴾ : ∀ {Γ A} → Tyᴺ A Γ → Set
+-- Tyᴾ {Γ} {ι}     tᴺ = ⊤
+-- Tyᴾ {Γ} {A ⇒ B} tᴺ =
+--   ∀ {Δ}(σ : OPE Δ Γ) {aᴺ : Tyᴺ A Δ} → Tyᴾ aᴺ
+--   → (∀ {Σ} (δ : OPE Σ Δ) → tᴺ (σ ∘ₑ δ) (Tyᴺₑ δ aᴺ) ≡ Tyᴺₑ δ (tᴺ σ aᴺ))
+--     × Tyᴾ (tᴺ σ aᴺ)
 
-Tyᴾₑ : ∀ {A Γ Δ}(σ : OPE Δ Γ) → ∀ {tᴺ : Tyᴺ A Γ} → Tyᴾ tᴺ → Tyᴾ (Tyᴺₑ σ tᴺ)
-Tyᴾₑ {ι}     σ {tᴺ} tᴾ           = tt
-Tyᴾₑ {A ⇒ B} σ {tᴺ} tᴾ δ {aᴺ} aᴾ = let tᴺ-nat , taᴾ = tᴾ (σ ∘ₑ δ) aᴾ in
-  (λ ν → (λ x → tᴺ x (Tyᴺₑ ν aᴺ)) & (assₑ σ δ ν ⁻¹) ◾ tᴺ-nat ν) , taᴾ
+-- Tyᴾₑ : ∀ {A Γ Δ}(σ : OPE Δ Γ) → ∀ {tᴺ : Tyᴺ A Γ} → Tyᴾ tᴺ → Tyᴾ (Tyᴺₑ σ tᴺ)
+-- Tyᴾₑ {ι}     σ {tᴺ} tᴾ           = tt
+-- Tyᴾₑ {A ⇒ B} σ {tᴺ} tᴾ δ {aᴺ} aᴾ = let tᴺ-nat , taᴾ = tᴾ (σ ∘ₑ δ) aᴾ in
+--   (λ ν → (λ x → tᴺ x (Tyᴺₑ ν aᴺ)) & (assₑ σ δ ν ⁻¹) ◾ tᴺ-nat ν) , taᴾ
 
-data Conᴾ : ∀ {Γ Δ} → Conᴺ Γ Δ → Set where
-  ∙   : ∀ {Δ} → Conᴾ {∙} {Δ} ∙
-  _,_ : ∀ {Γ Δ A Γᴺ tᴺ} → Conᴾ {Γ}{Δ} Γᴺ → Tyᴾ {Δ}{A} tᴺ → Conᴾ (Γᴺ , tᴺ)
+-- data Conᴾ : ∀ {Γ Δ} → Conᴺ Γ Δ → Set where
+--   ∙   : ∀ {Δ} → Conᴾ {∙} {Δ} ∙
+--   _,_ : ∀ {Γ Δ A Γᴺ tᴺ} → Conᴾ {Γ}{Δ} Γᴺ → Tyᴾ {Δ}{A} tᴺ → Conᴾ (Γᴺ , tᴺ)
 
-Conᴾₑ : ∀ {Γ Δ Σ Γᴺ}(σ : OPE Σ Δ) → Conᴾ {Γ}{Δ} Γᴺ → Conᴾ {Γ}{Σ} (Conᴺₑ σ Γᴺ)
-Conᴾₑ σ ∙         =  ∙
-Conᴾₑ σ (Γᴾ , tᴾ) = Conᴾₑ σ Γᴾ , Tyᴾₑ σ tᴾ
+-- Conᴾₑ : ∀ {Γ Δ Σ Γᴺ}(σ : OPE Σ Δ) → Conᴾ {Γ}{Δ} Γᴺ → Conᴾ {Γ}{Σ} (Conᴺₑ σ Γᴺ)
+-- Conᴾₑ σ ∙         =  ∙
+-- Conᴾₑ σ (Γᴾ , tᴾ) = Conᴾₑ σ Γᴾ , Tyᴾₑ σ tᴾ
 
-∈ᴾ : ∀ {Γ A}(v : A ∈ Γ) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (∈ᴺ v Γᴺ)
-∈ᴾ vz     (Γᴾ , tᴾ) = tᴾ
-∈ᴾ (vs v) (Γᴾ , _ ) = ∈ᴾ v Γᴾ
+-- ∈ᴾ : ∀ {Γ A}(v : A ∈ Γ) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (∈ᴺ v Γᴺ)
+-- ∈ᴾ vz     (Γᴾ , tᴾ) = tᴾ
+-- ∈ᴾ (vs v) (Γᴾ , _ ) = ∈ᴾ v Γᴾ
 
-mutual
-  Tmᴾ : ∀ {Γ A}(t : Tm Γ A) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (Tmᴺ t Γᴺ)
-  Tmᴾ (var v) Γᴾ = ∈ᴾ v Γᴾ
-  Tmᴾ (lam t) Γᴾ = λ σ {aᴺ} aᴾ →
-    (λ δ → (λ x → Tmᴺ t (x , Tyᴺₑ δ aᴺ)) & Conᴺ-∘ₑ σ δ _ ◾ Tmᴺ-nat t δ (Conᴾₑ σ Γᴾ , aᴾ))
-    , Tmᴾ t (Conᴾₑ σ Γᴾ , aᴾ)
-  Tmᴾ (app f x) Γᴾ = proj₂ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ))
+-- mutual
+--   Tmᴾ : ∀ {Γ A}(t : Tm Γ A) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (Tmᴺ t Γᴺ)
+--   Tmᴾ (var v) Γᴾ = ∈ᴾ v Γᴾ
+--   Tmᴾ (lam t) Γᴾ = λ σ {aᴺ} aᴾ →
+--     (λ δ → (λ x → Tmᴺ t (x , Tyᴺₑ δ aᴺ)) & Conᴺ-∘ₑ σ δ _ ◾ Tmᴺ-nat t δ (Conᴾₑ σ Γᴾ , aᴾ))
+--     , Tmᴾ t (Conᴾₑ σ Γᴾ , aᴾ)
+--   Tmᴾ (app f x) Γᴾ = proj₂ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ))
 
-  Tmᴺ-nat : ∀ {Γ Δ Σ A}(t : Tm Γ A)(σ : OPE Σ Δ) {Γᴺ} → Conᴾ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)
-  Tmᴺ-nat (var v)   σ {Γᴺ} Γᴾ = ∈ᴺ-nat v σ _
-  Tmᴺ-nat (lam t)   σ {Γᴺ} Γᴾ =
-    funexti λ Ξ → funext λ ν → funext λ aᴺ → Tmᴺ t & ((_, aᴺ) & (Conᴺ-∘ₑ σ ν Γᴺ ⁻¹ ))
-  Tmᴺ-nat (app f x) σ {Γᴺ} Γᴾ rewrite Tmᴺ-nat f σ Γᴾ | Tmᴺ-nat x σ Γᴾ =
-    (λ y → Tmᴺ f Γᴺ y (Tyᴺₑ σ (Tmᴺ x Γᴺ))) & (idrₑ σ ◾ idlₑ σ ⁻¹) ◾ proj₁ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ)) σ
+--   Tmᴺ-nat : ∀ {Γ Δ Σ A}(t : Tm Γ A)(σ : OPE Σ Δ) {Γᴺ} → Conᴾ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)
+--   Tmᴺ-nat (var v)   σ {Γᴺ} Γᴾ = ∈ᴺ-nat v σ _
+--   Tmᴺ-nat (lam t)   σ {Γᴺ} Γᴾ =
+--     funexti λ Ξ → funext λ ν → funext λ aᴺ → Tmᴺ t & ((_, aᴺ) & (Conᴺ-∘ₑ σ ν Γᴺ ⁻¹ ))
+--   Tmᴺ-nat (app f x) σ {Γᴺ} Γᴾ rewrite Tmᴺ-nat f σ Γᴾ | Tmᴺ-nat x σ Γᴾ =
+--     (λ y → Tmᴺ f Γᴺ y (Tyᴺₑ σ (Tmᴺ x Γᴺ))) & (idrₑ σ ◾ idlₑ σ ⁻¹) ◾ proj₁ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ)) σ
 
-mutual
-  uᴾ : ∀ {A Γ}(n : Ne Γ A) → Tyᴾ (uᴺ n)
-  uᴾ {ι}     n = tt
-  uᴾ {A ⇒ B} n = λ σ {aᴺ} aᴾ →
-    (λ {Δ} δ → (λ x y → uᴺ (app x y)) & (Ne-∘ₑ σ δ n ⁻¹) ⊗ qᴺ-nat δ aᴺ aᴾ ⁻¹
-             ◾ uᴺ-nat δ (app (Neₑ σ n) (qᴺ aᴺ)) ⁻¹)
-    , uᴾ (app (Neₑ σ n) (qᴺ aᴺ))
+-- mutual
+--   uᴾ : ∀ {A Γ}(n : Ne Γ A) → Tyᴾ (uᴺ n)
+--   uᴾ {ι}     n = tt
+--   uᴾ {A ⇒ B} n = λ σ {aᴺ} aᴾ →
+--     (λ {Δ} δ → (λ x y → uᴺ (app x y)) & (Ne-∘ₑ σ δ n ⁻¹) ⊗ qᴺ-nat δ aᴺ aᴾ ⁻¹
+--              ◾ uᴺ-nat δ (app (Neₑ σ n) (qᴺ aᴺ)) ⁻¹)
+--     , uᴾ (app (Neₑ σ n) (qᴺ aᴺ))
 
-  qᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(tᴺ : Tyᴺ A Γ) → Tyᴾ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
-  qᴺ-nat {ι}     σ tᴺ tᴾ = refl
-  qᴺ-nat {A ⇒ B} σ tᴺ tᴾ = let tᴺ-nat , taᴾ = tᴾ wk (uᴾ (var vz)) in
-    lam & (qᴺ-nat (keep σ) (tᴺ wk (uᴺ (var vz))) taᴾ
-         ◾ qᴺ & (tᴺ-nat (keep σ) ⁻¹
-               ◾ tᴺ & (drop & (idlₑ σ ◾ idrₑ σ ⁻¹)) ⊗ uᴺ-nat (keep σ) (var vz)))
+--   qᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(tᴺ : Tyᴺ A Γ) → Tyᴾ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
+--   qᴺ-nat {ι}     σ tᴺ tᴾ = refl
+--   qᴺ-nat {A ⇒ B} σ tᴺ tᴾ = let tᴺ-nat , taᴾ = tᴾ wk (uᴾ (var vz)) in
+--     lam & (qᴺ-nat (keep σ) (tᴺ wk (uᴺ (var vz))) taᴾ
+--          ◾ qᴺ & (tᴺ-nat (keep σ) ⁻¹
+--                ◾ tᴺ & (drop & (idlₑ σ ◾ idrₑ σ ⁻¹)) ⊗ uᴺ-nat (keep σ) (var vz)))
 
-  uᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(n : Ne Γ A) → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
-  uᴺ-nat {ι}     σ n = refl
-  uᴺ-nat {A ⇒ B} σ n = funexti λ Σ → funext λ δ → funext λ aᴺ →
-    (λ x → uᴺ (app x (qᴺ aᴺ))) & Ne-∘ₑ σ δ n
+--   uᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(n : Ne Γ A) → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
+--   uᴺ-nat {ι}     σ n = refl
+--   uᴺ-nat {A ⇒ B} σ n = funexti λ Σ → funext λ δ → funext λ aᴺ →
+--     (λ x → uᴺ (app x (qᴺ aᴺ))) & Ne-∘ₑ σ δ n
 
-uConᴾ : ∀ {Γ} → Conᴾ (uConᴺ {Γ})
-uConᴾ {∙}     = ∙
-uConᴾ {Γ , A} = Conᴾₑ wk uConᴾ , uᴾ (var vz)
+-- uConᴾ : ∀ {Γ} → Conᴾ (uConᴺ {Γ})
+-- uConᴾ {∙}     = ∙
+-- uConᴾ {Γ , A} = Conᴾₑ wk uConᴾ , uᴾ (var vz)
 
 --------------------------------------------------------------------------------
 
@@ -180,9 +179,9 @@ Subᴺ : ∀ {Γ Δ} → Sub Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ �
 Subᴺ ∙       δᴺ = ∙
 Subᴺ (σ , t) δᴺ = Subᴺ σ δᴺ , Tmᴺ t δᴺ
 
-Subᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) νᴺ → Conᴾ νᴺ → Subᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (Subᴺ σ νᴺ)
-Subᴺ-nat ∙       δ νᴺ νᴾ = refl
-Subᴺ-nat (σ , t) δ νᴺ νᴾ = _,_ & Subᴺ-nat σ δ νᴺ νᴾ ⊗ Tmᴺ-nat t δ νᴾ
+-- Subᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) νᴺ → Conᴾ νᴺ → Subᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (Subᴺ σ νᴺ)
+-- Subᴺ-nat ∙       δ νᴺ νᴾ = refl
+-- Subᴺ-nat (σ , t) δ νᴺ νᴾ = _,_ & Subᴺ-nat σ δ νᴺ νᴾ ⊗ Tmᴺ-nat t δ νᴾ
 
 Subᴺ-ₛ∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
