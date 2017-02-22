@@ -1,15 +1,11 @@
 module Readme where
 
 {-
-
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-We use function extensionality and Axiom K, but no other postulates,
-holes or unsafe pragmas. Extensionality doesn't interfere with the normalization
-function, so it computes for all inputs. Also, the use of Axiom K could be eliminated with
-a moderate amount of work.
-
+We use function extensionality, but no Axiom K, other postulates,
+holes or unsafe pragmas.
 -}
 
 -- Order in which you probably want to view modules
@@ -22,9 +18,11 @@ import Substitution
 import Conversion
 
 import Normalization
-import Stability
 import Completeness
+
+import PresheafExtension
 import Soundness
+import Stability
 
 -- Main results
 ------------------------------------------------------------

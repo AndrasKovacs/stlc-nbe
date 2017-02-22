@@ -6,12 +6,14 @@ open import Lib
 open import Syntax
 open import Embedding
 open import Nf
-open import Normalization
 
-stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uConᴺ ≡ uᴺ (var v)
+open import Normalization
+open import PresheafExtension
+
+stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uᶜᴺ ≡ uᴺ (var v)
 stab∈ vz     = refl
 stab∈ (vs v) =
-    ∈ᴺ-nat v wk uConᴺ
+    ∈ᴺ-nat v wk uᶜᴺ
   ◾ Tyᴺₑ wk & stab∈ v
   ◾ uᴺ-nat wk (var v)
   ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
@@ -21,10 +23,10 @@ mutual
   stab (ne n)  = stabNe n
   stab (lam n) = lam & stab n
 
-  stabNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uConᴺ ≡ uᴺ n
+  stabNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
   stabNe (var v)   = stab∈ v
   stabNe (app f a) = 
-      (λ x → x idₑ (Tmᴺ ⌜ a ⌝ uConᴺ)) & stabNe f
+      (λ x → x idₑ (Tmᴺ ⌜ a ⌝ uᶜᴺ)) & stabNe f
     ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stab a
     ◾ (λ x → uᴺ (app x a)) & Ne-idₑ f
 

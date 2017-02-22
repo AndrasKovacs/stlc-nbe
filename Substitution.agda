@@ -6,15 +6,12 @@ open import Lib
 open import Syntax
 open import Embedding
 
--- TODO: try to do as much as possible in Sub instead of OPE
-
 infixr 6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
 
 data Sub (Γ : Con) : Con → Set where
   ∙   : Sub Γ ∙
   _,_ : ∀ {A Δ} → Sub Γ Δ → Tm Γ A → Sub Γ (Δ , A)
 
--- Left and right compositions with embedding
 _ₛ∘ₑ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → OPE Γ Δ → Sub Γ Σ
 ∙       ₛ∘ₑ δ = ∙
 (σ , t) ₛ∘ₑ δ = σ ₛ∘ₑ δ , Tmₑ δ t
@@ -24,7 +21,6 @@ _ₑ∘ₛ_ : ∀ {Γ Δ Σ} → OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
 drop σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ
 keep σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ , t
 
--- Inject OPE into Sub
 dropₛ : ∀ {A Γ Δ} → Sub Γ Δ → Sub (Γ , A) Δ
 dropₛ σ = σ ₛ∘ₑ wk
 
@@ -158,27 +154,4 @@ Tm-idₛ (app f a) = app & Tm-idₛ f ⊗ Tm-idₛ a
 idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
 idrₛ ∙       = refl
 idrₛ (σ , t) = _,_ & idrₛ σ ⊗ Tm-idₛ t
-
--- idlₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → idₛ ∘ₛ σ ≡ σ
--- idlₛ ∙       = refl
--- idlₛ (σ , t) = (_, t) & (assₛₑₛ idₛ wk (σ , t) ◾ (idₛ ∘ₛ_) & idlₑₛ σ ◾ idlₛ σ)
-
--- assₛ :
---   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Δ Σ)(ν : Sub Γ Δ)
---   → (σ ∘ₛ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ∘ₛ ν)
--- assₛ ∙       δ ν = refl
--- assₛ (σ , t) δ ν = _,_ & assₛ σ δ ν ⊗ (Tm-∘ₛ δ ν t ⁻¹)
-
--- Misc lemma
-βₑₛ :
-  ∀ {Γ Δ Σ A B}(σ : Sub Δ Γ)(ν : OPE Σ Δ) (t : Tm (Γ , A) B) (a : Tm Σ A)
-  → Tmₛ (σ ₛ∘ₑ ν , a) t ≡ Tmₛ (idₛ , a) (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))
-βₑₛ σ ν t a =
-    (λ x → Tmₛ (x , a) t) &
-       (idrₛ (σ ₛ∘ₑ ν) ⁻¹
-      ◾ assₛₑₛ σ ν idₛ
-      ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ) ⁻¹
-      ◾ assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a) ⁻¹)
-  ◾ Tm-∘ₛ (keepₛ σ) (keep ν ₑ∘ₛ (idₛ , a)) t
-  ◾ Tm-ₑ∘ₛ (keep ν) (idₛ , a) (Tmₛ (keepₛ σ) t)
 
