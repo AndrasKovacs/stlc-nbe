@@ -7,7 +7,7 @@ open import Syntax
 open import Embedding
 open import Substitution
 open import Conversion
-open import Nf
+open import NormalForm
 
 open import Normalization
 open import PresheafExtension

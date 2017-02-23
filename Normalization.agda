@@ -5,7 +5,7 @@ module Normalization where
 open import Syntax
 open import Embedding
 open import Substitution
-open import Nf
+open import NormalForm
 
 Tyᴺ : Ty → Con → Set
 Tyᴺ ι       Γ = Nf Γ ι

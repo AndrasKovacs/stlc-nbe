@@ -47,8 +47,11 @@ record Σ {i j} (A : Set i) (B : A → Set j) : Set (i ⊔ j) where
     proj₁ : A
     proj₂ : B proj₁
 infixr 5 _,_
-
 open Σ public
+
+data _⊎_ {α β}(A : Set α)(B : Set β) : Set (α ⊔ β) where
+  inj₁ : A → A ⊎ B
+  inj₂ : B → A ⊎ B
 
 _×_ : ∀{i j} → Set i → Set j → Set (i ⊔ j)
 A × B = Σ A λ _ → B
@@ -61,6 +64,9 @@ data ⊥ : Set where
 
 ⊥-elim : ∀{i}{A : Set i} → ⊥ → A
 ⊥-elim ()
+
+Dec : ∀ {α} → Set α → Set α
+Dec A = A ⊎ (A → ⊥)
 
 postulate
   fext  : ∀{i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x}

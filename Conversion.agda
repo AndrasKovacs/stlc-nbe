@@ -6,7 +6,7 @@ open import Lib
 open import Syntax
 open import Embedding
 open import Substitution
-open import Nf
+open import NormalForm
 
 data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
   η     : ∀ {A B}(t : Tm Γ (A ⇒ B))     →  t ~ lam (app (Tmₑ wk t) (var vz))

@@ -4,7 +4,7 @@ module Completeness where
 
 open import Lib
 open import Syntax
-open import Nf
+open import NormalForm
 open import Normalization
 open import Embedding
 open import Substitution

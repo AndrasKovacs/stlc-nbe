@@ -6,7 +6,7 @@ open import Lib
 open import Syntax
 open import Embedding
 open import Substitution
-open import Nf
+open import NormalForm
 open import Normalization
 
 --------------------------------------------------------------------------------

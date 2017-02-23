@@ -5,7 +5,7 @@ module Stability where
 open import Lib
 open import Syntax
 open import Embedding
-open import Nf
+open import NormalForm
 
 open import Normalization
 open import PresheafExtension

@@ -11,37 +11,39 @@ holes or unsafe pragmas.
 -- Order in which you probably want to view modules
 ------------------------------------------------------------
 
-import Syntax
-import Embedding
-import Nf
-import Substitution
-import Conversion
+open import Syntax
+open import Embedding
+open import NormalForm
+open import Substitution
+open import Conversion
 
-import Normalization
-import Completeness
+open import Normalization
+open import Completeness
 
-import PresheafExtension
-import Soundness
-import Stability
+open import PresheafExtension
+open import Soundness
+open import Stability
+
 
 -- Main results
 ------------------------------------------------------------
 
 open import Lib
 
-open Syntax
-open Nf
-open Conversion
-
-nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
-nf = Normalization.nf
+normalization : ∀ {Γ A} → Tm Γ A → Nf Γ A
+normalization = nf
 
 stability : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝ ≡ n
-stability = Stability.stab
+stability = stab
 
 soundness : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
-soundness = Soundness.sound
+soundness = sound
 
 completeness : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝
-completeness = Completeness.complete
+completeness = complete
+
+decidableConversion : ∀ {Γ A}(t t' : Tm Γ A) → Dec (t ~ t')
+decidableConversion t t' with Nf≡? (nf t) (nf t')
+... | inj₁ p = inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝ ~ t') & p ⁻¹) (complete t' ~⁻¹))
+... | inj₂ p = inj₂ (λ q → p (sound q))
 
