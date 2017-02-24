@@ -41,13 +41,13 @@ mutual
   Ne-∘ₑ σ δ (app f a) = app & Ne-∘ₑ σ δ f ⊗ Nf-∘ₑ σ δ a
 
 mutual
-  Nf-idₑ : ∀ {Γ A}(t : Nf Γ A) → Nfₑ idₑ t ≡ t
-  Nf-idₑ (ne n)  = ne & Ne-idₑ n
-  Nf-idₑ (lam t) = lam & Nf-idₑ t
+  Nf-idₑ : ∀ {Γ A}(t : Nf Γ A){σ : OPE Γ Γ}{p : Idish σ} → Nfₑ σ t ≡ t
+  Nf-idₑ (ne n)  {σ}{p} = ne & Ne-idₑ n {σ}{p}
+  Nf-idₑ (lam t) {σ}{p} = lam & Nf-idₑ t {keep σ}{p}
 
-  Ne-idₑ : ∀ {Γ A}(t : Ne Γ A) → Neₑ idₑ t ≡ t
-  Ne-idₑ (var v)   = var & ∈-idₑ v
-  Ne-idₑ (app f a) = app & Ne-idₑ f ⊗ Nf-idₑ a
+  Ne-idₑ : ∀ {Γ A}(t : Ne Γ A){σ : OPE Γ Γ}{p : Idish σ} → Neₑ σ t ≡ t
+  Ne-idₑ (var v)   {σ}{p} = var & ∈-idₑ v {σ}{p}
+  Ne-idₑ (app f a) {σ}{p} = app & Ne-idₑ f {σ}{p} ⊗ Nf-idₑ a {σ}{p}
 
 -- Embedding into Tm
 --------------------------------------------------------------------------------

@@ -20,8 +20,11 @@ data Conᴺ : Con → Con → Set where
   _,_ : ∀ {A Γ Δ} → Conᴺ Γ Δ → Tyᴺ A Δ → Conᴺ (Γ , A) Δ
 
 Conᴺₑ : ∀ {Γ Δ Σ} → OPE Σ Δ → Conᴺ Γ Δ → Conᴺ Γ Σ
-Conᴺₑ σ ∙         = ∙
-Conᴺₑ σ (Γᴺ , tᴺ) = Conᴺₑ σ Γᴺ , Tyᴺₑ σ tᴺ
+Conᴺₑ idₑ      Γᴺ = Γᴺ
+Conᴺₑ (drop σ) ∙         = ∙
+Conᴺₑ (drop σ) (Γᴺ , tᴺ) = (Conᴺₑ (drop σ) Γᴺ) , Tyᴺₑ (drop σ) tᴺ
+Conᴺₑ (keep σ) ∙         = ∙
+Conᴺₑ (keep σ) (Γᴺ , tᴺ) = (Conᴺₑ (keep σ) Γᴺ) , (Tyᴺₑ (keep σ) tᴺ)
 
 ∈ᴺ : ∀ {Γ A} → A ∈ Γ → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
 ∈ᴺ vz     (Γᴺ , tᴺ) = tᴺ

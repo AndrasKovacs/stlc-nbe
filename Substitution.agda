@@ -6,7 +6,7 @@ open import Lib
 open import Syntax
 open import Embedding
 
-infixr 6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
+infixr 6 _ₑ∘ₛ_ _∘ₛ_ -- _ₛ∘ₑ_
 
 data Sub (Γ : Con) : Con → Set where
   ∙   : Sub Γ ∙
@@ -17,20 +17,15 @@ _ₛ∘ₑ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → OPE Γ Δ → Sub Γ Σ
 (σ , t) ₛ∘ₑ δ = σ ₛ∘ₑ δ , Tmₑ δ t
 
 _ₑ∘ₛ_ : ∀ {Γ Δ Σ} → OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
-∙      ₑ∘ₛ δ       = δ
+idₑ    ₑ∘ₛ δ       = δ
 drop σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ
-keep σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ , t
+keep σ ₑ∘ₛ (δ , t) = (σ ₑ∘ₛ δ) , t
 
 dropₛ : ∀ {A Γ Δ} → Sub Γ Δ → Sub (Γ , A) Δ
 dropₛ σ = σ ₛ∘ₑ wk
 
 keepₛ : ∀ {A Γ Δ} → Sub Γ Δ → Sub (Γ , A) (Δ , A)
 keepₛ σ = dropₛ σ , var vz
-
-⌜_⌝ᵒᵖᵉ : ∀ {Γ Δ} → OPE Γ Δ → Sub Γ Δ
-⌜ ∙      ⌝ᵒᵖᵉ = ∙
-⌜ drop σ ⌝ᵒᵖᵉ = dropₛ ⌜ σ ⌝ᵒᵖᵉ
-⌜ keep σ ⌝ᵒᵖᵉ = keepₛ ⌜ σ ⌝ᵒᵖᵉ
 
 -- Action on ∈ and Tm
 ∈ₛ : ∀ {A Γ Δ} → Sub Γ Δ → A ∈ Δ → Tm Γ A
@@ -46,6 +41,11 @@ Tmₛ σ (app f a) = app (Tmₛ σ f) (Tmₛ σ a)
 idₛ : ∀ {Γ} → Sub Γ Γ
 idₛ {∙}     = ∙
 idₛ {Γ , A} = keepₛ idₛ
+
+⌜_⌝ᵒᵖᵉ : ∀ {Γ Δ} → OPE Γ Δ → Sub Γ Δ
+⌜ idₑ    ⌝ᵒᵖᵉ = idₛ
+⌜ drop σ ⌝ᵒᵖᵉ = dropₛ ⌜ σ ⌝ᵒᵖᵉ
+⌜ keep σ ⌝ᵒᵖᵉ = keepₛ ⌜ σ ⌝ᵒᵖᵉ
 
 _∘ₛ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 ∙       ∘ₛ δ = ∙
@@ -63,7 +63,7 @@ assₛₑₑ (σ , t) δ ν = _,_ & assₛₑₑ σ δ ν ⊗ (Tm-∘ₑ δ ν t
 assₑₛₑ :
   ∀ {Γ Δ Σ Ξ}(σ : OPE Σ Ξ)(δ : Sub Δ Σ)(ν : OPE Γ Δ)
   → (σ ₑ∘ₛ δ) ₛ∘ₑ ν ≡ σ ₑ∘ₛ (δ ₛ∘ₑ ν)
-assₑₛₑ ∙        δ       ν = refl
+assₑₛₑ idₑ      δ       ν = refl
 assₑₛₑ (drop σ) (δ , t) ν = assₑₛₑ σ δ ν
 assₑₛₑ (keep σ) (δ , t) ν = (_, Tmₑ ν t) & assₑₛₑ σ δ ν
 
@@ -72,25 +72,25 @@ idlₑₛ ∙       = refl
 idlₑₛ (σ , t) = (_, t) & idlₑₛ σ
 
 idlₛₑ : ∀ {Γ Δ}(σ : OPE Γ Δ) → idₛ ₛ∘ₑ σ ≡ ⌜ σ ⌝ᵒᵖᵉ
-idlₛₑ ∙        = refl
+idlₛₑ {∙}     idₑ = refl
+idlₛₑ {Γ , A} idₑ = (λ x → (x , var vz)) & assₛₑₑ idₛ wk idₑ
 idlₛₑ (drop σ) =
-      ((idₛ ₛ∘ₑ_) ∘ drop) & idrₑ σ ⁻¹
-    ◾ assₛₑₑ idₛ σ wk ⁻¹
+      assₛₑₑ idₛ σ wk ⁻¹
     ◾ dropₛ & idlₛₑ σ
 idlₛₑ (keep σ) =
   (_, var vz) &
       (assₛₑₑ idₛ wk (keep σ)
-    ◾ ((idₛ ₛ∘ₑ_) ∘ drop) & (idlₑ σ ◾ idrₑ σ ⁻¹)
+    ◾ ((idₛ ₛ∘ₑ_) ∘ drop) & idlₑ σ
     ◾ assₛₑₑ idₛ σ wk ⁻¹
     ◾ (_ₛ∘ₑ wk) & idlₛₑ σ )
 
-idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
-idrₑₛ ∙        = refl
+idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ
+idrₑₛ idₑ      = refl
 idrₑₛ (drop σ) = assₑₛₑ σ idₛ wk ⁻¹ ◾ dropₛ & idrₑₛ σ
 idrₑₛ (keep σ) = (_, var vz) & (assₑₛₑ σ idₛ wk ⁻¹ ◾ (_ₛ∘ₑ wk) & idrₑₛ σ)
 
 ∈-ₑ∘ₛ : ∀ {A Γ Δ Σ}(σ : OPE Δ Σ)(δ : Sub Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₑ∘ₛ δ) v ≡ ∈ₛ δ (∈ₑ σ v)
-∈-ₑ∘ₛ ∙        δ       v      = refl
+∈-ₑ∘ₛ idₑ      δ       v      = refl
 ∈-ₑ∘ₛ (drop σ) (δ , t) v      = ∈-ₑ∘ₛ σ δ v
 ∈-ₑ∘ₛ (keep σ) (δ , t) vz     = refl
 ∈-ₑ∘ₛ (keep σ) (δ , t) (vs v) = ∈-ₑ∘ₛ σ δ v
@@ -111,7 +111,7 @@ Tm-ₛ∘ₑ σ δ (lam t)   =
   lam &
       ((λ x → Tmₛ (x , var vz) t) &
           (assₛₑₑ σ δ wk
-        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
+        ◾ (σ ₛ∘ₑ_) & (drop & idlₑ δ ⁻¹)
         ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
     ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) t)
 Tm-ₛ∘ₑ σ δ (app f a) = app & Tm-ₛ∘ₑ σ δ f ⊗ Tm-ₛ∘ₑ σ δ a
@@ -144,7 +144,7 @@ Tm-∘ₛ σ δ (app f a) = app & Tm-∘ₛ σ δ f ⊗ Tm-∘ₛ σ δ a
 
 ∈-idₛ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₛ idₛ v ≡ var v
 ∈-idₛ vz     = refl
-∈-idₛ (vs v) = ∈-ₛ∘ₑ idₛ wk v ◾ Tmₑ wk & ∈-idₛ v ◾ (var ∘ vs) & ∈-idₑ v
+∈-idₛ (vs v) = ∈-ₛ∘ₑ idₛ wk v ◾ Tmₑ wk & ∈-idₛ v
 
 Tm-idₛ : ∀ {A Γ}(t : Tm Γ A) → Tmₛ idₛ t ≡ t
 Tm-idₛ (var v)   = ∈-idₛ v

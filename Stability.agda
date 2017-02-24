@@ -16,7 +16,6 @@ stab∈ (vs v) =
     ∈ᴺ-nat v wk uᶜᴺ
   ◾ Tyᴺₑ wk & stab∈ v
   ◾ uᴺ-nat wk (var v)
-  ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
 
 mutual
   stab : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝ ≡ n

@@ -21,19 +21,27 @@ Tyᴺ-∘ₑ :
 Tyᴺ-∘ₑ {A = ι}     tᴺ σ δ = Nf-∘ₑ σ δ tᴺ
 Tyᴺ-∘ₑ {A = A ⇒ B} tᴺ σ δ = fexti λ Ξ → fext λ ν → tᴺ & assₑ σ δ ν
 
-Conᴺ-idₑ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → Conᴺₑ idₑ σᴺ ≡ σᴺ
-Conᴺ-idₑ ∙        = refl
-Conᴺ-idₑ (σᴺ , t) = _,_ & Conᴺ-idₑ σᴺ ⊗ Tyᴺ-idₑ t
+Conᴺₑ-∙ : ∀ {Γ Δ}(σ : OPE Γ Δ) → Conᴺₑ σ ∙ ≡ ∙
+Conᴺₑ-∙ idₑ = refl
+Conᴺₑ-∙ (drop σ) = refl
+Conᴺₑ-∙ (keep σ) = refl
+
+Conᴺₑ-, :
+  ∀ {Γ Δ Σ A}(σ : OPE Γ Δ) (Γᴺ : Conᴺ Σ Δ) (tᴺ : Tyᴺ A Δ)
+  → Conᴺₑ σ (Γᴺ , tᴺ) ≡ (Conᴺₑ σ Γᴺ , Tyᴺₑ σ tᴺ)
+Conᴺₑ-, idₑ      Γᴺ tᴺ = (Γᴺ ,_) & (Tyᴺ-idₑ tᴺ ⁻¹)
+Conᴺₑ-, (drop σ) Γᴺ tᴺ = refl
+Conᴺₑ-, (keep σ) Γᴺ tᴺ = refl
 
 Conᴺ-∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(ν : Conᴺ Ξ Σ)
   → Conᴺₑ (σ ∘ₑ δ) ν ≡ Conᴺₑ δ (Conᴺₑ σ ν)
-Conᴺ-∘ₑ σ δ ∙       = refl
-Conᴺ-∘ₑ σ δ (ν , t) = _,_ & Conᴺ-∘ₑ σ δ ν ⊗ Tyᴺ-∘ₑ t σ δ
+Conᴺ-∘ₑ σ δ ∙         rewrite Conᴺₑ-∙ σ | Conᴺₑ-∙ δ | Conᴺₑ-∙ (σ ∘ₑ δ) = refl
+Conᴺ-∘ₑ σ δ (Γᴺ , tᴺ) rewrite Conᴺₑ-, σ Γᴺ tᴺ | Conᴺₑ-, (σ ∘ₑ δ) Γᴺ tᴺ | Conᴺₑ-, δ (Conᴺₑ σ Γᴺ) (Tyᴺₑ σ tᴺ) = _,_ & Conᴺ-∘ₑ σ δ Γᴺ ⊗ Tyᴺ-∘ₑ tᴺ σ δ
 
 ∈ᴺ-nat : ∀ {Γ Δ Σ A}(v : A ∈ Γ)(σ : OPE Σ Δ) Γᴺ → ∈ᴺ v (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (∈ᴺ v Γᴺ)
-∈ᴺ-nat vz     σ (Γᴺ , _) = refl
-∈ᴺ-nat (vs v) σ (Γᴺ , _) = ∈ᴺ-nat v σ Γᴺ
+∈ᴺ-nat vz     σ (Γᴺ , tᴺ) rewrite Conᴺₑ-, σ Γᴺ tᴺ = refl
+∈ᴺ-nat (vs v) σ (Γᴺ , tᴺ) rewrite Conᴺₑ-, σ Γᴺ tᴺ = ∈ᴺ-nat v σ Γᴺ
 
 --------------------------------------------------------------------------------
 
@@ -54,8 +62,8 @@ data Conᴾ : ∀ {Γ Δ} → Conᴺ Γ Δ → Set where
   _,_ : ∀ {Γ Δ A Γᴺ tᴺ} → Conᴾ {Γ}{Δ} Γᴺ → Tyᴾ {Δ}{A} tᴺ → Conᴾ (Γᴺ , tᴺ)
 
 Conᴾₑ : ∀ {Γ Δ Σ Γᴺ}(σ : OPE Σ Δ) → Conᴾ {Γ}{Δ} Γᴺ → Conᴾ {Γ}{Σ} (Conᴺₑ σ Γᴺ)
-Conᴾₑ σ ∙         =  ∙
-Conᴾₑ σ (Γᴾ , tᴾ) = Conᴾₑ σ Γᴾ , Tyᴾₑ σ tᴾ
+Conᴾₑ σ ∙         rewrite Conᴺₑ-∙ σ = ∙ -- ∙
+Conᴾₑ σ (_,_ {Γᴺ = Γᴺ} {tᴺ} Γᴾ tᴾ) rewrite Conᴺₑ-, σ Γᴺ tᴺ = Conᴾₑ σ Γᴾ , Tyᴾₑ σ tᴾ
 
 ∈ᴾ : ∀ {Γ A}(v : A ∈ Γ) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (∈ᴺ v Γᴺ)
 ∈ᴾ vz     (Γᴾ , tᴾ) = tᴾ
@@ -64,8 +72,11 @@ Conᴾₑ σ (Γᴾ , tᴾ) = Conᴾₑ σ Γᴾ , Tyᴾₑ σ tᴾ
 mutual
   Tmᴾ : ∀ {Γ A}(t : Tm Γ A) → ∀ {Δ}{Γᴺ : Conᴺ Γ Δ}(Γᴾ : Conᴾ Γᴺ) → Tyᴾ (Tmᴺ t Γᴺ)
   Tmᴾ (var v) Γᴾ = ∈ᴾ v Γᴾ
-  Tmᴾ (lam t) Γᴾ = λ σ {aᴺ} aᴾ →
-    (λ δ → (λ x → Tmᴺ t (x , Tyᴺₑ δ aᴺ)) & Conᴺ-∘ₑ σ δ _ ◾ Tmᴺ-nat t δ (Conᴾₑ σ Γᴾ , aᴾ))
+  Tmᴾ (lam t) Γᴾ σ {aᴺ} aᴾ =
+    (λ δ → (λ x → Tmᴺ t (x , Tyᴺₑ δ aᴺ)) &
+             Conᴺ-∘ₑ σ δ _
+           ◾ Tmᴺ t & (Conᴺₑ-, δ (Conᴺₑ σ _) aᴺ ⁻¹)
+           ◾ Tmᴺ-nat t δ (Conᴾₑ σ Γᴾ , aᴾ) )
     , Tmᴾ t (Conᴾₑ σ Γᴾ , aᴾ)
   Tmᴾ (app f x) Γᴾ = proj₂ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ))
 
@@ -74,7 +85,7 @@ mutual
   Tmᴺ-nat (lam t)   σ {Γᴺ} Γᴾ =
     fexti λ Ξ → fext λ ν → fext λ aᴺ → Tmᴺ t & ((_, aᴺ) & (Conᴺ-∘ₑ σ ν Γᴺ ⁻¹ ))
   Tmᴺ-nat (app f x) σ {Γᴺ} Γᴾ rewrite Tmᴺ-nat f σ Γᴾ | Tmᴺ-nat x σ Γᴾ =
-    (λ y → Tmᴺ f Γᴺ y (Tyᴺₑ σ (Tmᴺ x Γᴺ))) & (idrₑ σ ◾ idlₑ σ ⁻¹) ◾ proj₁ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ)) σ
+    (λ y → Tmᴺ f Γᴺ y (Tyᴺₑ σ (Tmᴺ x Γᴺ))) & (idlₑ σ ⁻¹) ◾ proj₁ (Tmᴾ f Γᴾ idₑ (Tmᴾ x Γᴾ)) σ
 
 mutual
   uᴾ : ∀ {A Γ}(n : Ne Γ A) → Tyᴾ (uᴺ n)
@@ -89,7 +100,7 @@ mutual
   qᴺ-nat {A ⇒ B} σ tᴺ tᴾ = let tᴺ-nat , taᴾ = tᴾ wk (uᴾ (var vz)) in
     lam & (qᴺ-nat (keep σ) (tᴺ wk (uᴺ (var vz))) taᴾ
          ◾ qᴺ & (tᴺ-nat (keep σ) ⁻¹
-               ◾ tᴺ & (drop & (idlₑ σ ◾ idrₑ σ ⁻¹)) ⊗ uᴺ-nat (keep σ) (var vz)))
+               ◾ tᴺ & (drop & idlₑ σ) ⊗ uᴺ-nat (keep σ) (var vz)))
 
   uᴺ-nat : ∀ {A Γ Δ}(σ : OPE Δ Γ)(n : Ne Γ A) → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
   uᴺ-nat {ι}     σ n = refl
@@ -103,14 +114,15 @@ uᶜᴾ {Γ , A} = Conᴾₑ wk uᶜᴾ , uᴾ (var vz)
 --------------------------------------------------------------------------------
 
 OPEᴺ : ∀ {Γ Δ} → OPE Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
-OPEᴺ ∙        δᴺ        = δᴺ
+OPEᴺ idₑ      δᴺ        = δᴺ
 OPEᴺ (drop σ) (δᴺ , _)  = OPEᴺ σ δᴺ
 OPEᴺ (keep σ) (δᴺ , tᴺ) = OPEᴺ σ δᴺ , tᴺ
 
 OPEᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : OPE Γ Δ)(δ : OPE Ξ Σ) νᴺ → OPEᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (OPEᴺ σ νᴺ)
-OPEᴺ-nat ∙        δ νᴺ        = refl
-OPEᴺ-nat (drop σ) δ (νᴺ , tᴺ) = OPEᴺ-nat σ δ νᴺ
-OPEᴺ-nat (keep σ) δ (νᴺ , tᴺ) = (_, Tyᴺₑ δ tᴺ) & OPEᴺ-nat σ δ νᴺ
+OPEᴺ-nat idₑ      δ νᴺ        = refl
+OPEᴺ-nat (drop σ) δ (νᴺ , tᴺ) rewrite Conᴺₑ-, δ νᴺ tᴺ = OPEᴺ-nat σ δ νᴺ
+OPEᴺ-nat (keep σ) δ (νᴺ , tᴺ) rewrite Conᴺₑ-, δ νᴺ tᴺ | Conᴺₑ-, δ (OPEᴺ σ νᴺ) tᴺ =
+  (_, Tyᴺₑ δ tᴺ) & OPEᴺ-nat σ δ νᴺ
 
 OPEᴺ-idₑ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → OPEᴺ idₑ σᴺ ≡ σᴺ
 OPEᴺ-idₑ ∙         = refl
@@ -119,7 +131,7 @@ OPEᴺ-idₑ (σᴺ , tᴺ) = (_, tᴺ) & OPEᴺ-idₑ σᴺ
 ∈ₑᴺ :
  ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
  → ∈ᴺ (∈ₑ σ v) δᴺ ≡ ∈ᴺ v (OPEᴺ σ δᴺ)
-∈ₑᴺ ∙        v      δᴺ        = refl
+∈ₑᴺ idₑ      v      δᴺ        = refl
 ∈ₑᴺ (drop σ) v      (δᴺ , _)  = ∈ₑᴺ σ v δᴺ
 ∈ₑᴺ (keep σ) vz     (δᴺ , tᴺ) = refl
 ∈ₑᴺ (keep σ) (vs v) (δᴺ , tᴺ) = ∈ₑᴺ σ v δᴺ
@@ -140,8 +152,9 @@ Subᴺ (σ , t) δᴺ = Subᴺ σ δᴺ , Tmᴺ t δᴺ
 
 Subᴺ-nat :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) νᴺ → Conᴾ νᴺ → Subᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (Subᴺ σ νᴺ)
-Subᴺ-nat ∙       δ νᴺ νᴾ = refl
-Subᴺ-nat (σ , t) δ νᴺ νᴾ = _,_ & Subᴺ-nat σ δ νᴺ νᴾ ⊗ Tmᴺ-nat t δ νᴾ
+Subᴺ-nat ∙       δ νᴺ νᴾ = Conᴺₑ-∙ δ ⁻¹
+Subᴺ-nat (σ , t) δ νᴺ νᴾ rewrite Conᴺₑ-, δ (Subᴺ σ νᴺ) (Tmᴺ t νᴺ) =
+  _,_ & Subᴺ-nat σ δ νᴺ νᴾ ⊗ Tmᴺ-nat t δ νᴾ
 
 Subᴺ-ₛ∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)

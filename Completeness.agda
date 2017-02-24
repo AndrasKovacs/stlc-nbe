@@ -9,6 +9,7 @@ open import Normalization
 open import Embedding
 open import Substitution
 open import Conversion
+open import PresheafExtension
 
 _≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
 _≈_ {ι}        t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝
@@ -25,8 +26,9 @@ data _≈ᶜ_ {Γ} : ∀ {Δ} → Sub Γ Δ → Conᴺ Δ Γ → Set where
 ≈ₑ {A ⇒ B} σ {t}{tᴺ} t≈tᴺ δ rewrite Tm-∘ₑ σ δ t ⁻¹ = t≈tᴺ (σ ∘ₑ δ)
 
 ≈ᶜₑ : ∀ {Γ Δ Σ}(σ : OPE Σ Γ){δ}{νᴺ : Conᴺ Δ Γ} → δ ≈ᶜ νᴺ → δ ₛ∘ₑ σ ≈ᶜ Conᴺₑ σ νᴺ
-≈ᶜₑ σ ∙              = ∙
-≈ᶜₑ σ (δ≈ᶜνᴺ , t≈tᴺ) = ≈ᶜₑ σ δ≈ᶜνᴺ , ≈ₑ σ t≈tᴺ
+≈ᶜₑ σ ∙              rewrite Conᴺₑ-∙ σ = ∙
+≈ᶜₑ σ₁ (_,_ {δ = δ} {t' = t'} δ≈ᶜνᴺ t≈tᴺ)
+  rewrite Conᴺₑ-, σ₁ δ t' = ≈ᶜₑ σ₁ δ≈ᶜνᴺ , ≈ₑ σ₁ t≈tᴺ
 
 _~◾≈_ : ∀ {Γ A}{t t'}{tᴺ : Tyᴺ A Γ} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
 _~◾≈_ {A = ι}     p q = p ~◾ q

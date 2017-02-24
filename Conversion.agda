@@ -27,7 +27,7 @@ infix 6 _~⁻¹
 ~ₑ σ (η t) =
   coe ((λ t' → Tmₑ σ t ~ lam (app t' (var vz)))
     & (Tm-∘ₑ σ wk t ⁻¹
-    ◾ (λ x → Tmₑ (drop x) t) & (idrₑ σ ◾ idlₑ σ ⁻¹)
+    ◾ (λ x → Tmₑ (drop x) t) & (idlₑ σ ⁻¹)
     ◾ Tm-∘ₑ wk  (keep σ) t))
   (η (Tmₑ σ t))
   
