@@ -1,0 +1,22 @@
+
+Things to generally know:
+
+1. we need to begin theorems as:
+
+  \
+  \begin{theorem}
+
+   for some obscure reason
+
+2. We have all the Agda unicode characters in monospace code blocks, but
+   basically none of them in $$ latex blocks. In latex blocks we have to
+   use latex commands and symbols. Unfortunately, we can't teach latex
+   the unicode symbols with "newunicodechar",  because that wrecks the
+   unicode symbols inside Agda code blocks.
+
+3. We have pandoc-citeproc-preamble, and use the
+   .pandoc/citeproc-preable/default.latex to format citations.
+
+4. We should use flyspell-mode or ispell every now and then
+
+   

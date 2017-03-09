@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module PresheafExtension where
+module PresheafRefinement where
 
 open import Lib
 open import Syntax

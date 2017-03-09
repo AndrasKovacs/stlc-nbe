@@ -20,7 +20,7 @@ open import Conversion
 open import Normalization
 open import Completeness
 
-open import PresheafExtension
+open import PresheafRefinement
 open import Soundness
 open import Stability
 
