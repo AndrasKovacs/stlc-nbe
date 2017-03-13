@@ -70,7 +70,7 @@ assₑ (keep σ) (keep δ) (keep ν) = keep & assₑ σ δ ν
 ∈ₑ (keep σ) (vs v) = vs (∈ₑ σ v)
 
 ∈-idₑ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₑ idₑ v ≡ v
-∈-idₑ vz     = refl 
+∈-idₑ vz     = refl
 ∈-idₑ (vs v) = vs & ∈-idₑ v
 
 ∈-∘ₑ : ∀ {A Γ Δ Σ}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(v : A ∈ Σ) → ∈ₑ (σ ∘ₑ δ) v ≡ ∈ₑ δ (∈ₑ σ v)
@@ -170,7 +170,7 @@ idlₛₑ (keep σ) =
     ◾ assₛₑₑ idₛ σ wk ⁻¹
     ◾ (_ₛ∘ₑ wk) & idlₛₑ σ )
 
-idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
+idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ
 idrₑₛ ∙        = refl
 idrₑₛ (drop σ) = assₑₛₑ σ idₛ wk ⁻¹ ◾ dropₛ & idrₑₛ σ
 idrₑₛ (keep σ) = (_, var vz) & (assₑₛₑ σ idₛ wk ⁻¹ ◾ (_ₛ∘ₑ wk) & idrₑₛ σ)
@@ -297,7 +297,7 @@ mutual
     → Nfₑ (σ ∘ₑ δ) t ≡ Nfₑ δ (Nfₑ σ t)
   Nf-∘ₑ  σ δ (ne n)  = ne & Ne-∘ₑ σ δ n
   Nf-∘ₑ  σ δ (lam t) = lam & Nf-∘ₑ (keep σ) (keep δ) t
-    
+
   Ne-∘ₑ :
     ∀ {Γ Δ Σ A}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(t : Ne Σ A)
     → Neₑ (σ ∘ₑ δ) t ≡ Neₑ δ (Neₑ σ t)
@@ -319,12 +319,11 @@ data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
   η     : ∀ {A B}(t : Tm Γ (A ⇒ B))     →  t ~ lam (app (Tmₑ wk t) (var vz))
   β     : ∀ {A B}(t : Tm (Γ , A) B) t'  →  app (lam t) t' ~ Tmₛ (idₛ , t') t
 
-  lam   : ∀ {A B}{t t' : Tm (Γ , A) B}      → t ~ t' →  lam t   ~ lam t'
-  app₁  : ∀ {A B}{f f' : Tm Γ (A ⇒ B)}{x}   → f ~ f' →  app f x ~ app f' x
-  app₂  : ∀ {A B}{f : Tm Γ (A ⇒ B)} {x x'}  → x ~ x' →  app f x ~ app f x'
-  ~refl : ∀ {A}{t : Tm Γ A}                 → t ~ t
-  _~⁻¹  : ∀ {A}{t t' : Tm Γ A}              → t ~ t' → t' ~ t
-  _~◾_  : ∀ {A}{t t' t'' : Tm Γ A}          → t ~ t' → t' ~ t'' → t ~ t''
+  lam   : ∀ {A B}{t t' : Tm (Γ , A) B}       → t ~ t' →  lam t   ~ lam t'
+  app   : ∀ {A B}{f f' : Tm Γ (A ⇒ B)}{a a'} → f ~ f' →  a ~ a' → app f a ~ app f' a'
+  ~refl : ∀ {A}{t : Tm Γ A}                  → t ~ t
+  _~⁻¹  : ∀ {A}{t t' : Tm Γ A}               → t ~ t' → t' ~ t
+  _~◾_  : ∀ {A}{t t' t'' : Tm Γ A}           → t ~ t' → t' ~ t'' → t ~ t''
 
 infix 3 _~_
 infixl 4 _~◾_
@@ -337,7 +336,7 @@ infix 6 _~⁻¹
     ◾ (λ x → Tmₑ (drop x) t) & (idrₑ σ ◾ idlₑ σ ⁻¹)
     ◾ Tm-∘ₑ wk  (keep σ) t))
   (η (Tmₑ σ t))
-  
+
 ~ₑ σ (β t t') =
   coe ((app (lam (Tmₑ (keep σ) t)) (Tmₑ σ t') ~_) &
     (Tm-ₑ∘ₛ (keep σ) (idₛ , Tmₑ σ t') t ⁻¹
@@ -346,8 +345,7 @@ infix 6 _~⁻¹
   (β (Tmₑ (keep σ) t) (Tmₑ σ t'))
 
 ~ₑ σ (lam t~t')       = lam (~ₑ (keep σ) t~t')
-~ₑ σ (app₁ t~t')      = app₁ (~ₑ σ t~t')
-~ₑ σ (app₂ t~t')      = app₂ (~ₑ σ t~t')
+~ₑ σ (app t~t' a~a')  = app (~ₑ σ t~t') (~ₑ σ a~a')
 ~ₑ σ ~refl            = ~refl
 ~ₑ σ (t~t' ~⁻¹)       = ~ₑ σ t~t' ~⁻¹
 ~ₑ σ (t~t' ~◾ t'~t'') = ~ₑ σ t~t' ~◾ ~ₑ σ t'~t''
@@ -357,7 +355,7 @@ infix 6 _~⁻¹
 mutual
   Tyᴺ : Ty → Con → Set
   Tyᴺ ι       Γ = Nf Γ ι
-  Tyᴺ (A ⇒ B) Γ =  
+  Tyᴺ (A ⇒ B) Γ =
     Σ (∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ) λ fᴺ →
     ∀ {Δ Σ}(σ : OPE Δ Γ)(δ : OPE Σ Δ) aᴺ → fᴺ (σ ∘ₑ δ) (Tyᴺₑ δ aᴺ) ≡ Tyᴺₑ δ (fᴺ σ aᴺ)
 
@@ -402,7 +400,7 @@ Conᴺ-idₑ (σᴺ , t) = _,_ & Conᴺ-idₑ σᴺ ⊗ Tyᴺ-idₑ t
 
 Conᴺ-∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(ν : Conᴺ Ξ Σ)
-  → Conᴺₑ (σ ∘ₑ δ) ν ≡ Conᴺₑ δ (Conᴺₑ σ ν)  
+  → Conᴺₑ (σ ∘ₑ δ) ν ≡ Conᴺₑ δ (Conᴺₑ σ ν)
 Conᴺ-∘ₑ σ δ ∙       = refl
 Conᴺ-∘ₑ σ δ (ν , t) = _,_ & Conᴺ-∘ₑ σ δ ν ⊗ Tyᴺ-∘ₑ t σ δ
 
@@ -464,7 +462,7 @@ Tmₑᴺ :
 Tmₑᴺ σ (var v)   δᴺ = ∈ₑᴺ σ v δᴺ
 Tmₑᴺ σ (lam t)   δᴺ = ⇒ᴺ≡ λ ν aᴺ →
   Tmₑᴺ (keep σ) t (Conᴺₑ ν δᴺ , aᴺ) ◾ (λ x → Tmᴺ t (x , aᴺ)) & OPEᴺ-nat σ ν δᴺ
-Tmₑᴺ σ (app f a) δᴺ rewrite Tmₑᴺ σ f δᴺ | Tmₑᴺ σ a δᴺ = refl 
+Tmₑᴺ σ (app f a) δᴺ rewrite Tmₑᴺ σ f δᴺ | Tmₑᴺ σ a δᴺ = refl
 
 -- Subᴺ {Γ}{Δ} σ : PSh(Conᴺ Γ, Conᴺ Δ)
 --------------------------------------------------------------------------------
@@ -480,7 +478,7 @@ Subᴺ-ₛ∘ₑ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
   → Subᴺ (σ ₛ∘ₑ δ) νᴺ ≡ Subᴺ σ (OPEᴺ δ νᴺ)
 Subᴺ-ₛ∘ₑ ∙       δ νᴺ = refl
-Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ  
+Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ
 
 ∈ₛᴺ :
  ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
@@ -559,7 +557,7 @@ data _≈*_ {Γ} : ∀ {Δ} → Sub Γ Δ → Conᴺ Δ Γ → Set where
 
 _~≈◾_ : ∀ {Γ A}{t t'}{tᴺ : Tyᴺ A Γ} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
 _~≈◾_ {A = ι}     p q = p ~◾ q
-_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app₁ (~ₑ σ p) ~≈◾ q σ a≈aᴺ
+_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app (~ₑ σ p) ~refl ~≈◾ q σ a≈aᴺ
 
 ⟦∈⟧ : ∀ {Γ Δ A}(v : A ∈ Γ){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈* δᴺ → ∈ₛ σ v ≈ ∈ᴺ v δᴺ
 ⟦∈⟧ vz     (σ≈δᴺ , t≈tᴺ) = t≈tᴺ
@@ -584,7 +582,7 @@ mutual
   u≈ : ∀ {Γ A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
   u≈ {A = ι}     n = ~refl
   u≈ {A = A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
-    rewrite ⌜⌝Ne-nat σ n ⁻¹ = app₂ (q≈ a≈aᴺ) ~≈◾ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
+    rewrite ⌜⌝Ne-nat σ n ⁻¹ = app ~refl (q≈ a≈aᴺ) ~≈◾ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
 
 u≈*  : ∀ {Γ} → idₛ {Γ} ≈* uConᴺ
 u≈* {∙}     = ∙
@@ -599,14 +597,13 @@ complete t = coe ((_~ ⌜ qᴺ (Tmᴺ t uConᴺ) ⌝) & Tm-idₛ t) (q≈ (⟦Tm
   ◾ (λ x → proj₁ x idₑ aᴺ) &
         (Tmₑᴺ wk t (Conᴺₑ ν σ , aᴺ)
       ◾ Tmᴺ t & OPEᴺ-idₑ (Conᴺₑ ν σ)
-      ◾ Tmᴺ-nat t ν σ) ⁻¹                                 
-⟦~⟧ (β t t')            σ = (λ x → Tmᴺ t (x , Tmᴺ t' σ)) & (Conᴺ-idₑ σ ◾ Subᴺ-idₛ σ ⁻¹) ◾ Tmₛᴺ (idₛ , t') t σ ⁻¹
-⟦~⟧ (lam t~t')          σ = ⇒ᴺ≡ λ {Σ} ν aᴺ → ⟦~⟧ t~t' (Conᴺₑ ν σ , aᴺ)
-⟦~⟧ (app₁ {x = x} t~t') σ = (λ f → proj₁ f idₑ (Tmᴺ x σ)) & ⟦~⟧ t~t' σ
-⟦~⟧ (app₂ {f = f} t~t') σ = (λ x → proj₁ (Tmᴺ f σ) idₑ x ) & ⟦~⟧ t~t' σ
-⟦~⟧ ~refl               σ = refl
-⟦~⟧ (t'~t ~⁻¹)          σ = ⟦~⟧ t'~t σ ⁻¹
-⟦~⟧ (t~t' ~◾ t'~t'')    σ = ⟦~⟧ t~t' σ ◾ ⟦~⟧ t'~t'' σ
+      ◾ Tmᴺ-nat t ν σ) ⁻¹
+⟦~⟧ (β t t')         σ = (λ x → Tmᴺ t (x , Tmᴺ t' σ)) & (Conᴺ-idₑ σ ◾ Subᴺ-idₛ σ ⁻¹) ◾ Tmₛᴺ (idₛ , t') t σ ⁻¹
+⟦~⟧ (lam t~t')       σ = ⇒ᴺ≡ λ {Σ} ν aᴺ → ⟦~⟧ t~t' (Conᴺₑ ν σ , aᴺ)
+⟦~⟧ (app t~t' a~a')  σ = (λ f a → proj₁ f idₑ a) & ⟦~⟧ t~t' σ ⊗ ⟦~⟧ a~a' σ
+⟦~⟧ ~refl            σ = refl
+⟦~⟧ (t'~t ~⁻¹)       σ = ⟦~⟧ t'~t σ ⁻¹
+⟦~⟧ (t~t' ~◾ t'~t'') σ = ⟦~⟧ t~t' σ ◾ ⟦~⟧ t'~t'' σ
 
 sound : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
 sound t~t' = qᴺ & ⟦~⟧ t~t' uConᴺ

@@ -31,7 +31,7 @@ data _≈*_ {Γ} : ∀ {Δ} → Sub Γ Δ → Conᴺ Δ Γ → Set where
 
 _~≈◾_ : ∀ {Γ A}{t t'}{tᴺ : Tyᴺ A Γ} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
 _~≈◾_ {A = ι}     p q = p ~◾ q
-_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app₁ (~ₑ σ p) ~≈◾ q σ a≈aᴺ
+_~≈◾_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app (~ₑ σ p) ~refl ~≈◾ q σ a≈aᴺ
 
 ⟦∈⟧ : ∀ {Γ Δ A}(v : A ∈ Γ){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈* δᴺ → ∈ₛ σ v ≈ ∈ᴺ v δᴺ
 ⟦∈⟧ vz     (σ≈δᴺ , t≈tᴺ) = t≈tᴺ
@@ -56,7 +56,7 @@ mutual
   u≈ : ∀ {Γ A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
   u≈ {A = ι}     n = ~refl
   u≈ {A = A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
-    rewrite ⌜⌝Ne-nat σ n ⁻¹ = app₂ (q≈ a≈aᴺ) ~≈◾ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
+    rewrite ⌜⌝Ne-nat σ n ⁻¹ = app ~refl (q≈ a≈aᴺ) ~≈◾ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
 
 u≈*  : ∀ {Γ} → idₛ {Γ} ≈* uConᴺ
 u≈* {∙}     = ∙
