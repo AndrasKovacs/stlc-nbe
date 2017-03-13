@@ -14,7 +14,7 @@ data Sub (Γ : Con) : Con → Set where
 
 _ₛ∘ₑ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → OPE Γ Δ → Sub Γ Σ
 ∙       ₛ∘ₑ δ = ∙
-(σ , t) ₛ∘ₑ δ = σ ₛ∘ₑ δ , Tmₑ δ t
+(σ , t) ₛ∘ₑ δ = (σ ₛ∘ₑ δ) , Tmₑ δ t
 
 _ₑ∘ₛ_ : ∀ {Γ Δ Σ} → OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
 ∙      ₑ∘ₛ δ       = δ
@@ -35,7 +35,7 @@ keepₛ σ = dropₛ σ , var vz
 -- Action on ∈ and Tm
 ∈ₛ : ∀ {A Γ Δ} → Sub Γ Δ → A ∈ Δ → Tm Γ A
 ∈ₛ (σ , t) vz     = t
-∈ₛ (σ  , t)(vs v) = ∈ₛ σ v
+∈ₛ (σ , t) (vs v) = ∈ₛ σ v
 
 Tmₛ : ∀ {A Γ Δ} → Sub Γ Δ → Tm Δ A → Tm Γ A
 Tmₛ σ (var v)   = ∈ₛ σ v

@@ -70,8 +70,8 @@ Dec A = A ⊎ (A → ⊥)
 
 postulate
   fext  : ∀{i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x}
-          → ((x : A) → f x  ≡ g x) → _≡_ f g
+          → ((x : A) → f x ≡ g x) → f ≡ g
           
   fexti : ∀{i j}{A : Set i}{B : A → Set j}{f g : {x : A} → B x}
-          → ((x : A) → f {x} ≡ g {x}) → _≡_ {A = {x : A} → B x} f g
+          → ((x : A) → f {x} ≡ g {x}) → (λ {x} → f {x}) ≡ (λ {x} → g {x})
 

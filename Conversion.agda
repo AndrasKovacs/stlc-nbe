@@ -9,15 +9,14 @@ open import Substitution
 open import NormalForm
 
 data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
-  η     : ∀ {A B}(t : Tm Γ (A ⇒ B))     →  t ~ lam (app (Tmₑ wk t) (var vz))
-  β     : ∀ {A B}(t : Tm (Γ , A) B) t'  →  app (lam t) t' ~ Tmₛ (idₛ , t') t
-
-  lam   : ∀ {A B}{t t' : Tm (Γ , A) B}      → t ~ t' →  lam t   ~ lam t'
-  app₁  : ∀ {A B}{f f' : Tm Γ (A ⇒ B)}{x}   → f ~ f' →  app f x ~ app f' x
-  app₂  : ∀ {A B}{f : Tm Γ (A ⇒ B)} {x x'}  → x ~ x' →  app f x ~ app f x'
-  ~refl : ∀ {A}{t : Tm Γ A}                 → t ~ t
-  _~⁻¹  : ∀ {A}{t t' : Tm Γ A}              → t ~ t' → t' ~ t
-  _~◾_  : ∀ {A}{t t' t'' : Tm Γ A}          → t ~ t' → t' ~ t'' → t ~ t''
+  η     : ∀ {A B}(t : Tm Γ (A ⇒ B))          →  t ~ lam (app (Tmₑ wk t) (var vz))
+  β     : ∀ {A B}(t : Tm (Γ , A) B) t'       →  app (lam t) t' ~ Tmₛ (idₛ , t') t
+  
+  lam   : ∀ {A B}{t t' : Tm (Γ , A) B}       → t ~ t' →  lam t ~ lam t'
+  app   : ∀ {A B}{f f' : Tm Γ (A ⇒ B)}{a a'} → f ~ f' →  a ~ a' →  app f a ~ app f' a'
+  ~refl : ∀ {A}{t : Tm Γ A}                  → t ~ t
+  _~⁻¹  : ∀ {A}{t t' : Tm Γ A}               → t ~ t' → t' ~ t
+  _~◾_  : ∀ {A}{t t' t'' : Tm Γ A}           → t ~ t' → t' ~ t'' → t ~ t''
 
 infix 3 _~_
 infixl 4 _~◾_
@@ -39,8 +38,7 @@ infix 6 _~⁻¹
   (β (Tmₑ (keep σ) t) (Tmₑ σ t'))
 
 ~ₑ σ (lam t~t')       = lam (~ₑ (keep σ) t~t')
-~ₑ σ (app₁ t~t')      = app₁ (~ₑ σ t~t')
-~ₑ σ (app₂ t~t')      = app₂ (~ₑ σ t~t')
+~ₑ σ (app t~t' x~x')  = app (~ₑ σ t~t') (~ₑ σ x~x')
 ~ₑ σ ~refl            = ~refl
 ~ₑ σ (t~t' ~⁻¹)       = ~ₑ σ t~t' ~⁻¹
 ~ₑ σ (t~t' ~◾ t'~t'') = ~ₑ σ t~t' ~◾ ~ₑ σ t'~t''
