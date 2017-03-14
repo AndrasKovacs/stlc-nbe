@@ -351,7 +351,7 @@ Elements of `OPE Γ Δ` express that `Δ` can be obtained from `Γ` by dropping 
 
 Some choices can be made here. C. Coquand [@coquand1992proof] uses an explicit identity embedding constructor with type `(∀ {Γ} → OPE Γ Γ)`{.agda} instead of our `∙`. This slightly simplifies some proofs and slightly complicates others. It does not have propositionally unique identity embeddings^[Since wrapping the identity embedding with any number of `keep`-s also yields identity embeddings.], but overall the choice between this definition and ours is fairly arbitrary.
 
-An alternative solution is using *renamings*. Renamings are essentially substitutions containing only variables. They can fulfill the same role as order-preserving embeddings. However, they are larger than necessary, since they can represent permutations of context entries as well, which we have no need for.
+An alternative solution is using *renamings*. Renamings are essentially substitutions containing only variables. They can fulfill the same role as order-preserving embeddings. However, they are larger than necessary, since they can represent permutations contexts as well, which we have no need for.
 
 Embeddings have action on variables and terms, reconstructing them in larger contexts. We denote embedding by lowercase "e" subscripts:
 
@@ -450,17 +450,58 @@ The conversion relation is given as:
       _~◾_  : t ~ t' → t' ~ t'' → t ~ t''
 ~~~
 
-`η` and `β` are the actual conversion rules. We push `t` under a lambda with `(Tmₑ wk)`{.agda} in `η`, and use single substitution for `β`. The rest are rules for congruence (`lam`, `app₁`, `app₂`) and equivalence closure (`~refl`, `_~⁻¹`{.agda}, `_~◾_`{.agda}).
-
+`η` and `β` are the actual conversion rules. We push `t` under a lambda with `(Tmₑ wk)`{.agda} in `η`, and use single substitution for `β`. The rest are rules for congruence (`lam`, `app`) and equivalence closure (`~refl`, `_~⁻¹`{.agda}, `_~◾_`{.agda}).
 
 
 # Normalization
 
-TODO
+In this chapter we implement normalization and prove its correctness.
 
-## Preliminaries: Standard Model
+## Preliminaries: Standard and Enriched Models
 
-TODO
+Clearly, STLC is a small fragment of Agda, so we should be able to interpret the syntax back to Agda types and constructions in a straightforward way. From a semantic viewpoint, the most straightforward interpretation of the syntax is called the *standard model*. From an operational viewpoint, the standard model is just a well-typed interpreter [@augustsson1999exercise] for STLC as an embedded language. It is implemented as follows:
+
+~~~{.agda}
+    Tyˢ : Ty → Set
+    Tyˢ ι       = ⊥
+    Tyˢ (A ⇒ B) = Tyˢ A → Tyˢ B
+    
+    Conˢ : Con → Set
+    Conˢ ∙       = ⊤
+    Conˢ (Γ , A) = Conˢ Γ × Tyˢ A
+    
+    ∈ˢ : ∀ {Γ A} → A ∈ Γ → (Conˢ Γ → Tyˢ A)
+    ∈ˢ vz     Γˢ = proj₂ Γˢ
+    ∈ˢ (vs v) Γˢ = ∈ˢ v (proj₁ Γˢ)
+    
+    Tmˢ : ∀ {Γ A} → Tm Γ A → (Conˢ Γ → Tyˢ A)
+    Tmˢ (var v)   Γˢ = ∈ˢ v Γˢ
+    Tmˢ (lam t)   Γˢ = λ aˢ → Tmˢ t (Γˢ , aˢ)
+    Tmˢ (app f a) Γˢ = Tmˢ f Γˢ (Tmˢ a Γˢ)
+~~~
+
+Traditionally, notation for semantics use double brackets, e. g. the interpretation of types would look like this:
+
+~~~{.agda}
+    ⟦_⟧ : Ty → Set
+    ⟦ ι     ⟧ = ⊥
+    ⟦ A ⇒ B ⟧ = ⟦ A ⟧ → ⟦ B ⟧
+~~~
+
+We instead opt for notating semantic interpretations with superscripts on type constructors. Agda does not yet have convenient overloading support, so we have to distinguish different constructions (terms or types, etc.) and different models in any case. Therefore it makes sense to just reuse the names of types in the syntax, and distinguish different models by different superscripts.
+
+As to the implementation of the model: we interpret the base type with the empty type, and functions as functions. Contexts are interpreted as lists of semantic values. Terms are interpreted as functions from semantic contexts to semantic types. Now, normalizing `(Tmˢ (lam (var vz)) tt)`{.agda} yields the `(λ aˢ → aˢ)`{.agda} Agda term, so indeed we interpret a syntactic identity function with a metatheoretic identity function.
+
+The standard model already has a key feature of NbE: it uses metatheoretical functions for evaluation. However, the standard model does not allow one to go back to syntax from semantics. If we have an `(f : Aˢ → Bˢ)`{.agda} semantic function, all we can do with it is to apply it to an argument and extract a `Bˢ`. The idea of NbE is to add extra structure to semantic types which allows one to get back to syntax, moreover, to a subset of syntax containing only normal terms.
+
+Adding progressively more structure to models allows us to prove more about the syntax. The standard model yields a simple proof of soundness, namely that there is no term with base type in the empty context:
+
+~~~{.agda}
+    sound : Tm ∙ ι → ⊥
+    sound t = Tmˢ t tt
+~~~
+
+*Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic]. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. In this chapter, we will present Kripke and presheaf models in this order.
 
 ## Normalization with a Kripke Model
 
@@ -474,7 +515,7 @@ TODO
 
 TODO
 
-## Naturality Proofs
+## Presheaf Model
 
 TODO
 
