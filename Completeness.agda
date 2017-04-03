@@ -11,7 +11,7 @@ open import Substitution
 open import Conversion
 
 _≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
-_≈_ {ι}        t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝
+_≈_ {ι}        t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝Nf
 _≈_ {A ⇒ B}{Γ} t tᴺ = ∀ {Δ}(σ : OPE Δ Γ){a aᴺ} → a ≈ aᴺ → app (Tmₑ σ t) a ≈ tᴺ σ aᴺ
 
 infix 3 _≈_ _≈ᶜ_
@@ -55,7 +55,7 @@ Tm≈ (app f a) {σ} {δ} σ≈δᴺ
   rewrite Tm-idₑ (Tmₛ σ f) ⁻¹ = Tm≈ f σ≈δᴺ idₑ (Tm≈ a σ≈δᴺ)
 
 mutual
-  q≈ : ∀ {Γ A}{t}{tᴺ : Tyᴺ A Γ} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝
+  q≈ : ∀ {Γ A}{t}{tᴺ : Tyᴺ A Γ} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝Nf
   q≈ {A = ι}     t≈tᴺ = t≈tᴺ
   q≈ {A = A ⇒ B} t≈tᴺ = η _ ~◾ lam (q≈ (t≈tᴺ wk (u≈ (var vz))))
 
@@ -68,6 +68,6 @@ uᶜ≈  : ∀ {Γ} → idₛ {Γ} ≈ᶜ uᶜᴺ
 uᶜ≈ {∙}     = ∙
 uᶜ≈ {Γ , A} = ≈ᶜₑ wk uᶜ≈ , u≈ (var vz)
 
-complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝
-complete t = coe ((_~ ⌜ qᴺ (Tmᴺ t uᶜᴺ) ⌝) & Tm-idₛ t) (q≈ (Tm≈ t uᶜ≈))
+complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝Nf
+complete t = coe ((_~ ⌜ qᴺ (Tmᴺ t uᶜᴺ) ⌝Nf) & Tm-idₛ t) (q≈ (Tm≈ t uᶜ≈))
 

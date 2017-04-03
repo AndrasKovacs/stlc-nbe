@@ -19,14 +19,14 @@ stab∈ (vs v) =
   ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
 
 mutual
-  stab : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝ ≡ n
+  stab : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝Nf ≡ n
   stab (ne n)  = stabNe n
   stab (lam n) = lam & stab n
 
   stabNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
   stabNe (var v)   = stab∈ v
   stabNe (app f a) = 
-      (λ x → x idₑ (Tmᴺ ⌜ a ⌝ uᶜᴺ)) & stabNe f
+      (λ x → x idₑ (Tmᴺ ⌜ a ⌝Nf uᶜᴺ)) & stabNe f
     ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stab a
     ◾ (λ x → uᴺ (app x a)) & Ne-idₑ f
 

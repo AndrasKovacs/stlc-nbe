@@ -53,20 +53,20 @@ mutual
 --------------------------------------------------------------------------------
 
 mutual
-  ⌜_⌝ : ∀ {Γ A} → Nf Γ A → Tm Γ A
-  ⌜ ne n  ⌝ = ⌜ n ⌝Ne
-  ⌜ lam t ⌝ = lam ⌜ t ⌝
+  ⌜_⌝Nf : ∀ {Γ A} → Nf Γ A → Tm Γ A
+  ⌜ ne n  ⌝Nf = ⌜ n ⌝Ne
+  ⌜ lam t ⌝Nf = lam ⌜ t ⌝Nf
 
   ⌜_⌝Ne : ∀ {Γ A} → Ne Γ A → Tm Γ A
   ⌜ var v   ⌝Ne = var v
-  ⌜ app n t ⌝Ne = app ⌜ n ⌝Ne ⌜ t ⌝
+  ⌜ app n t ⌝Ne = app ⌜ n ⌝Ne ⌜ t ⌝Nf
 
 mutual
   ⌜⌝Ne-nat : ∀ {Γ Δ A}(σ : OPE Δ Γ)(n : Ne Γ A) → ⌜ Neₑ σ n ⌝Ne ≡ Tmₑ σ ⌜ n ⌝Ne
   ⌜⌝Ne-nat σ (var v)   = refl
   ⌜⌝Ne-nat σ (app f a) = app & ⌜⌝Ne-nat σ f ⊗ ⌜⌝Nf-nat σ a
 
-  ⌜⌝Nf-nat : ∀ {Γ Δ A}(σ : OPE Δ Γ)(n : Nf Γ A) → ⌜ Nfₑ σ n ⌝ ≡ Tmₑ σ ⌜ n ⌝
+  ⌜⌝Nf-nat : ∀ {Γ Δ A}(σ : OPE Δ Γ)(n : Nf Γ A) → ⌜ Nfₑ σ n ⌝Nf ≡ Tmₑ σ ⌜ n ⌝Nf
   ⌜⌝Nf-nat σ (ne n)  = ⌜⌝Ne-nat σ n
   ⌜⌝Nf-nat σ (lam n) = lam & ⌜⌝Nf-nat (keep σ) n
 

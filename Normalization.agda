@@ -30,7 +30,7 @@ Conᴺₑ σ (Γᴺ , tᴺ) = Conᴺₑ σ Γᴺ , Tyᴺₑ σ tᴺ
 Tmᴺ : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
 Tmᴺ (var v)   Γᴺ = ∈ᴺ v Γᴺ
 Tmᴺ (lam t)   Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ)
-Tmᴺ (app f x) Γᴺ = Tmᴺ f Γᴺ idₑ (Tmᴺ x Γᴺ)
+Tmᴺ (app f a) Γᴺ = Tmᴺ f Γᴺ idₑ (Tmᴺ a Γᴺ)
 
 mutual
   qᴺ : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
@@ -42,8 +42,8 @@ mutual
   uᴺ {A ⇒ B} n = λ σ aᴺ → uᴺ (app (Neₑ σ n) (qᴺ aᴺ))
 
 uᶜᴺ : ∀ {Γ} → Conᴺ Γ Γ
-uᶜᴺ {∙}      = ∙
-uᶜᴺ {Γ , tᴺ} = Conᴺₑ wk uᶜᴺ , uᴺ (var vz)
+uᶜᴺ {∙}     = ∙
+uᶜᴺ {Γ , A} = Conᴺₑ wk uᶜᴺ , uᴺ (var vz)
 
 nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
 nf t = qᴺ (Tmᴺ t uᶜᴺ)
