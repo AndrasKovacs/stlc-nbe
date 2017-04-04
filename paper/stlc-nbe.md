@@ -1,6 +1,6 @@
- <!-- 
+ <!--
 pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe.md -o stlc-nbe.latex
-; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex 
+; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex
 -->
 
 ---
@@ -30,10 +30,10 @@ header-includes:
    - \newtheorem{definition}{Definition}
    - \renewenvironment{Shaded}{\setstretch{1.0}}{}
 
-title: 
+title:
   A Machine-Checked Correctness Proof of Normalization by Evaluation
   for Simply Typed Lambda Calculus
-author: 
+author:
 - 'Author: András Kovács'
 - 'Advisor: Ambrus Kaposi'
 date: Budapest, 2017
@@ -59,7 +59,7 @@ Additionally, we may require stability, which establishes that there is no redun
 
 * *Stability*: normalization acts as the identity function on normal terms.
 
-[@sec:metatheory] describes the metatheory we work in. In [@sec:syntax], we formalize the syntax of STLC along with $\beta\eta$-conversion. [@sec:normalization] first presents the normalization function, then proceeds with its correctness proofs. In [@sec:variations] we describe two alternative formalizations, one with more efficient evaluation and one with more concise correctness proofs. 
+[@sec:metatheory] describes the metatheory we work in. In [@sec:syntax], we formalize the syntax of STLC along with $\beta\eta$-conversion. [@sec:normalization] first presents the normalization function, then proceeds with its correctness proofs. In [@sec:variations] we describe two alternative formalizations, one with more efficient evaluation and one with more concise correctness proofs. We discuss the results and possible future research in the final chapter.
 
 ## Related Work
 
@@ -101,7 +101,7 @@ Two essential artifacts in Agda code are *inductive type definitions* and *funct
 ~~~{.agda}
     data ℕ : Set where
       zero : ℕ
-      suc  : ℕ → ℕ 
+      suc  : ℕ → ℕ
 ~~~
 
 Inductive definitions may have *parameters* and *indices*. The former are implicitly quantified over the term constructors, but must be uniform in the constructors' return types. The latter must be  explicitly quantified in term constructors, but are allowed to vary. The definition for length-indexed vectors exhibits both:
@@ -118,6 +118,18 @@ In a type constructor declaration, parameters are listed left to the colon, whil
     cons : ∀ {n} → A → Vec A n → Vec A (suc n)
 ~~~
 
+Additionally, Agda has records, providing syntactic sugar and namespace management for iterated $\Sigma$ types. For example semigroups can be defined as elements of the following record type:
+
+~~~{.agda}
+    record Semigroup : Set₁ where
+      field
+        S     : Set
+        _⊗_   : M → M → M
+        assoc : ∀ m₁ m₂ m₃ → (m₁ ⊗ (m₂ ⊗ m₃)) ≡ ((m₁ ⊗ m₂) ⊗ m₃)
+~~~
+
+Elements of `Semigroup` can de given as `record {S = ...; _⊗_ = ...; assoc = ...}`{.agda}. Also, whenever we have some `(sg : Semigroup)`{.agda} in context, we can bring all of its fields into the current namespace by `open Semigroup sg`{.agda}.
+
 *Function definitions* are given by pattern matching. In Agda, pattern matching implements branching evaluation as it is usual in functional languages, but it also refines type indices based on particular selected cases. The main practical difference between parameters and indices is that we can can gain information about indices by pattern matching, while we can't infer anything about parameters just by having a parameterized term.
 
 For example, in the following definition of concatenation for `Vec`, the result type is refined depending on whether the first argument is empty:
@@ -126,7 +138,7 @@ For example, in the following definition of concatenation for `Vec`, the result 
     _+_ : ℕ → ℕ → ℕ
     zero  + m = m
     suc n + m = suc (n + m)
-    
+
     _++_ : ∀ {A n m} → Vec A n → Vec A m → Vec A (n + m)
     nil       ++ ys = ys
     cons x xs ++ ys = cons x (xs ++ ys)
@@ -166,8 +178,8 @@ We also postulate function extensionality, for functions with both implicit and 
 Note that the types of `f` and `g` are left implicit above, in accordance with out notational liberties. In full Agda we write:
 
 ~~~{.agda}
-    fext : 
-      ∀ {i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x} 
+    fext :
+      ∀ {i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x}
       → ((x : A) → f x ≡ g x) → f ≡ g
 ~~~
 
@@ -179,7 +191,7 @@ Our style of equational reasoning deviates from the standard library. First, we 
 ~~~{.agda}
     _◾_ : x ≡ y → y ≡ z → x ≡ z -- transitivity
     refl ◾ refl = refl
-    
+
     _⁻¹ : x ≡ y → y ≡ x -- symmetry
     refl ⁻¹ = refl
 ~~~
@@ -240,8 +252,7 @@ In formal development we do not use this style and instead keep the intermediate
 
 This is because in an interactive environment one can step through the intermediate points fairly easily, and writing them out adds significant visual clutter. However, we will use informal equational reasoning when it aids explanation.
 
-We also borrow `Σ` (dependent sum), `⊤` (unit type), `⊥` (empty type) and `_⊎_`{.agda} (disjoint union) from the standard library. Elements of `Σ` are constructed as `(a , b)`{.agda} pairs, and the projections are `proj₁` and `proj₂`. `⊤` has `tt` ("trivially true") as sole element. Injection into disjoint unions is done with `inj₁` and `inj₂`. The *ex falso* principle is named `⊥-elim`, and we have `⊥-elim : {A : Set} → ⊥ → A`{.agda}. 
-
+We also borrow `Σ` (dependent sum), `⊤` (unit type), `⊥` (empty type) and `_⊎_`{.agda} (disjoint union) from the standard library. Elements of `Σ` are constructed as `(a , b)`{.agda} pairs, and the projections are `proj₁` and `proj₂`. `A × B` is defined in terms of `Σ` as the non-dependent pair type. `⊤` has `tt` ("trivially true") as sole element. Injection into disjoint unions is done with `inj₁` and `inj₂`. The *ex falso* principle is named `⊥-elim`, with type `{A : Set} → A → A`{.agda}.
 
 # Syntax {#sec:syntax}
 
@@ -257,15 +268,15 @@ The complete definition is the following:
     data Ty : Set where
       ι   : Ty
       _⇒_ : Ty → Ty → Ty
-    
+
     data Con : Set where
       ∙   : Con
       _,_ : Con → Ty → Con
-    
+
     data _∈_ (A : Ty) : Con → Set where
       vz : A ∈ (Γ , A)
       vs : A ∈ Γ → A ∈ (Γ , B)
-    
+
     data Tm Γ : Ty → Set where
       var : A ∈ Γ → Tm Γ A
       lam : Tm (Γ , A) B → Tm Γ (A ⇒ B)
@@ -286,7 +297,7 @@ Th presented syntax is *intrinsic*. In other words, only the well-typed terms ar
    data Tm : Set where -- omitted constructors
    data _⊢_∈_ (Γ : Con) → Tm → Ty → Set where -- omitted constructors
 ~~~
-Now, `Γ ⊢ t ∈ A`{.agda} expresses that the preterm `t` is well-formed and has type `A` in context `Γ`. 
+Now, `Γ ⊢ t ∈ A`{.agda} expresses that the preterm `t` is well-formed and has type `A` in context `Γ`.
 
 There are advantages and disadvantages to both intrinsic and extrinsic definitions. With intrinsic syntax, well-formedness and type preservation come for free. On the other hand, proofs and computations which do not depend on types are easier to formulate with preterms. In the case of STLC, the type system is simple enough so that carrying around type information never becomes burdensome, so in this setting intrinsic definitions are all-around more convenient. For polymorphic systems such as System $F$, intrinsic typing introduces significant bureaucratic overhead, by tagging terms with type coercions; see Benton et al. [@benton2012strongly] for approaches to dealing with them. For extrinsic syntax, powerful automation for reasoning about substitution is available in Coq, allowing spectacularly compact proofs [@autosubst]. It remains to be seen if it can be practically adapted to intrinsic syntax. For dependent type theories, intrinsic typing with quotient inductive-inductive definitions seems to be most promising, as it requires a relatively compact set of rules [@tt-in-tt], in contrast to extrinsic approaches which suffer from a veritable explosion of well-formedness conditions and congruence rules.
 
@@ -326,7 +337,7 @@ Embeddings have action on variables and terms, reconstructing them in larger con
     ∈ₑ (drop σ) v      = vs (∈ₑ σ v)
     ∈ₑ (keep σ) vz     = vz
     ∈ₑ (keep σ) (vs v) = vs (∈ₑ σ v)
-    
+
     Tmₑ : OPE Γ Δ → Tm Δ A → Tm Γ A
     Tmₑ σ (var v)   = var (∈ₑ σ v)
     Tmₑ σ (lam t)   = lam (Tmₑ (keep σ) t)
@@ -392,10 +403,10 @@ There is a canonical injection `⌜_⌝ᵒᵖᵉ`{.agda} from `OPE` to `Sub`:
 ~~~{.agda}
     dropₛ : Sub Γ Δ → Sub (Γ , A) Δ
     dropₛ σ = σ ₛ∘ₑ wk
-    
+
     keepₛ : Sub Γ Δ → Sub (Γ , A) (Δ , A)
     keepₛ σ = dropₛ σ , var vz
-    
+
     ⌜_⌝ᵒᵖᵉ : OPE Γ Δ → Sub Γ Δ
     ⌜ ∙      ⌝ᵒᵖᵉ = ∙
     ⌜ drop σ ⌝ᵒᵖᵉ = dropₛ ⌜ σ ⌝ᵒᵖᵉ
@@ -408,7 +419,7 @@ We note that `keepₛ` is the needed operation for pushing substitutions under b
     ∈ₛ : Sub Γ Δ → A ∈ Δ → Tm Γ A
     ∈ₛ (σ , t) vz     = t
     ∈ₛ (σ , t) (vs v) = ∈ₛ σ v
-    
+
     Tmₛ : Sub Γ Δ → Tm Δ A → Tm Γ A
     Tmₛ σ (var v)   = ∈ₛ σ v
     Tmₛ σ (lam t)   = lam (Tmₛ (keepₛ σ) t)
@@ -424,7 +435,7 @@ We note that `keepₛ` is the needed operation for pushing substitutions under b
 ~~~
 
 Single substitution with a `(t : Tm Γ A)`{.agda} term is given by `(idₛ , t)`{.agda}. This assigns the `t` term to the zeroth de Bruijn variable and leaves all other variables unchanged.
-   
+
 
 [^bignote]: The immediate reason for not naming `∈ₛ` simply "lookup" is that we will need several different lookup functions for various purposes. For any sizable formal development, naming schemes eventually emerge, for better or worse. The author has found that uniformly encoding salient information about types of operations in their names is worthwhile to do. It is also not easy to hit the right level of abstraction; too little and we repeat ourselves too much or neglect to include known structures, but too much abstraction may cause the project to be less accessible and often also less convenient to develop in the first place.  Many of the operations and proofs here could be defined explicitly using categorical language, i. e. bundling together functors' actions on objects, morphisms and category laws in records, then projecting out required components. Our choice is to keep the general level of abstraction low for this development.
 
@@ -436,10 +447,10 @@ The conversion relation is given as:
     data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
       η     : t ~ lam (app (Tmₑ wk t) (var vz))
       β     : app (lam t) t' ~ Tmₛ (idₛ , t') t
-    
+
       lam   : t ~ t' → lam t ~ lam t'
       app   : f ~ f' → a ~ a' →  app f a ~ app f' a'
-      
+
       ~refl : t ~ t
       _~⁻¹  : t ~ t' → t' ~ t
       _~◾_  : t ~ t' → t' ~ t'' → t ~ t''
@@ -450,24 +461,24 @@ The conversion relation is given as:
 
 # Normalization {#sec:normalization}
 
-In this chapter we specify normal forms, then implement normalization and prove its correctness.
+In this chapter we specify normal forms and implement normalization. Then, we discuss Kripke models and how normalization can be expressed in terms of them.
 
 ## Normal terms
 
-Naturally, we need to know what normal forms are, if we are to normalize. Our definition is entirely standard: normal terms are either lambdas or *neutral* terms of base type, and neutral terms are variables applied to zero of more normal arguments:
+Our definition of normal forms is entirely standard: they are either lambdas or *neutral* terms of base type, and neutral terms are variables applied to zero of more normal arguments:
 
 ~~~{.agda}
     mutual
       data Nf (Γ : Con) : Ty → Set where
         ne  : Ne Γ ι → Nf Γ ι
         lam : Nf (Γ , A) B → Nf Γ (A ⇒ B)
-    
+
       data Ne (Γ : Con) : Ty → Set where
         var : A ∈ Γ → Ne Γ A
         app : Ne Γ (A ⇒ B) → Nf Γ A → Ne Γ B
 ~~~
 
-Agda allows us to overload `var`, `lam` and `app` for normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function type must in fact be lambdas. Only requiring $\beta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as 
+Agda allows us to overload `var`, `lam` and `app` for normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function type must in fact be lambdas. Only requiring $\beta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as
 
 ~~~{.agda}
     data Nf (Γ : Con) : (A : Ty) → Tm Γ A → Set
@@ -483,7 +494,7 @@ with the same construction as before except that it is a predicate on general te
 These are defined by straightforward mutual recursion.
 
 
-## Preliminaries: Standard and Enriched Models {#sec:models-intro}
+## Preliminaries: Models of STLC {#sec:models-intro}
 
 Clearly, STLC is a small fragment of Agda, so we should be able to interpret the syntax back to Agda types and constructions in a straightforward way. From a semantic viewpoint, the most straightforward interpretation of the syntax is called the *standard model*. From an operational viewpoint, the standard model is just a well-typed interpreter [@augustsson1999exercise] for STLC as an embedded language. It is implemented as follows:
 
@@ -491,15 +502,15 @@ Clearly, STLC is a small fragment of Agda, so we should be able to interpret the
     Tyˢ : Ty → Set
     Tyˢ ι       = ⊥
     Tyˢ (A ⇒ B) = Tyˢ A → Tyˢ B
-    
+
     Conˢ : Con → Set
     Conˢ ∙       = ⊤
     Conˢ (Γ , A) = Conˢ Γ × Tyˢ A
-    
+
     ∈ˢ : ∀ {Γ A} → A ∈ Γ → (Conˢ Γ → Tyˢ A)
     ∈ˢ vz     Γˢ = proj₂ Γˢ
     ∈ˢ (vs v) Γˢ = ∈ˢ v (proj₁ Γˢ)
-    
+
     Tmˢ : ∀ {Γ A} → Tm Γ A → (Conˢ Γ → Tyˢ A)
     Tmˢ (var v)   Γˢ = ∈ˢ v Γˢ
     Tmˢ (lam t)   Γˢ = λ aˢ → Tmˢ t (Γˢ , aˢ)
@@ -520,7 +531,7 @@ As to the implementation of the model: we interpret the base type with the empty
 
 The standard model already has a key feature of NbE: it uses metatheoretical functions for evaluation. However, the standard model does not allow one to go back to syntax from semantics. If we have an `(f : Aˢ → Bˢ)`{.agda} semantic function, all we can do with it is to apply it to an argument and extract a `Bˢ`. *Weak evaluation* of programs assumes that all variables are mapped to semantic values. This corresponds to the usual notion of program evaluation in common programming languages. In contrast, strong normalization requires reducing terms inside function bodies, under binders. Bound variables are not mapped to any semantic value, so they block evaluation. In STLC, variables block function application; in richer systems variables may block case analysis or elimination of inductively defined data as well. See [@abel2013normalization, pp. 12] for an overview for various approaches for implementing computation under binders.
 
-NbE adds additional structure to semantic types, internalizing computation with blocking variables, which allows one to get back to syntax, moreover, to a subset of syntax containing only normal terms. 
+NbE adds additional structure to semantic types, internalizing computation with blocking variables, which allows one to get back to syntax, moreover, to a subset of syntax containing only normal terms.
 
 Adding progressively more structure to models allows us to prove more properties about the syntax. The standard model yields a simple proof of consistency, namely that there is no term with base type in the empty context:
 
@@ -531,7 +542,7 @@ Adding progressively more structure to models allows us to prove more properties
 
 *Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below.
 
-| Model     | Computation            | Logical proof               |
+| Model     | Computation            | Yields proof of             |
 |:----------|:-----------------------|:----------------------------|
 | Standard  |  Type-safe interpreter | Consistency                 |
 | Kripke    |  Normalizer            | Completeness                |
@@ -539,12 +550,9 @@ Adding progressively more structure to models allows us to prove more properties
 
 : Overview of models {#tbl:models-table}
 
-## Normalization {#sec:normalization}
-
-First, we present the implementation in its entirety. Then, we briefly discuss Kripke models and how ours is a particular instance of them.
+## Implementation {#sec:norm-implementation}
 
 We denote the model for normalization with capital "N" superscript. The implementation follows a similar shape as the standard model. The key difference - from which others follow - is in the interpretation of functions:
-
 
 ~~~{.agda}
     Tyᴺ : Ty → Con → Set
@@ -563,13 +571,13 @@ then we also have
     fᴺ (wk {A}) : Tyᴺ A (Γ , A) → Tyᴺ B (Γ , A)
 ~~~
 
-The interpretations of contexts and variables are analogous to those in the standard model: contexts become lists of semantic values and variables look up semantic values from semantic contexts. However, we define semantic contexts inductively rather than recursively, for technical convenience. 
+The interpretations of contexts and variables are analogous to those in the standard model: contexts become lists of semantic values and variables look up semantic values from semantic contexts. However, we define semantic contexts inductively rather than recursively, for technical convenience.
 
 ~~~{.agda}
     data Conᴺ : Con → Con → Set where
       ∙   : Conᴺ ∙ Δ
       _,_ : Conᴺ Γ Δ → Tyᴺ A Δ → Conᴺ (Γ , A) Δ
-      
+
     ∈ᴺ : ∀ {Γ A} → A ∈ Γ → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
     ∈ᴺ vz     (Γᴺ , tᴺ) = tᴺ
     ∈ᴺ (vs v) (Γᴺ , _ ) = ∈ᴺ v Γᴺ
@@ -600,7 +608,7 @@ It witnesses transitivity for the embedding relation. Then, embeddings on semant
     Tyᴺₑ : OPE Δ Γ → Tyᴺ A Γ → Tyᴺ A Δ
     Tyᴺₑ {ι}     σ tᴺ = Nfₑ σ tᴺ
     Tyᴺₑ {A ⇒ B} σ tᴺ = λ δ aᴺ → tᴺ (σ ∘ₑ δ) aᴺ
-    
+
     Conᴺₑ : OPE Σ Δ → Conᴺ Γ Δ → Conᴺ Γ Σ
     Conᴺₑ σ ∙         = ∙
     Conᴺₑ σ (Γᴺ , tᴺ) = Conᴺₑ σ Γᴺ , Tyᴺₑ σ tᴺ
@@ -622,7 +630,7 @@ We still need a `quote` function to transform semantic terms to normal terms. We
       qᴺ : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
       qᴺ {ι}     tᴺ = tᴺ
       qᴺ {A ⇒ B} tᴺ = lam (qᴺ (tᴺ wk (uᴺ (var vz))))
-    
+
       uᴺ : ∀ {A Γ} → Ne Γ A → Tyᴺ A Γ
       uᴺ {ι}     n = ne n
       uᴺ {A ⇒ B} n = λ σ aᴺ → uᴺ (app (Neₑ σ n) (qᴺ aᴺ))
@@ -630,24 +638,104 @@ We still need a `quote` function to transform semantic terms to normal terms. We
     uᶜᴺ : ∀ {Γ} → Conᴺ Γ Γ
     uᶜᴺ {∙}     = ∙
     uᶜᴺ {Γ , A} = Conᴺₑ wk uᶜᴺ , uᴺ (var vz)
-    
+
     nf : ∀ {Γ A} → Tm Γ A → Nf Γ A
     nf t = qᴺ (Tmᴺ t uᶜᴺ)
 ~~~
 
-At first, it can be difficult to build a mental model of the operation of the algorithm. On the highest level, normalization alternates between evaluation and quoting: a term is first evaluated, then if it is a function, its semantic function is applied to a "blocking" input and we quote the result, which can be a semantic function again. This evaluate-quote alternation proceeds until the result is not a function but a base value. Note that although `qᴺ` does not directly call `Tmᴺ`, it does apply semantic functions, which may *internally* call `Tmᴺ`{.agda}. 
+At first, it can be difficult to build a mental model of the operation of the algorithm. On the highest level, normalization alternates between evaluation and quoting: a term is first evaluated, then if it is a function, its semantic function is applied to a "blocking" input and we quote the result, which can be a semantic function again. This evaluate-quote alternation proceeds until the result is not a function but a base value. Note that although `qᴺ` does not directly call `Tmᴺ`, it does apply semantic functions, which may *internally* call `Tmᴺ`{.agda}.
 
-In fact, this encapsulation of recursive `Tmᴺ` calls is a crucial detail which makes this whole definition structurally recursive and thus total. In the `(Tmᴺ (lam t) Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ))`{.agda} clause, the recursive `Tmᴺ`{.agda} call is evidently structural, and because it happens under a *metatheoretic* lambda, semantic functions can be applied to *any* value in any definition without ruining structurality.
+In fact, this encapsulation of recursive `Tmᴺ` calls is a crucial detail which makes this whole definition structurally recursive and thus total. In the `(Tmᴺ (lam t) Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ))`{.agda} clause, the recursive `Tmᴺ`{.agda} call is evidently structural, and because it happens under a *metatheoretic* lambda, semantic functions can be applied to *any* value in any definition without compromising structurality.
 
 To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (var vz)))`{.agda} application, the `(uᴺ (var vz))`{.agda} term plays the role of blocking input, but it is not quite entirely blocking. `uᴺ` performs an operation best described as *semantic $\eta$-expansion*: it acts as identity on neutral base terms, and from neutral function it produces semantic function which build up neutral applications from their inputs. Thus, `(uᴺ {ι} (var vz))`{.agda} simply reduces to `(ne (var vz))`{.agda}, while `(uᴺ {ι ⇒ i} (var vz))`{.agda} reduces to `(λ σ aᴺ → ne (app (var (∈ₑ σ vz)) aᴺ))`{.agda}. In short, `uᴺ` returns semantic values which will yield properly $\eta$-expanded normal forms when quoted. As convoluted this may seem, it is actually a very elegant solution.
 
-In the section introduction we have stated that the `N` superscript specifies a Kripke model of STLC. What are Kripke models, then?
+## Kripke Models {#sec:kripke}
 
+We show now how Kirpke models relate to the above definition of normalization. Following the presentation of Altenkirch [@altenkirch2009normalisation], Kripke models can be defined in Agda for the syntax of STLC as follows:
 
+~~~{.agda}
+    record KripkeModel : Set₁ where
+      field
+        W       : Set
+        _≤_     : W → W → Set
+        ≤refl   : ∀ {w} → w ≤ w
+        _≤◾_    : ∀ {w₁ w₂ w₃} → w₁ ≤ w₂ → w₂ ≤ w₃ → w₁ ≤ w₃
+        _||-ι   : W → Set
+        ι-mono  : ∀ {w w'} → w ≤ w' → w ||-ι → w' ||-ι
+~~~
 
+A Kripke model consists of a preordered set of "worlds", denoted `W`, along with a forcing predicate for the base type, and a *monotonicity condition* `ι-mono`{.agda}. On a concrete level, we can obtain the definition of `KripkeModel` by noticing the details in our previous `N` model which can be abstracted out, and packing them into a record. Indeed, the interpretation of function types, contexts and terms can be derived from this amount of data. Agda allow us to include them in the record as well, as definitions which depend on the record fields:
 
+~~~{.agda}
+    record KripkeModel : Set₁ where
+      field
+        ... -- as before
 
+      _||-Ty_ : W → Ty → Set
+      w ||-Ty ι       = w ||-ι
+      w ||-Ty (A ⇒ B) = ∀ {w'} → w ≤ w' → w' ||-Ty A → w' ||-Ty B
 
+      _||-Con_ : W → Con → Set
+      w ||-Con ∙       = ⊤
+      w ||-Con (Γ , A) = (w ||-Con Γ) × (w ||-Ty A)
+
+      _||-_ : Con → Ty → Set
+      Γ ||- A = ∀ w → w ||-Con Γ → w ||-Ty A
+
+      Ty-mono : ∀ {A w w'} → w ≤ w' → w ||-Ty A → w' ||-Ty A
+      Ty-mono {ι}     σ p = ι-mono σ p
+      Ty-mono {A ⇒ B} σ p δ q = p (σ ≤◾ δ) q
+
+      Con-mono : ∀ {Γ}{w w'} → w ≤ w' → w ||-Con Γ → w' ||-Con Γ
+      Con-mono {∙}     σ p = p
+      Con-mono {Γ , A} σ p = Con-mono σ (proj₁ p) , Ty-mono {A} σ (proj₂ p)
+
+      ||-Tm : ∀ {Γ A} → Tm Γ A → Γ ||- A
+      ||-Tm (var vz)     w (_ , q) = q
+      ||-Tm (var (vs v)) w (p , q) = ||-Tm (var v) w p
+      ||-Tm (lam t)      w p σ a   = ||-Tm t _ (Con-mono σ p , a)
+      ||-Tm (app f a)    w p       = ||-Tm f w p ≤refl (||-Tm a w p)
+~~~
+
+With this, everything up to `Tmᴺ` in our previous implementation can be obtained by defining the corresponding model:
+
+~~~{.agda}
+    N : KripkeModel
+    N = record {
+        W      = Con
+      ; _≤_    = λ Γ Δ → OPE Δ Γ
+      ; ≤refl  = idₑ
+      ; _≤◾_   = _∘ₑ_
+      ; _||-ι  = λ Γ → Nf Γ ι
+      ; ι-mono = Nfₑ }
+~~~
+
+This has been an interesting exercise in abstraction, but what is the deeper significance? STLC can be viewed as a simple intuitionistic propositional logic, with a single atomic propopsition `ι`. What is a right notion of semantics, though? We could abstract out the interpetation of base types from the standard model as given in [@sec:models-intro], and get another notion of models; would not that suffice? From a logician's point of view, the issue is that it does not give us completeness. Semantics in general is necessary because we use logic to talk about concepts about which we have underlying intuition, but we have no *a priori* reason to believe that syntactic constructions talk meaningfully about any intuitive concept.
+
+Soundness and completeness together express that syntactic and semantic entailment are logically equivalent; the lack of completeness indicates that there is a mismatch, that semantics is larger than necessary. In Agda, we define soundness and completeness for Kripke models as follows:
+
+~~~{.agda}
+    sound    = ∀ {Γ A} → Tm Γ A → (∀ M → let open KripkeModel M in Γ ||- A)
+    complete = ∀ {Γ A} → (∀ M → let open KripkeModel M in Γ ||- A) → Tm Γ A
+~~~
+
+The `let open KripkeModel M`{.agda} incantation makes locally available all fields and definitions of `M`. We give here an brief informal proof for both.
+
+**Theorem**. *STLC is both sound and complete with respect to Kripke models.*
+
+*Proof*. Soundness follows immediately from `||-Tm`. For completeness, we instantiate the hypothesis with the previously defined `N` model, then define quoting and unquoting the same way as in [@sec:algorithm]. Using them, we can produce a `(Nf Γ A)`{.agda}, which can be canonically injected back to `(Tm Γ A)`{.agda}. $\qed$
+
+With the standard set-theoretic semantics for first-order logic, the intuitive content is clear: formulas talk about truth and falsehood. What is an intuitive meaning of Kripke semantics, though? A possible answer is that it talks about *knowledge*. `W` worlds can be understood as states of knowledge, and `_≤_` denotes increasing knowledge. Monotonicity expresses that if something is proven in some state of knowledge, it will never be invalidated, not matter how "wiser" we get.
+
+Note that in the formal development the direct `ᴺ` definitions are used instead of Kripke models. This is primarily to make the algorithm as transparent as possible to lay readers. In the `Normalization.agda` file, the core algorithm is laid out in about 50 lines, and together with the definition of syntax and embeding it is about a hundred lines.
+
+# Correctness
+
+TODO
+
+## Categorical Notions {#sec:cat-notions}
+
+TODO
 
 ## Laws for Embedding and Substitution {#sec:sub-calc}
 
@@ -683,7 +771,7 @@ TODO
 * Agda benchmarking
 * performance limitations of intrinsic syntax compared to type assignment
 
-# Discussion and Future Work {#sec:future-work}
+# Discussion and Future Work {#sec:discussion}
 
 * Technical overhead: Vs big-step, hereditary subst, Coquand, Abel (?)
 * Linecounts vs big-step and hsubst (email C. Coquand to get sources?)

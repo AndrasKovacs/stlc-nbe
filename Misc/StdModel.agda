@@ -1,6 +1,6 @@
 {-# OPTIONS --without-K #-}
 
-module StdModel.StdModel where
+module Misc.StdModel where
 
 open import Lib
 open import Syntax
