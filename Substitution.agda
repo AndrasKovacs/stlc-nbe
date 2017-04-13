@@ -84,7 +84,7 @@ idlₛₑ (keep σ) =
     ◾ assₛₑₑ idₛ σ wk ⁻¹
     ◾ (_ₛ∘ₑ wk) & idlₛₑ σ )
 
-idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
+idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ
 idrₑₛ ∙        = refl
 idrₑₛ (drop σ) = assₑₛₑ σ idₛ wk ⁻¹ ◾ dropₛ & idrₑₛ σ
 idrₑₛ (keep σ) = (_, var vz) & (assₑₛₑ σ idₛ wk ⁻¹ ◾ (_ₛ∘ₑ wk) & idrₑₛ σ)
@@ -154,4 +154,14 @@ Tm-idₛ (app f a) = app & Tm-idₛ f ⊗ Tm-idₛ a
 idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
 idrₛ ∙       = refl
 idrₛ (σ , t) = _,_ & idrₛ σ ⊗ Tm-idₛ t
+
+idlₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → idₛ ∘ₛ σ ≡ σ
+idlₛ ∙       = refl
+idlₛ (σ , t) = (_, t) & (assₛₑₛ idₛ wk (σ , t) ◾ idlₛ (idₑ ₑ∘ₛ σ) ◾ idlₑₛ σ)
+
+assₛ :
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : Sub Δ Σ)(ν : Sub Γ Δ)
+  → (σ ∘ₛ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ∘ₛ ν)
+assₛ ∙       δ ν = refl
+assₛ (σ , t) δ ν = _,_ & assₛ σ δ ν ⊗ (Tm-∘ₛ δ ν t ⁻¹)
 

@@ -158,6 +158,10 @@ As a notational convention, we shall take cues from the Idris [@brady2013idris] 
 
 This is not valid Agda, but we shall do this whenever the types and binding status of parameters are obvious.
 
+### Included Code Examples
+
+The project can be found in *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this thesis are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. When an Agda example here directly corresponds to some code in the mentioned repository, we indicate the name of the source file in the examples as Agda comments or in expository text.
+
 ### Standard Library
 
 Our development does not have any external dependencies. We need less than a hundred lines of code from the Agda standard library [@agda-stdlib], but we choose to include it alongside the project in `Lib.agda`, for portability, and also make some changes.
@@ -267,6 +271,7 @@ In this chapter we present the syntax of simply typed lambda calculus - in our c
 The complete definition is the following:
 
 ~~~{.agda}
+    -- Syntax.agda
     data Ty : Set where
       ι   : Ty
       _⇒_ : Ty → Ty → Ty
@@ -312,6 +317,7 @@ In order to specify $\beta$-conversion, we need a notion of substitution. Also, 
 We define order-preserving embeddings the following way:
 
 ~~~{.agda}
+    -- Embedding.agda
     data OPE : Con → Con → Set where
       ∙    : OPE ∙ ∙
       drop : OPE Γ Δ → OPE (Γ , A) Δ
@@ -372,6 +378,7 @@ A salient feature of our syntax is the lack of explicit substitution, i. e. we d
 Strictly speaking, stating $\beta$-conversion only requires single substitutions. However, simultaneous substitution is easier to define and reason about. Thus, we shall define the former using the latter and identity substitutions. We have substitutions as lists of terms:
 
 ~~~{.agda}
+    -- Substitution.agda
     data Sub (Γ : Con) : Con → Set where
       ∙   : Sub Γ ∙
       _,_ : Sub Γ Δ → Tm Γ A → Sub Γ (Δ , A)
@@ -446,6 +453,7 @@ Single substitution with a `(t : Tm Γ A)`{.agda} term is given by `(idₛ , t)`
 The conversion relation is given as:
 
 ~~~{.agda}
+    -- Conversion.agda
     data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
       η     : t ~ lam (app (Tmₑ wk t) (var vz))
       β     : app (lam t) t' ~ Tmₛ (idₛ , t') t
@@ -470,6 +478,7 @@ In this chapter we specify normal forms and implement normalization. Then, we di
 Our definition of normal forms is entirely standard: they are either lambdas or *neutral* terms of base type, and neutral terms are variables applied to zero of more normal arguments:
 
 ~~~{.agda}
+    -- NormalForm.agda
     mutual
       data Nf (Γ : Con) : Ty → Set where
         ne  : Ne Γ ι → Nf Γ ι
@@ -501,6 +510,7 @@ These are defined by straightforward mutual recursion.
 Clearly, STLC is a small fragment of Agda, so we should be able to interpret the syntax back to Agda types and constructions in a straightforward way. From a semantic viewpoint, the most straightforward interpretation of the syntax is called the *standard model*. From an operational viewpoint, the standard model is just a well-typed interpreter [@augustsson1999exercise] for STLC as an embedded language. It is implemented as follows:
 
 ~~~{#lst:std-model .agda}
+    -- Misc/StdModel.agda
     Tyˢ : Ty → Set
     Tyˢ ι       = ⊥
     Tyˢ (A ⇒ B) = Tyˢ A → Tyˢ B
@@ -557,6 +567,7 @@ Adding progressively more structure to models allows us to prove more properties
 We denote the model for normalization with capital "N" superscript. The implementation follows a similar shape as the standard model. The key difference - from which others follow - is in the interpretation of functions:
 
 ~~~{.agda}
+    -- Normalization.agda
     Tyᴺ : Ty → Con → Set
     Tyᴺ ι       Γ = Nf Γ ι
     Tyᴺ (A ⇒ B) Γ = ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
@@ -656,6 +667,7 @@ To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (
 We show now how Kirpke models relate to the above definition of normalization. Following the presentation of Altenkirch [@altenkirch2009normalisation], Kripke models can be defined in Agda for the syntax of STLC as follows (omitting universe polymorphism):
 
 ~~~{.agda}
+    -- Misc/Kripke.agda
     record KripkeModel : Set₁ where
       field
         W       : Set
@@ -742,6 +754,7 @@ First, we shall introduce a modest number of concepts from category theory. The 
 A *category* is defined as follows. 
 
 ~~~{.agda}
+    -- Misc/Category.agda
     record Category : Set₁ where
       field
         Obj   : Set             -- "objects"
@@ -800,7 +813,7 @@ This development mostly utilizes presheaves and natural transformations between 
 
 ## Laws for Embedding and Substitution {#sec:sub-calc}
 
-People who set out to write normalization proofs soon find that a jumble of twenty-odd substitution and weakening lemmas is required to make headway. The naive proving process works by repeatedly hitting roadblocks and reacting by adding more lemmas. The more informed way is to characterize all lemmas beforehand in categorical terms. This way we can be confident that we have proven all relevant statements.
+People who set out to write normalization proofs soon find that a jumble of twenty-odd substitution and weakening lemmas is required to make headway. The naive proving process works by repeatedly hitting roadblocks and reacting by adding more lemmas. A more prudent way is to characterize all lemmas beforehand in categorical terms. This way we can be confident that we have proven all relevant statements.
 
 ### Embeddings {#sec:embedding-laws}
 
@@ -829,6 +842,7 @@ Additionally, variables and terms of a given type are presheaves on **OPE**. `(�
 Note that the input is a morphism in **OPE**, i. e. a context embedding, and the output is a morphism in **Set**, which is an Agda function. Also note the contravariance: the order of `Γ` and `Δ` is flipped in the output. Functor laws for variables and terms are as follows:
 
 ~~~{.agda}
+    -- Embedding.agda
     ∈-idₑ  : ∀ v → ∈ₑ idₑ v ≡ v
     ∈-∘ₑ   : ∀ σ δ v → ∈ₑ (σ ∘ₑ δ) v ≡ ∈ₑ δ (∈ₑ σ v)
     Tm-idₑ : ∀ t → Tmₑ idₑ t ≡ t
@@ -846,6 +860,7 @@ This expresses that `idₑ`{.agda} is mapped to the identity function in **Set**
 Normal and neutral terms are also presheaves on **OPE** in a similar manner:
 
 ~~~{.agda}
+    -- NormalForm.agda
     Nfₑ    : OPE Γ Δ → Nf Δ A → Nf Γ A
     Neₑ    : OPE Γ Δ → Ne Δ A → Ne Γ A
     Nf-∘ₑ  : ∀ σ δ t → Nfₑ (σ ∘ₑ δ) t ≡ Nfₑ δ (Nfₑ σ t)
@@ -854,7 +869,7 @@ Normal and neutral terms are also presheaves on **OPE** in a similar manner:
     Ne-idₑ : ∀ t → Neₑ idₑ t ≡ t
 ~~~
 
-This is to be expected, since neutral and normal terms are just terms with restricted form.
+This is to be expected, since neutral and normal terms are just terms with restricted structure.
 
 ### Substitutions {#sec:substitution-laws}
 
@@ -869,7 +884,7 @@ We review identity substitution here (previously defined in [@sec:substitutions]
 
     _∘ₛ_ : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
     ∙       ∘ₛ δ = ∙
-    (σ , t) ∘ₛ δ = σ ∘ₛ δ , Tmₛ δ t
+    (σ , t) ∘ₛ δ = (σ ∘ₛ δ) , Tmₛ δ t
 ~~~
 
 We also have substitution operations for terms and variables:
@@ -881,9 +896,9 @@ We also have substitution operations for terms and variables:
   
 We aim to establish that **STLC** is a category, and that `(Tm _ A)`{.agda} and `(A ∈ _)`{.agda} are presheaves on it. This is significantly more complicated than what we have seen for **OPE**. Identity and composition for substitutions are actually defined using embeddings, thus proving properties of substitution involves a proving a variety of lemmas about their interaction with embedding. 
 
-The categorical structure of proof obligations is less clear here; although we have clear goals (category and presheaf laws), this author is unaware of a compact and abstract interpretation of our process of building **STLC** around **OPE**. In [@benton2012strongly], substitution laws are constructed the same way as here, but the authors of Ibid. also do not provide a semantic explanation. For contrast, see [@altenkirch2016normalisation], where substitutions are given first as part of the syntax, and renamings (an alternative of embeddings) are defined later as a subcategory. 
+The categorical structure of proof obligations is less clear here; although we have clear goals (category and presheaf laws), this author is unaware of a compact and abstract explanation of the process of building **STLC** around **OPE**. In [@benton2012strongly], substitution laws are constructed the same way as here, but the authors of Ibid. also do not provide a semantic explanation. For contrast, see [@altenkirch2016normalisation], where substitutions are given first as part of the syntax, and renamings (an alternative of embeddings) are defined later as a subcategory. 
 
-The key characteristic of the lemmas is the following: there are four different operations of composing embeddings and substitutions, since there are two choices for both arguments. We define the `_ₑ∘ₛ_`{.agda} operation here:
+There are four different operations of composing embeddings and substitutions, since there are two choices for both arguments. We define the missing `_ₑ∘ₛ_`{.agda} operation here:
 
 ~~~{.agda}
     _∘ₑ_  : OPE Δ Σ → OPE Γ Δ → OPE Γ Σ -- defined in Chapter 4.3
@@ -893,11 +908,42 @@ The key characteristic of the lemmas is the following: there are four different 
     _ₑ∘ₛ_ : OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
     ∙      ₑ∘ₛ δ       = δ
     drop σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ
-    keep σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ , t
+    keep σ ₑ∘ₛ (δ , t) = (σ ₑ∘ₛ δ) , t
 ~~~
 
-There are variations of the category laws where occurrences of composition can be any of the four versions, and it appears that a number (not all) of these has to be proven.
+There are variations of the category laws where occurrences of composition can be any of the four versions, and it appears that some (not all) of these laws have to be proven. Similarly, functor laws for terms and variables have multiple versions differing in the mapped composition. All in all, we need to prove the following theorems in order:
 
+~~~{.agda}
+    -- Substitution.agda
+    assₛₑₑ : ∀ σ δ ν → (σ ₛ∘ₑ δ) ₛ∘ₑ ν ≡ σ ₛ∘ₑ (δ ∘ₑ ν)
+    assₑₛₑ : ∀ σ δ ν → (σ ₑ∘ₛ δ) ₛ∘ₑ ν ≡ σ ₑ∘ₛ (δ ₛ∘ₑ ν)
+    
+    idlₑₛ : ∀ σ → idₑ ₑ∘ₛ σ ≡ σ
+    idlₛₑ : ∀ σ → idₛ ₛ∘ₑ σ ≡ ⌜ σ ⌝ᵒᵖᵉ
+    idrₑₛ : ∀ σ → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
+    
+    ∈-ₑ∘ₛ  : ∀ σ δ v → ∈ₛ (σ ₑ∘ₛ δ) v ≡ ∈ₛ δ (∈ₑ σ v)
+    Tm-ₑ∘ₛ : ∀ σ δ t → Tmₛ (σ ₑ∘ₛ δ) t ≡ Tmₛ δ (Tmₑ σ t)
+    
+    ∈-ₛ∘ₑ  : ∀ σ δ v → ∈ₛ (σ ₛ∘ₑ δ) v ≡ Tmₑ δ (∈ₛ σ v)
+    Tm-ₛ∘ₑ : ∀ σ δ t → Tmₛ (σ ₛ∘ₑ δ) t ≡ Tmₑ δ (Tmₛ σ t)
+    
+    assₛₑₛ : ∀ σ δ ν → (σ ₛ∘ₑ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ₑ∘ₛ ν)
+    assₛₛₑ : ∀ σ δ ν → (σ ∘ₛ δ) ₛ∘ₑ ν ≡ σ ∘ₛ (δ ₛ∘ₑ ν)
+    
+    -- Functor laws for (A ∈ _) and (Tm _ A)
+    ∈-∘ₛ   : ∀ σ δ v → ∈ₛ (σ ∘ₛ δ) v ≡ Tmₛ δ (∈ₛ σ v)
+    Tm-∘ₛ  : ∀ σ δ t → Tmₛ (σ ∘ₛ δ) t ≡ Tmₛ δ (Tmₛ σ t)    
+    ∈-idₛ  : ∀ v → ∈ₛ idₛ v ≡ var v
+    Tm-idₛ : ∀ t → Tmₛ idₛ t ≡ t
+    
+    -- Category laws for STLC
+    idrₛ   : ∀ σ → σ ∘ₛ idₛ ≡ σ
+    idlₛ   : ∀ σ → idₛ ∘ₛ σ ≡ σ
+    assₛ   : ∀ σ δ ν → (σ ∘ₛ δ) ∘ₛ ν ≡ σ ∘ₛ (δ ∘ₛ ν)
+~~~
+
+The proofs are moderately interesting and involve straightforward induction and equational reasoning. They comprise about 110 lines of Agda.
 
 
 
