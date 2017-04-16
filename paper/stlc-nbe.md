@@ -160,7 +160,7 @@ This is not valid Agda, but we shall do this whenever the types and binding stat
 
 ### Included Code Examples
 
-The project can be found in *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this thesis are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. When an Agda example here directly corresponds to some code in the mentioned repository, we indicate the name of the source file in the examples as Agda comments or in expository text.
+The project can be found in *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this thesis are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. When a code example here corresponds to some code in the repository, we indicate the name of the source file in the examples as Agda comments or in expository text.
 
 ### Standard Library
 
@@ -498,12 +498,19 @@ Agda allows us to overload `var`, `lam` and `app` for normal forms. $\beta$-norm
 with the same construction as before except that it is a predicate on general terms, expressing their normality. This definition would be roughly as convenient as the one we use. We also need actions of context embeddings:
 
 ~~~{.agda}
-  Nfₑ : OPE Γ Δ → Nf Δ A → Nf Γ A -- definitions omitted
-  Neₑ : OPE Γ Δ → Ne Δ A → Ne Γ A -- definitions omitted
+    Nfₑ : OPE Γ Δ → Nf Δ A → Nf Γ A -- definitions omitted
+    Neₑ : OPE Γ Δ → Ne Δ A → Ne Γ A -- definitions omitted
 ~~~
 
-These are defined by straightforward mutual recursion.
+Normal and neutral terms can be injected back to terms. Also, injection commutes with embedding (i. e. injection is natural). 
 
+~~~{.agda}
+    ⌜_⌝Nf : Nf Γ A → Tm Γ A    
+    ⌜_⌝Ne : Ne Γ A → Tm Γ A
+    
+    ⌜⌝Ne-nat : ∀ σ n → ⌜ Neₑ σ n ⌝Ne ≡ Tmₑ σ ⌜ n ⌝Ne    
+    ⌜⌝Nf-nat : ∀ σ n → ⌜ Nfₑ σ n ⌝Nf ≡ Tmₑ σ ⌜ n ⌝Nf
+~~~    
 
 ## Preliminaries: Models of STLC {#sec:models-intro}
 
@@ -813,7 +820,7 @@ This development mostly utilizes presheaves and natural transformations between 
 
 ## Laws for Embedding and Substitution {#sec:sub-calc}
 
-People who set out to write normalization proofs soon find that a jumble of twenty-odd substitution and weakening lemmas is required to make headway. The naive proving process works by repeatedly hitting roadblocks and reacting by adding more lemmas. A more prudent way is to characterize all lemmas beforehand in categorical terms. This way we can be confident that we have proven all relevant statements.
+Before we attempt to prove correctness we should pin down the laws of embedding and substitution. People who set out to write normalization proofs soon find that a jumble of twenty-odd substitution lemmas is required to make headway. The naive proving process works by repeatedly hitting roadblocks and reacting by adding more lemmas. A more prudent way is to characterize all of them beforehand in categorical terms, which lends us confidence that a given set of lemmas is complete.
 
 ### Embeddings {#sec:embedding-laws}
 
@@ -946,14 +953,182 @@ There are variations of the category laws where occurrences of composition can b
 The proofs are moderately interesting and involve straightforward induction and equational reasoning. They comprise about 110 lines of Agda.
 
 
-
 ## Completeness {#sec:completeness}
 
-TODO
+In this section we prove completeness of normalization. It expresses that the output of normalization is convertible to its input.
+
+~~~{.agda}
+    complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝Nf
+~~~
+
+`nf` refers to the function defined in [@sec:norm-implementation]. In the return type, the injection `⌜_⌝Nf`{.agda} converts `(Nf Γ A)`{.agda} back to `(Tm Γ A)`{.agda}.
+
+Since `nf` is defined with a Kripke model, it is clear that proving properties about it have to involve similar model structures. The overall structure of the proof is very similar to normalization itself; we will have interpretation of types, contexts, terms, and quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
+
+~~~{.agda}
+    -- Completeness.agda
+    _≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
+    _≈_ {ι}        t tᴺ = t ~ ⌜ tᴺ ⌝Nf
+    _≈_ {A ⇒ B}{Γ} t tᴺ = 
+        ∀ {Δ}(σ : OPE Δ Γ){a aᴺ} → a ≈ aᴺ → app (Tmₑ σ t) a ≈ tᴺ σ aᴺ
+~~~
+
+`_≈_`{.agda} is a *Kripke logical relation*. Here, "logical relation" simply means that it is a relation defined by induction on types. "Kripke" indicates that the interpretation of function types is generalized to work in extended contexts. The purpose of the generalization is the same as with evaluation: it provides us with a "fresh variable" supply, allowing us to quote semantic functions and go under binders.
+
+`_≈_`{.agda} essentially extends conversion to relate syntactic and semantic terms. At the base type, it is precisely conversion; at function types, it expresses that syntactic and semantic application respect `_≈_`{.agda}.
+
+we extend `_≈_`{.agda} to a relation between substitutions and semantic contexts:
+
+~~~{.agda}
+    data _≈ᶜ_ {Γ} : ∀ {Δ} → Sub Γ Δ → Conᴺ Δ Γ → Set where
+      ∙   : ∙ ≈ᶜ ∙
+      _,_ : σ ≈ᶜ δ → t ≈ t' → (σ , t) ≈ᶜ (δ , t')
+~~~
+
+Substitutions are list of syntactic terms while semantic context are lists of semantic terms, so they can be elementwise related by `_≈_`{.agda}.
+
+Mirroring ᴺ, we need monotonicity for semantic terms and contexts:
+
+~~~{.agda}
+    ≈ₑ  : ∀ {A : Ty} σ → t ≈ tᴺ → Tmₑ σ t ≈ Tyᴺₑ σ tᴺ
+    ≈ᶜₑ : ∀ σ → δ ≈ᶜ νᴺ → δ ₛ∘ₑ σ ≈ᶜ Conᴺₑ σ νᴺ
+~~~
+
+The only interesting case here is the base type:
+
+~~~{.agda}
+    ≈ₑ {ι} σ t≈tᴺ = ?
+~~~
+
+Here, the goal has type `(Tmₑ σ t ~ ⌜ Nfₑ σ tᴺ ⌝Nf)`{.agda}, and we have `(t≈tᴺ : t ~ ⌜ tᴺ ⌝Nf)`{.agda}. First, we witness `(Tmₑ σ t ~ Tmₑ σ ⌜ tᴺ ⌝Nf)`{.agda} by showing that embedding respects conversion:
+
+~~~{.agda}
+    -- Embedding.agda
+    ~ₑ : ∀ σ → t ~ t' → Tmₑ σ t ~ Tmₑ σ t'
+~~~
+
+This can be proven by induction on `(t ~ t')`, with the help of substitution laws defined in [@sec:sub-calc]. Now, `(~ₑ σ t≈tᴺ : Tmₑ σ t ~ Tmₑ σ ⌜ tᴺ ⌝Nf)`{.agda}, and the type can be shown to be equal to the goal using `⌜⌝Nf-nat`{.agda}.
+
+The only needed lemma which has no direct counterpart in `ᴺ` is the following:
+
+~~~{.agda}
+    _~◾≈_ : ∀ {A Γ}{t t'}{tᴺ : Tyᴺ A Γ} → t ~ t' → t' ≈ tᴺ → t ≈ tᴺ
+    _~◾≈_ {ι}     p q = p ~◾ q
+    _~◾≈_ {A ⇒ B} p q = λ σ a≈aᴺ → app (~ₑ σ p) ~refl ~◾≈ q σ a≈aᴺ
+~~~
+
+Now, the interpretation of terms can be defined. This is often called the "fundamental theorem" of a logical relation interpretation.
+
+~~~{.agda}    
+    Tm≈ : ∀ (t : Tm Γ A){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈ᶜ δᴺ → Tmₛ σ t ≈ Tmᴺ t δᴺ
+~~~
+
+The proof is by induction on the input term. Witnesses for variables are simply looked up from `(σ ≈ᶜ δᴺ)`{.agda}, the same way as with other models. If the input term is an application, we use the inductive hypotheses the same way as in `Tmᴺ`, although first we need to rewrite the goal type with a functor law:
+
+~~~{.agda}
+    Tm≈ (app f a) {σ} σ≈δᴺ
+      rewrite Tm-idₑ (Tmₛ σ f) ⁻¹ = Tm≈ f σ≈δᴺ idₑ (Tm≈ a σ≈δᴺ)
+~~~
+
+Only the case for `(lam t)`{.agda} is non-trivial:
+
+~~~{.agda}
+    Tm≈ (lam t) {σ} {δ} σ≈δᴺ ν {a} {aᴺ} a≈aᴺ = ?
+~~~
+
+The goal is
+
+~~~{.agda}
+    app (lam (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))) a ≈ Tmᴺ t (Conᴺₑ ν δᴺ , aᴺ)
+~~~
+
+By using the induction hypotheses, we get the following:
+
+~~~{.agda}
+    Tm≈ t (≈ᶜₑ ν σ≈δᴺ , a≈aᴺ)
+      : Tmₛ ((σ ₛ∘ₑ ν) , a) t ≈ Tmᴺ t (Conᴺₑ ν δᴺ , aᴺ)
+~~~
+
+The left hand side of the `_≈_` does not yet match the goal. We need to use `_~◾≈_`{.agda} to compose it with a conversion proof on the left. The `β` rule can be used, but the result type does not line up on the right hand side:
+
+~~~{.agda}
+    β (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t)) a
+      : app (lam (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))) a ~
+        Tmₛ (idₛ , a) (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))
+~~~
+
+Hence we need to coerce this type to the desired one, using embedding and substitution laws. We omit the equality proof here.^[Generally, explicit reasoning about substitutions is omitted from textbooks as well, because it tends to be technical and uninteresting]
+
+~~~{.agda}
+    Tm≈ (lam t) {σ} {δᴺ} σ≈δᴺ ν {a} {aᴺ} a≈aᴺ =
+      coe eq (β (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t)) a) -- eq omitted
+      ~◾≈
+      Tm≈ t (≈ᶜₑ ν σ≈δᴺ , a≈aᴺ)
+~~~
+
+Now, quoting, unquoting and completeness can be defined as follows:
+
+~~~{.agda}
+    mutual
+      q≈ : ∀ {A} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝Nf
+      q≈ {ι}     t≈tᴺ = t≈tᴺ
+      q≈ {A ⇒ B} t≈tᴺ = η _ ~◾ lam (q≈ (t≈tᴺ wk (u≈ (var vz))))
+    
+      u≈ : ∀ {A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
+      u≈ {ι}     n = ~refl
+      u≈ {A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
+        rewrite ⌜⌝Ne-nat σ n ⁻¹ = app ~refl (q≈ a≈aᴺ) ~◾≈ u≈ (app (Neₑ σ n) (qᴺ aᴺ))
+    
+    uᶜ≈  : ∀ {Γ} → idₛ {Γ} ≈ᶜ uᶜᴺ
+    uᶜ≈ {∙}     = ∙
+    uᶜ≈ {Γ , A} = ≈ᶜₑ wk uᶜ≈ , u≈ (var vz)
+    
+    complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝Nf
+    complete t = coe eq (q≈ (Tm≈ t uᶜ≈)) -- eq omitted
+~~~
+
+Since, `nf`{.agda} was defined as evaluation followed by quotation, we define `complete`{.agda} this way as well. Expanding the type of `complete`, we get:
+
+~~~{.agda}
+  complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ qᴺ (Tmᴺ t uᶜᴺ) ⌝Nf
+~~~
+
+However, `(q≈ (Tm≈ t uᶜ≈))`{.agda} has type `(Tmₛ idₛ t ~ ⌜ qᴺ (Tmᴺ t uᶜᴺ) ⌝Nf)`{.agda}, hence we need an extra coercion to rewrite the result type along `Tm-idₛ`{.agda}. This completes the proof. $\qed$
+
+Now, since a large part of the proof was just reiterating the structure of `ᴺ`, would not it be better to implement normalization and completeness in one go? For instance, the following could be implemented:
+
+~~~{.agda}
+    nf : ∀ {Γ A}(t : Tm Γ A) → Σ (Nf Γ A) λ n → t ~ ⌜ n ⌝Nf
+~~~
+
+However, this has a disadvantage: now there are proof terms threaded through which add considerable noise for any later proof we might be proving about normalization. It is also contrary to our goal of implementing the algorithm as simply as possible.
 
 ## Presheaf Model {#sec:presheaf-model}
 
-TODO
+For soundness, one migth be tempted to try directly defining another logical relation, and proceeding similarly as in the previous section. That approach would fall short. The reason is that at some point one has to prove naturality for evaluation, quoting and unquoting, i. e. that they commute with embeddings.
+
+~~~{.agda}
+    Tmᴺ-nat : ∀ t σ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)    
+    qᴺ-nat  : ∀ σ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
+    uᴺ-nat  : ∀ σ n → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
+~~~
+
+Unfortunately, these are not actually provable, because `Tyᴺ`{.agda} is too large: it contains "unnatural" semantic terms. Recall its definition:
+
+~~~{.agda}
+    Tyᴺ : Ty → Con → Set
+    Tyᴺ ι       Γ = Nf Γ ι
+    Tyᴺ (A ⇒ B) Γ = ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
+~~~
+
+`(Tyᴺ ι Γ)`{.agda} is fine, but `(Tyᴺ (A ⇒ B) Γ)`{.agda} contains ill-behaved values, for instance a semantic function which looks into the input `Δ` context and returns different values depending on its length. Such a function clearly does not commute with embedding. Having type `(Tyᴺ A Γ)`{.agda} does not tell all that we would like to know about a semantic value.
+
+A *presheaf model* of STLC interprets each type as a presheaf. In our case, there is a presheaf model which can be used for normalization and which is a straightforward refinement of the Kripke model `ᴺ`. In this model, the interpretation of types is as follows:
+
+~~~{.agda}
+
+
+
 
 ## Soundness {#sec:soundness}
 
@@ -985,5 +1160,8 @@ TODO
 
 * Scaling up the technique
   + With implicit substitution and conversion relation: to System F, probably
+
+
+
 
 
