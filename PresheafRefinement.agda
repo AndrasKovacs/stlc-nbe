@@ -103,59 +103,59 @@ uᶜᴾ {Γ , A} = Conᴾₑ wk uᶜᴾ , uᴾ (var vz)
 --------------------------------------------------------------------------------
 
 OPEᴺ : ∀ {Γ Δ} → OPE Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
-OPEᴺ ∙        δᴺ        = δᴺ
-OPEᴺ (drop σ) (δᴺ , _)  = OPEᴺ σ δᴺ
-OPEᴺ (keep σ) (δᴺ , tᴺ) = OPEᴺ σ δᴺ , tᴺ
+OPEᴺ ∙         Γᴺ       = Γᴺ
+OPEᴺ (drop σ) (Γᴺ , _)  = OPEᴺ σ Γᴺ
+OPEᴺ (keep σ) (Γᴺ , tᴺ) = OPEᴺ σ Γᴺ , tᴺ
 
-OPEᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : OPE Γ Δ)(δ : OPE Ξ Σ) νᴺ → OPEᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (OPEᴺ σ νᴺ)
-OPEᴺ-nat ∙        δ νᴺ        = refl
-OPEᴺ-nat (drop σ) δ (νᴺ , tᴺ) = OPEᴺ-nat σ δ νᴺ
-OPEᴺ-nat (keep σ) δ (νᴺ , tᴺ) = (_, Tyᴺₑ δ tᴺ) & OPEᴺ-nat σ δ νᴺ
+OPEᴺ-nat : ∀ {Γ Δ Σ Ξ}(σ : OPE Γ Δ)(δ : OPE Ξ Σ) Γᴺ → OPEᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (OPEᴺ σ Γᴺ)
+OPEᴺ-nat ∙        δ  Γᴺ       = refl
+OPEᴺ-nat (drop σ) δ (Γᴺ , tᴺ) = OPEᴺ-nat σ δ Γᴺ
+OPEᴺ-nat (keep σ) δ (Γᴺ , tᴺ) = (_, Tyᴺₑ δ tᴺ) & OPEᴺ-nat σ δ Γᴺ
 
-OPEᴺ-idₑ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → OPEᴺ idₑ σᴺ ≡ σᴺ
+OPEᴺ-idₑ : ∀ {Γ Δ}(Γᴺ : Conᴺ Γ Δ) → OPEᴺ idₑ Γᴺ ≡ Γᴺ
 OPEᴺ-idₑ ∙         = refl
-OPEᴺ-idₑ (σᴺ , tᴺ) = (_, tᴺ) & OPEᴺ-idₑ σᴺ
+OPEᴺ-idₑ (Γᴺ , tᴺ) = (_, tᴺ) & OPEᴺ-idₑ Γᴺ
 
 ∈ₑᴺ :
- ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ)
- → ∈ᴺ (∈ₑ σ v) δᴺ ≡ ∈ᴺ v (OPEᴺ σ δᴺ)
-∈ₑᴺ ∙        v      δᴺ        = refl
-∈ₑᴺ (drop σ) v      (δᴺ , _)  = ∈ₑᴺ σ v δᴺ
-∈ₑᴺ (keep σ) vz     (δᴺ , tᴺ) = refl
-∈ₑᴺ (keep σ) (vs v) (δᴺ , tᴺ) = ∈ₑᴺ σ v δᴺ
+ ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(v : A ∈ Γ)(Γᴺ : Conᴺ Δ Σ)
+ → ∈ᴺ (∈ₑ σ v) Γᴺ ≡ ∈ᴺ v (OPEᴺ σ Γᴺ)
+∈ₑᴺ ∙        v      Γᴺ        = refl
+∈ₑᴺ (drop σ) v      (Γᴺ , _)  = ∈ₑᴺ σ v Γᴺ
+∈ₑᴺ (keep σ) vz     (Γᴺ , tᴺ) = refl
+∈ₑᴺ (keep σ) (vs v) (Γᴺ , tᴺ) = ∈ₑᴺ σ v Γᴺ
 
 Tmₑᴺ :
- ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(t : Tm Γ A)(δᴺ : Conᴺ Δ Σ)
- → Tmᴺ (Tmₑ σ t) δᴺ ≡ Tmᴺ t (OPEᴺ σ δᴺ)
-Tmₑᴺ σ (var v)   δᴺ = ∈ₑᴺ σ v δᴺ
-Tmₑᴺ σ (lam t)   δᴺ = fexti λ Ξ → fext λ ν → fext λ aᴺ →
-  Tmₑᴺ (keep σ) t (Conᴺₑ ν δᴺ , aᴺ) ◾ (λ x → Tmᴺ t (x , aᴺ)) & OPEᴺ-nat σ ν δᴺ
-Tmₑᴺ σ (app f a) δᴺ rewrite Tmₑᴺ σ f δᴺ | Tmₑᴺ σ a δᴺ = refl
+ ∀ {Γ Δ Σ A}(σ : OPE Δ Γ)(t : Tm Γ A)(Γᴺ : Conᴺ Δ Σ)
+ → Tmᴺ (Tmₑ σ t) Γᴺ ≡ Tmᴺ t (OPEᴺ σ Γᴺ)
+Tmₑᴺ σ (var v)   Γᴺ = ∈ₑᴺ σ v Γᴺ
+Tmₑᴺ σ (lam t)   Γᴺ = fexti λ Ξ → fext λ ν → fext λ aᴺ →
+  Tmₑᴺ (keep σ) t (Conᴺₑ ν Γᴺ , aᴺ) ◾ ((λ x → Tmᴺ t (x , aᴺ)) & OPEᴺ-nat σ ν Γᴺ)
+Tmₑᴺ σ (app f a) Γᴺ rewrite Tmₑᴺ σ f Γᴺ | Tmₑᴺ σ a Γᴺ = refl
 
 --------------------------------------------------------------------------------
 
 Subᴺ : ∀ {Γ Δ} → Sub Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
-Subᴺ ∙       δᴺ = ∙
-Subᴺ (σ , t) δᴺ = Subᴺ σ δᴺ , Tmᴺ t δᴺ
+Subᴺ ∙       Γᴺ = ∙
+Subᴺ (σ , t) Γᴺ = Subᴺ σ Γᴺ , Tmᴺ t Γᴺ
 
 Subᴺ-nat :
-  ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) νᴺ → Conᴾ νᴺ → Subᴺ σ (Conᴺₑ δ νᴺ) ≡ Conᴺₑ δ (Subᴺ σ νᴺ)
-Subᴺ-nat ∙       δ νᴺ νᴾ = refl
-Subᴺ-nat (σ , t) δ νᴺ νᴾ = _,_ & Subᴺ-nat σ δ νᴺ νᴾ ⊗ Tmᴺ-nat t δ νᴾ
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Γ Δ)(δ : OPE Ξ Σ) Γᴺ → Conᴾ Γᴺ → Subᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (Subᴺ σ Γᴺ)
+Subᴺ-nat ∙       δ Γᴺ Γᴾ = refl
+Subᴺ-nat (σ , t) δ Γᴺ Γᴾ = _,_ & Subᴺ-nat σ δ Γᴺ Γᴾ ⊗ Tmᴺ-nat t δ Γᴾ
 
 Subᴺ-ₛ∘ₑ :
-  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(νᴺ : Conᴺ Γ Δ)
-  → Subᴺ (σ ₛ∘ₑ δ) νᴺ ≡ Subᴺ σ (OPEᴺ δ νᴺ)
-Subᴺ-ₛ∘ₑ ∙       δ νᴺ = refl
-Subᴺ-ₛ∘ₑ (σ , t) δ νᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ νᴺ ⊗ Tmₑᴺ δ t νᴺ
+  ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Γ Σ)(Γᴺ : Conᴺ Γ Δ)
+  → Subᴺ (σ ₛ∘ₑ δ) Γᴺ ≡ Subᴺ σ (OPEᴺ δ Γᴺ)
+Subᴺ-ₛ∘ₑ ∙       δ Γᴺ = refl
+Subᴺ-ₛ∘ₑ (σ , t) δ Γᴺ = _,_ & Subᴺ-ₛ∘ₑ σ δ Γᴺ ⊗ Tmₑᴺ δ t Γᴺ
 
 ∈ₛᴺ :
- ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(δᴺ : Conᴺ Δ Σ) → Tmᴺ (∈ₛ σ v) δᴺ ≡ ∈ᴺ v (Subᴺ σ δᴺ)
-∈ₛᴺ (σ , t) vz     δᴺ = refl
-∈ₛᴺ (σ , _) (vs v) δᴺ = ∈ₛᴺ σ v δᴺ
+ ∀ {Γ Δ Σ A}(σ : Sub Δ Γ)(v : A ∈ Γ)(Γᴺ : Conᴺ Δ Σ) → Tmᴺ (∈ₛ σ v) Γᴺ ≡ ∈ᴺ v (Subᴺ σ Γᴺ)
+∈ₛᴺ (σ , t) vz     Γᴺ = refl
+∈ₛᴺ (σ , _) (vs v) Γᴺ = ∈ₛᴺ σ v Γᴺ
 
-Subᴺ-idₛ : ∀ {Γ Δ}(σᴺ : Conᴺ Γ Δ) → Subᴺ idₛ σᴺ ≡ σᴺ
+Subᴺ-idₛ : ∀ {Γ Δ}(Γᴺ : Conᴺ Γ Δ) → Subᴺ idₛ Γᴺ ≡ Γᴺ
 Subᴺ-idₛ ∙         = refl
-Subᴺ-idₛ (σᴺ , tᴺ) =
-  (_, tᴺ) & (Subᴺ-ₛ∘ₑ idₛ wk (σᴺ , tᴺ) ◾ Subᴺ-idₛ (OPEᴺ idₑ σᴺ) ◾ OPEᴺ-idₑ σᴺ)
+Subᴺ-idₛ (Γᴺ , tᴺ) =
+  (_, tᴺ) & (Subᴺ-ₛ∘ₑ idₛ wk (Γᴺ , tᴺ) ◾ Subᴺ-idₛ (OPEᴺ idₑ Γᴺ) ◾ OPEᴺ-idₑ Γᴺ)
   
