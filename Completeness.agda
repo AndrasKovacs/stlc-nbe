@@ -39,17 +39,18 @@ _~◾≈_ {A = A ⇒ B} p q = λ σ a≈aᴺ → app (~ₑ σ p) ~refl ~◾≈ q
 Tm≈ : ∀ {Γ Δ A}(t : Tm Γ A){σ}{δᴺ : Conᴺ Γ Δ} → σ ≈ᶜ δᴺ → Tmₛ σ t ≈ Tmᴺ t δᴺ
 Tm≈ (var v) σ≈δᴺ = ∈≈ v σ≈δᴺ
 
-Tm≈ (lam t) {σ}{δᴺ} σ≈δᴺ ν {a} {aᴺ} a≈aᴺ
-  = coe ((app (lam (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))) a ~_ ) &
-      ( Tm-ₑ∘ₛ (keep ν) (idₛ , a) (Tmₛ (keepₛ σ) t) ⁻¹
-      ◾ Tm-∘ₛ (keepₛ σ) (keep ν ₑ∘ₛ (idₛ , a)) t ⁻¹
-      ◾ (λ x → Tmₛ (x , a) t) &
-          (assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a)
-        ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ)
-        ◾ assₛₑₛ σ ν idₛ ⁻¹
-        ◾ idrₛ _)))
-        (β (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t)) a)
-  ~◾≈ Tm≈ t (≈ᶜₑ ν σ≈δᴺ , a≈aᴺ)
+Tm≈ (lam t) {σ}{δᴺ} σ≈δᴺ ν {a} {aᴺ} a≈aᴺ =
+  coe ((app (lam (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t))) a ~_ ) &
+    ( Tm-ₑ∘ₛ (keep ν) (idₛ , a) (Tmₛ (keepₛ σ) t) ⁻¹
+    ◾ Tm-∘ₛ (keepₛ σ) (keep ν ₑ∘ₛ (idₛ , a)) t ⁻¹
+    ◾ (λ x → Tmₛ (x , a) t) &
+        (assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a)
+      ◾ (σ ∘ₛ_) & idlₑₛ (ν ₑ∘ₛ idₛ)
+      ◾ assₛₑₛ σ ν idₛ ⁻¹
+      ◾ idrₛ _)))
+  (β (Tmₑ (keep ν) (Tmₛ (keepₛ σ) t)) a)
+  ~◾≈
+  Tm≈ t (≈ᶜₑ ν σ≈δᴺ , a≈aᴺ)
 
 Tm≈ (app f a) {σ} σ≈δᴺ
   rewrite Tm-idₑ (Tmₛ σ f) ⁻¹ = Tm≈ f σ≈δᴺ idₑ (Tm≈ a σ≈δᴺ)

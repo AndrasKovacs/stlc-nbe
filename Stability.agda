@@ -10,23 +10,23 @@ open import NormalForm
 open import Normalization
 open import PresheafRefinement
 
-stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uᶜᴺ ≡ uᴺ (var v)
-stab∈ vz     = refl
-stab∈ (vs v) =
+stable∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uᶜᴺ ≡ uᴺ (var v)
+stable∈ vz     = refl
+stable∈ (vs v) =
     ∈ᴺ-nat v wk uᶜᴺ
-  ◾ Tyᴺₑ wk & stab∈ v
+  ◾ Tyᴺₑ wk & stable∈ v
   ◾ uᴺ-nat wk (var v)
   ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
 
 mutual
-  stab : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝Nf ≡ n
-  stab (ne n)  = stabNe n
-  stab (lam n) = lam & stab n
+  stable : ∀ {Γ A}(n : Nf Γ A) → nf ⌜ n ⌝Nf ≡ n
+  stable (ne n)  = stableNe n
+  stable (lam n) = lam & stable n
 
-  stabNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
-  stabNe (var v)   = stab∈ v
-  stabNe (app f a) = 
-      (λ x → x idₑ (Tmᴺ ⌜ a ⌝Nf uᶜᴺ)) & stabNe f
-    ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stab a
+  stableNe : ∀ {Γ A}(n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
+  stableNe (var v)   = stable∈ v
+  stableNe (app f a) =
+      (λ x → x idₑ (Tmᴺ ⌜ a ⌝Nf uᶜᴺ)) & stableNe f
+    ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stable a
     ◾ (λ x → uᴺ (app x a)) & Ne-idₑ f
 

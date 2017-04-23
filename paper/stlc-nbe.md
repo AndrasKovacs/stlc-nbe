@@ -11,15 +11,14 @@ csl: ieee.csl
 lang: en
 
 fontsize: 12pt
-linestretch: 1.5
-margin-left: 3.5cm
-margin-right: 2.5cm
+linestretch: 1.0
+margin-left: 3.0cm
+margin-right: 3.0cm
 margin-top: 2.5cm
 margin-bottom: 2.5cm
 
-secPrefix: Chapter
-
-documentclass: book
+secPrefix: section
+documentclass: article
 classoption: openany
 
 header-includes:
@@ -29,6 +28,12 @@ header-includes:
    - \newtheorem{theorem}{Theorem}
    - \newtheorem{definition}{Definition}
    - \renewenvironment{Shaded}{\setstretch{1.0}}{}
+   - \def\secname{section}
+   - \def\Secname{Section}
+   - \def\chname{section}
+   - \def\Chname{Section}
+   - \def\workname{article}
+   - \def\Workname{Article}
 
 title:
   A Machine-Checked Correctness Proof of Normalization by Evaluation
@@ -46,22 +51,22 @@ date: Budapest, 2017
 
 Normalization animates the syntax of typed $\lambda$-calculi, making them useful as programming languages. Also, in contrast to general terms, normal forms possess a more restricted structure which simplifies formal reasoning. Moreover, normalization allows one to decide convertibility of terms, which is required during type checking polymorphic and dependent type theories.^[In particular, the types of System $F_{\omega}$ largely correspond to simply typed $\lambda$-terms.]
 
-This thesis presents an efficient and verified implementation of $\beta\eta$-normalization for simply typed $\lambda$-calculus (STLC) in Agda, an implementation of constructive type theory. In this setting, the syntax can be seen as an embedded language, and manipulating embedded terms is a limited form of metaprogramming. Normalization can be reused in the implementation of proof tactics, decision procedures or domain-specific languages, therefore efficiency is desirable. It is also preferable that the syntax remains as simple and self-contained as possible, both for pedagogical purposes and for the ease of reuse in other Agda developments. For this reason we choose an intrinsic syntax with de Bruijn indices and implicit substitutions.
+This \workname\ presents an efficient and verified implementation of $\beta\eta$-normalization for simply typed $\lambda$-calculus (STLC) in Agda, an implementation of constructive type theory. In this setting, the syntax can be seen as an embedded language, and manipulating embedded terms is a limited form of metaprogramming. Normalization can be reused in the implementation of proof tactics, decision procedures or domain-specific languages, therefore efficiency is desirable. It is also preferable that the syntax remains as simple and self-contained as possible, both for pedagogical purposes and for the ease of reuse in other Agda developments. For this reason we choose an intrinsic syntax with de Bruijn indices and implicit substitutions.
 
 We are not concerned with mapping the algorithm to lower-level abstract machines or hardware. Thus we are free to make use of the most convenient evaluation mechanism at hand: that of the metalanguage. This way, we can gloss over implementation details of efficient higher-order evaluation. This is the core idea of normalization by evaluation (NbE) from an operational point of view. Also, totality of evaluation in the metatheory is always implicitly assumed from the inside. This lets us implement normalization in a structurally recursive way, making its totality trivial. NbE also naturally supports $\eta$-normalization.
 
 If we are to trust a particular normalization algorithm, we need to prove the following properties (borrowing terminology from [@altenkirch2009big]):
 
-* *Completeness*: terms are convertible to their normal forms.
-* *Soundness*: normalization takes convertible terms to the same normal form.
+* *Completeness*: normalization maps a term to a normal form which is convertible to the term.
+* *Soundness*: normalization maps convertible terms to equal normal forms.
 
-Additionally, we require stability, which establishes that there is no redundancy in normal forms:
+Additionally, we require stability, which establishes that normalization is aligned with the specification of normal forms:
 
 * *Stability*: normalization acts as the identity function on normal terms.
 
-[@sec:metatheory] describes the metatheory we work in. In [@sec:syntax], we formalize the syntax of STLC along with $\beta\eta$-conversion. [@sec:normalization] first presents the normalization function, then proceeds with its correctness proofs. In [@sec:variations] we describe two alternative formalizations, one with more efficient evaluation and one with more concise correctness proofs. We discuss the results and possible future research in the final chapter.
+[@Sec:metatheory] describes the metatheory we work in. In [@Sec:syntax], we formalize the syntax of STLC along with $\beta\eta$-conversion. [@Sec:normalization] presents the normalization function, and [@Sec:correctness] proves its correctness. [@Sec:variations] describes two alternative formalizations, one with more efficient evaluation and one with more concise correctness proofs. We discuss the results and possible future research in the final \chname\.
 
-The content of this thesis is fully formalized in Agda. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*.
+The content of this \workname\ is fully formalized in Agda. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*.
 
 ## Related Work
 
@@ -71,12 +76,12 @@ Catarina Coquand's work [@coquand2002formalised] is the most closely related to 
 
 Altenkirch and Chapman [@altenkirch2009big] formalize a big-step normalization algorithm in Agda. This development uses an explicit substitution calculus and implements normalization using an environment machine with first-order closures. The algorithm works similarly to ours on the common syntactic fragment, but it is not structurally recursive and hence specifies evaluation as a inductive relation, using the Bove-Capretta method [@bove2005modelling].
 
-Altenkirch and Kaposi [@altenkirch2016normalisation] use a glued presheaf model ("presheaf logical predicate") for NbE for a minimal dependent type theory. This development provided the initial inspiration for the formalization in this thesis; it seemed plausible that "scaling down" dependently typed NbE to simple type theory would yield a formalization that is more compact than existing ones. This turned to be the case; however the discussion of resulting development is relegated to [@sec:direct-psh-model], because using a Kripke model has the advantage of clean separation of the actual algorithm and its naturality proofs, which was deemed preferable to the more involved presheaf construction. Also, our work uses a simple presheaf model rather than the glued model used in Ibid. or in the work of Altenkirch, Hoffman and Streicher [@altenkirch1995categorical].
+Altenkirch and Kaposi [@altenkirch2016normalisation] use a glued presheaf model ("presheaf logical predicate") for NbE for a minimal dependent type theory. This development provided the initial inspiration for the formalization in this \workname\; it seemed plausible that "scaling down" dependently typed NbE to simple type theory would yield a formalization that is more compact than existing ones. This turned to be the case; however the discussion of resulting development is relegated to [@Sec:direct-psh-model], because using a Kripke model has the advantage of clean separation of the actual algorithm and its naturality proofs, which was deemed preferable to the more involved presheaf construction. Also, our work uses a simple presheaf model rather than the glued model used in Ibid. or in the work of Altenkirch, Hoffman and Streicher [@altenkirch1995categorical].
 
 
 # Metatheory {#sec:metatheory}
 
-In this chapter the metatheory used for formalization is presented, first broadly, then its specific implementation in Agda.
+In this \chname\ the metatheory used for formalization is presented, first broadly, then its specific implementation in Agda.
 
 ## Type Theory
 
@@ -88,7 +93,7 @@ The basic system we use is intensional Martin-Löf type theory (MLTT). For an ov
 
 * _Function extensionality as an axiom_. This posits that two functions are equal if they take equal arguments to equal results. We could eschew it by using setoid reasoning with semantic equivalence, as C. Coquand does [@coquand2002formalised]. However, we only use function extensionality in correctness proofs, and the normalization function does not refer to it or to any other postulate. We are content with *logical* as opposed to computational content for correctness proofs. This way, the numerous congruence lemmas needed for setoid reasoning can be skipped. Also, function extensionality has computational interpretation in cubical [@cohen2016cubical] and observational [@altenkirch2007observational] type theories, to which this development could be plausibly ported in the future (when practical implementations of the mentioned theories become available).
 
-In Agda 2.5.2, there is robust support for dependent pattern matching without Streicher's K axiom [@streicher1993investigations]. We use the `--without-K` language option for all of our code in the main development. However, we do use axiom K in [@sec:direct-psh-model] for the direct presheaf model, but only for technical convenience, as it can be avoided by additional uniqueness proofs for equalities.
+In Agda 2.5.2, there is robust support for dependent pattern matching without Streicher's K axiom [@streicher1993investigations]. We use the `--without-K` language option for all of our code in the main development. However, we do use axiom K in [@Sec:direct-psh-model] for the direct presheaf model, but only for technical convenience, as it can be avoided by additional uniqueness proofs for equalities.
 
 ## Agda
 
@@ -160,7 +165,7 @@ This is not valid Agda, but we shall do this whenever the types and binding stat
 
 ### Included Code Examples
 
-The project can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this thesis are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. We indicate the names of relevant source files in the examples as Agda comments or in expository text.
+The project can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this \workname\ are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. We indicate the names of relevant source files in the examples as Agda comments or in expository text.
 
 ### Standard Library
 
@@ -262,11 +267,11 @@ We also borrow `Σ` (dependent sum), `⊤` (unit type), `⊥` (empty type) and `
 
 # Syntax {#sec:syntax}
 
-In this chapter we present the syntax of simply typed lambda calculus - in our case intrinsic syntax with implicit substitutions and de Bruijn indices. We take term conversion to be part of the syntax and therefore include it in this chapter.[^conversion-in-syntax] Since the definition of conversion refers to substitution and weakening, they are also presented here.
+In this \chname\ we present the syntax of simply typed lambda calculus - in our case intrinsic syntax with implicit substitutions and de Bruijn indices. We take term conversion to be part of the syntax and therefore include it in this \chname\.[^conversion-in-syntax] Since the definition of conversion refers to substitution and weakening, they are also presented here.
 
 [^conversion-in-syntax]: We take the view that the "proper" definition of the syntax would be an initial object in some suitable category of models, e. g. the initial category with families. In this way, models include conversion as propositional equations, so the syntax is quotiented by conversion as well; see e. g. [@initialCwF] and [@tt-in-tt]. We do not use this definition because quotients are not yet natively supported in Agda, and we find value in developing a conventional presentation first.
 
-## Base Syntax
+## Core Syntax
 
 The complete definition is the following:
 
@@ -304,7 +309,7 @@ Th presented syntax is *intrinsic*. In other words, only the well-typed terms ar
    data Tm : Set where -- omitted constructors
    data _⊢_∈_ (Γ : Con) → Tm → Ty → Set where -- omitted constructors
 ~~~
-Now, `Γ ⊢ t ∈ A`{.agda} expresses that the preterm `t` is well-formed and has type `A` in context `Γ`.
+Here, `Γ ⊢ t ∈ A`{.agda} expresses that the preterm `t` is well-formed and has type `A` in context `Γ`.
 
 There are advantages and disadvantages to both intrinsic and extrinsic definitions. With intrinsic syntax, well-formedness and type preservation come for free. On the other hand, proofs and computations which do not depend on types are easier to formulate with preterms. In the case of STLC, the type system is simple enough so that carrying around type information never becomes burdensome, so in this setting intrinsic definitions are all-around more convenient. For polymorphic systems such as System $F$, intrinsic typing introduces significant bureaucratic overhead, by tagging terms with type coercions; see Benton et al. [@benton2012strongly] for approaches to dealing with them. For extrinsic syntax, powerful automation for reasoning about substitution is available in Coq, allowing spectacularly compact proofs [@autosubst]. It remains to be seen if it can be practically adapted to intrinsic syntax. For dependent type theories, intrinsic typing with quotient inductive-inductive definitions seems to be most promising, as it requires a relatively compact set of rules [@tt-in-tt], in contrast to extrinsic approaches which suffer from a veritable explosion of well-formedness conditions and congruence rules.
 
@@ -373,7 +378,7 @@ A salient feature of our syntax is the lack of explicit substitution, i. e. we d
 
 1. It is the canonical presentation of STLC in textbooks [@pierce2002types; @harper2016practical].
 
-2. Lighter formalization. With implicit substitutions, the definition of conversion becomes significantly smaller. With explicit substitutions, we need congruence closure of $\beta$ and $\eta$ conversion on terms and substitutions, plus rules for the action of substitution on terms. With implicit substitutions, only terms need to be considered. For illustration, Altenkirch and Chapman's definition [@altenkirch2009big] of conversion for explicit substitution calculus has twenty-four rules, while this development has only seven. It also follows that with our syntax, equational reasoning about substitutions involves definitional or propositional equalities, which are automatically respected by all constructions. There is minor complication involving semantic interpretation of substitutions, discussed in [@sec:soundness].
+2. Lighter formalization. With implicit substitutions, the definition of conversion becomes significantly smaller. With explicit substitutions, we need congruence closure of $\beta$ and $\eta$ conversion on terms and substitutions, plus rules for the action of substitution on terms. With implicit substitutions, only terms need to be considered. For illustration, Altenkirch and Chapman's definition [@altenkirch2009big] of conversion for explicit substitution calculus has twenty-four rules, while this development has only seven. It also follows that with our syntax, equational reasoning about substitutions involves definitional or propositional equalities, which are automatically respected by all constructions. There is minor complication involving semantic interpretation of substitutions, discussed in [@Sec:soundness].
 
 Strictly speaking, stating $\beta$-conversion only requires single substitutions. However, simultaneous substitution is easier to define and reason about. Thus, we shall define the former using the latter and identity substitutions. We have substitutions as lists of terms:
 
@@ -405,7 +410,7 @@ Before we can define identity substitutions and the action of substitution on te
     (σ , t) ₛ∘ₑ δ = (σ ₛ∘ₑ δ) , Tmₑ δ t
 ~~~
 
-The notation `_ₛ∘ₑ_`{.agda} expresses that we have a substitution on the left and an embedding on the right. Its type resembles that of ordinary function composition, if we consider both `Sub` and `OPE` as context morphisms. We will expand on the categorical interpretation of this in [@sec:sub-calc].
+The notation `_ₛ∘ₑ_`{.agda} expresses that we have a substitution on the left and an embedding on the right. Its type resembles that of ordinary function composition, if we consider both `Sub` and `OPE` as context morphisms. We will expand on the categorical interpretation of this in [@Sec:sub-calc].
 
 There is a canonical injection `⌜_⌝ᵒᵖᵉ`{.agda} from `OPE` to `Sub`:
 
@@ -471,7 +476,7 @@ The conversion relation is given as:
 
 # Normalization {#sec:normalization}
 
-In this chapter we specify normal forms and implement normalization. Then, we discuss Kripke models and how normalization can be expressed in terms of them.
+In this \chname\ we specify normal forms and implement normalization. Then, we discuss Kripke models and how normalization can be expressed in terms of them.
 
 ## Normal terms
 
@@ -561,7 +566,7 @@ Adding progressively more structure to models allows us to prove more properties
 
 *Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below.
 
-| Model     | Computation            | Yields proof of             |
+| Model     | Enabled computation    | Yields proof of             |
 |:----------|:-----------------------|:----------------------------|
 | Standard  |  Type-safe interpreter | Consistency                 |
 | Kripke    |  Normalizer            | Completeness                |
@@ -580,7 +585,7 @@ We denote the model for normalization with `ᴺ` superscripts. The implementatio
     Tyᴺ (A ⇒ B) Γ = ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
 ~~~
 
-Each type is mapped to a `(Con → Set)`{.agda} predicate. Hence, semantic types are not just sets anymore, but families of sets indexed by contexts. The base type is mapped to the family of its normal forms. Functions are mapped to semantic functions which take semantic inputs to semantic outputs in *any context larger than Γ*. The additional `OPE` parameter is the key to the algorithm. As it was noted in [@sec:models-intro], semantic functions must be able to take blocking variables as inputs. Blocking variables must be necessarily "fresh" with respect to the Γ context of a semantic function. Here, we can apply a semantic function to suitable embedding into a larger context, allowing to subsequently apply it to semantic terms containing variables pointing into that context. In the simplest case (and the only case we will actually use), if we have
+Each type is mapped to a `(Con → Set)`{.agda} predicate. Hence, semantic types are not just sets anymore, but families of sets indexed by contexts. The base type is mapped to the family of its normal forms. Functions are mapped to semantic functions which take semantic inputs to semantic outputs in *any context larger than Γ*. The additional `OPE` parameter is the key to the algorithm. As it was noted in [@Sec:models-intro], semantic functions must be able to take blocking variables as inputs. Blocking variables must be necessarily "fresh" with respect to the Γ context of a semantic function. Here, we can apply a semantic function to suitable embedding into a larger context, allowing to subsequently apply it to semantic terms containing variables pointing into that context. In the simplest case (and the only case we will actually use), if we have
 
 ~~~{.agda}
     fᴺ : ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
@@ -690,7 +695,7 @@ A Kripke model consists of a preordered set of "worlds", denoted `W`, along with
 ~~~{.agda}
     record KripkeModel : Set₁ where
       field
-        ... -- as before
+        ... -- the same as before
 
       _||-Ty_ : W → Ty → Set
       w ||-Ty ι       = w ||-ι
@@ -731,9 +736,9 @@ With this, everything up to `Tmᴺ` in our previous implementation can be obtain
       ; ι-mono = Nfₑ }
 ~~~
 
-This is an interesting exercise in abstraction, but what is the deeper significance? STLC can be viewed as a simple intuitionistic propositional logic, with a single atomic propopsition `ι`. What is a right notion of semantics, though? We could abstract out the interpetation of base types from the standard model as given in [@sec:models-intro], and get another notion of models; would not that suffice? From a logician's point of view, the issue is that it does not give us completeness. Semantics in general is necessary because we use logic to talk about concepts about which we have underlying intuition, but we have no *a priori* reason to believe that syntactic constructions talk meaningfully about any intuitive concept.
+This is an interesting exercise in abstraction, but what is the deeper significance? STLC can be viewed as a simple intuitionistic propositional logic, with a single atomic propopsition `ι`. What is a right notion of semantics, though? We could abstract out the interpetation of base types from the standard model as given in [@Sec:models-intro], and get another notion of models; would not that suffice? From a logician's point of view, the issue is that it does not give us completeness. Semantics in general is necessary because we use logic to talk about concepts about which we have underlying intuition, but we have no *a priori* reason to believe that syntactic constructions talk meaningfully about any intuitive concept.
 
-Soundness and completeness together express that syntactic and semantic entailment are logically equivalent; the lack of completeness indicates that there is a mismatch, that semantics is larger than necessary. In Agda, we define soundness and completeness for Kripke models as follows^[Note that these are wholly different from soundness and completeness as defined for a normalization algorithm in [@sec:overview].]:
+Soundness and completeness together express that syntactic and semantic entailment are logically equivalent; the lack of completeness indicates that there is a mismatch, that semantics is larger than necessary. In Agda, we define soundness and completeness for Kripke models as follows^[Note that these are wholly different from soundness and completeness as defined for a normalization algorithm in [@Sec:overview].]:
 
 ~~~{.agda}
     sound    = ∀ {Γ A} → Tm Γ A → (∀ M → let open KripkeModel M in Γ ||- A)
@@ -744,19 +749,19 @@ The `let open KripkeModel M`{.agda} incantation makes locally available all fiel
 
 **Theorem**. *STLC is sound and complete with respect to Kripke models.*
 
-*Proof*. Soundness follows immediately from `||-Tm`. For completeness, we instantiate the hypothesis with the previously defined `N` model, then define quoting and unquoting the same way as in [@sec:norm-implementation]. Using them, we can produce a `(Nf Γ A)`{.agda}, which can be canonically injected back to `(Tm Γ A)`{.agda}. $\qed$
+*Proof*. Soundness follows immediately from `||-Tm`. For completeness, we instantiate the hypothesis with the previously defined `N` model, then define quoting and unquoting the same way as in [@Sec:norm-implementation]. Using them, we can produce a `(Nf Γ A)`{.agda}, which can be canonically injected back to `(Tm Γ A)`{.agda}. $\qed$
 
 With the standard set-theoretic semantics for first-order logic, the intuitive content is clear: formulas talk about truth and falsehood. What is an intuitive meaning of Kripke semantics, though? A possible answer is that it talks about *knowledge*. `W` worlds can be understood as states of knowledge, and `_≤_` denotes increasing knowledge. Monotonicity expresses that if something is proven in some state of knowledge, it will never be invalidated, not matter how "wiser" we get.
 
 Note that in the formal development the direct `ᴺ` definitions are used instead of Kripke models. This is primarily to make the algorithm as transparent as possible to lay readers. In the `Normalization.agda` file, the core algorithm is laid out in about 50 lines, and together with the definition of syntax and embedding it is about a hundred lines.
 
-# Correctness
+# Correctness {#sec:correctness}
 
-In this chapter, we prove completeness, soundness and stability for the algorithm.
+In this \chname\, we prove completeness, soundness and stability for the algorithm.
 
 ## Categorical Notions {#sec:cat-notions}
 
-First, we shall introduce a modest number of concepts from category theory. The prime motivation is that they allow us to compactly describe the contents of our proofs. They also make it easier to mentally keep track of proof obligations; a few words of categorical definitions can be unpacked into a dozen lemmas. When proofs align with category theory, that is usually also indicative that one has the right approach. That said, we shall keep category theory to a minimum and only introduce definitions that are directly applicable to our work.
+First, we shall introduce a modest number of concepts from category theory. The prime motivation is that they allow us to compactly describe the contents of our proofs. They also make it easier to mentally keep track of proof obligations, since often a few words of categorical definitions can be unpacked into a dozen lemmas. When proofs align with category theory, that is usually also indicative that one has the right approach. That said, we shall keep category theory to a minimum and only introduce definitions that are directly applicable to our work.
 
 A *category* is defined as follows.
 
@@ -815,7 +820,7 @@ A *presheaf* is a contravariant functor from some $C$ category to **Set**, i. e.
 
 $F : C \rightarrow D$ functors themselves form a category, where functors are objects and natural transformations are morphisms.
 
-This development mostly utilizes presheaves and natural transformations between presheaves. More concretely, our setting will be mostly $PSh$(**OPE**), the category of presheaves on **OPE**, where **OPE** is the category of contexts and order-preserving context embeddings. We examine **OPE** in detail in the next section.
+This development mostly utilizes presheaves and natural transformations between presheaves. More concretely, our setting will be mostly $PSh$(**OPE**), the category of presheaves on **OPE**, where **OPE** is the category of contexts and order-preserving context embeddings. We examine **OPE** in detail in the next \secname\.
 
 
 ## Laws for Embedding and Substitution {#sec:sub-calc}
@@ -824,7 +829,7 @@ Before we attempt to prove correctness we should pin down the laws of embedding 
 
 ### Embeddings {#sec:embedding-laws}
 
-Contexts and order-preserving embeddings form a category, which we call **OPE**. Objects are contexts, morphisms are elements of the `OPE` type. Identity and composition are as previously defined in [@sec:embeddings] and [@sec:norm-implementation]:
+Contexts and order-preserving embeddings form a category, which we call **OPE**. Objects are contexts, morphisms are elements of the `OPE` type. Identity and composition are as previously defined in [@Sec:embeddings] and [@Sec:norm-implementation]:
 
 ~~~{.agda}
     idₑ  : ∀ {Γ} → OPE Γ Γ
@@ -839,7 +844,7 @@ The category laws can be proven with simple induction.
     assₑ : (σ ∘ₑ δ) ∘ₑ ν ≡ σ ∘ₑ (δ ∘ₑ ν) -- associativity
 ~~~
 
-Additionally, variables and terms of a given type are presheaves on **OPE**. `(λ Γ → A ∈ Γ)`{.agda} maps each object of **OPE** to an object of **Set**, that is, an Agda type. Likewise does `(λ Γ → Tm Γ A)`{.agda}. They also have action on morphisms: these are precisely the embedding operations on variables and terms, defined in [@sec:embeddings].
+Additionally, variables and terms of a given type are presheaves on **OPE**. `(λ Γ → A ∈ Γ)`{.agda} maps each object of **OPE** to an object of **Set**, that is, an Agda type. Likewise does `(λ Γ → Tm Γ A)`{.agda}. They also have action on morphisms: these are precisely the embedding operations on variables and terms, defined in [@Sec:embeddings].
 
 ~~~{.agda}
     ∈ₑ  : OPE Γ Δ → (A ∈ Δ → A ∈ Γ)
@@ -882,7 +887,7 @@ This is to be expected, since neutral and normal terms are just terms with restr
 
 We previously introduced **STLC** as the syntactic category, containing contexts as objects and substitutions as morphisms. However, we then presented **OPE** as yet another category with contexts as objects. Why single out **STLC** as the category which characterizes syntax? Well, the conversion relation is an integral part of the syntax, and **OPE** does not contain the morphisms needed to define $\beta$-conversion. In contrast, **STLC** contains all substitutions as well as all embeddings, since embeddings can be viewed as restricted substitutions. **OPE** is a *wide subcategory* of **STLC**: it contains all the objects of **STLC** but only some of its morphisms.
 
-We review identity substitution here (previously defined in [@sec:substitutions]). Composition is elementwise substitution of terms in a substitution.
+We review identity substitution here (previously defined in [@Sec:substitutions]). Composition is elementwise substitution of terms in a substitution.
 
 ~~~{.agda}
     idₛ : ∀ {Γ} → Sub Γ Γ
@@ -908,9 +913,9 @@ The categorical structure of proof obligations is less clear here; although we h
 There are four different operations of composing embeddings and substitutions, since there are two choices for both arguments. We define the missing `_ₑ∘ₛ_`{.agda} operation here:
 
 ~~~{.agda}
-    _∘ₑ_  : OPE Δ Σ → OPE Γ Δ → OPE Γ Σ -- defined in Chapter 4.3
-    _∘ₛ_  : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ -- defined in this chapter
-    _ₛ∘ₑ_ : Sub Δ Σ → OPE Γ Δ → Sub Γ Σ -- defined in Chapter 3.2.2
+    _∘ₑ_  : OPE Δ Σ → OPE Γ Δ → OPE Γ Σ -- defined in 4.3
+    _∘ₛ_  : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ -- defined in this section
+    _ₛ∘ₑ_ : Sub Δ Σ → OPE Γ Δ → Sub Γ Σ -- defined in 3.2.2
 
     _ₑ∘ₛ_ : OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
     ∙      ₑ∘ₛ δ       = δ
@@ -955,13 +960,13 @@ The proofs are moderately interesting and involve straightforward induction and 
 
 ## Completeness {#sec:completeness}
 
-In this section we prove completeness of normalization. It expresses that the output of normalization is convertible to its input.
+In this \secname\ we prove completeness of normalization. It expresses that the output of normalization is convertible to its input.
 
 ~~~{.agda}
     complete : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝Nf
 ~~~
 
-`nf` refers to the function defined in [@sec:norm-implementation]. In the return type, the injection `⌜_⌝Nf`{.agda} converts `(Nf Γ A)`{.agda} back to `(Tm Γ A)`{.agda}.
+`nf` refers to the function defined in [@Sec:norm-implementation]. In the return type, the injection `⌜_⌝Nf`{.agda} converts `(Nf Γ A)`{.agda} back to `(Tm Γ A)`{.agda}.
 
 Since `nf` is defined with a Kripke model, it is clear that proving properties about it have to involve similar model structures. The overall structure of the proof is very similar to normalization itself; we will have interpretation of types, contexts, terms, and quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
 
@@ -1007,7 +1012,7 @@ Here, the goal has type `(Tmₑ σ t ~ ⌜ Nfₑ σ tᴺ ⌝Nf)`{.agda}, and we 
     ~ₑ : ∀ σ → t ~ t' → Tmₑ σ t ~ Tmₑ σ t'
 ~~~
 
-This can be proven by induction on `(t ~ t')`, with the help of substitution laws defined in [@sec:sub-calc]. Now, `(~ₑ σ t≈tᴺ : Tmₑ σ t ~ Tmₑ σ ⌜ tᴺ ⌝Nf)`{.agda}, and the type can be shown to be equal to the goal using `⌜⌝Nf-nat`{.agda}.
+This can be proven by induction on `(t ~ t')`, with the help of substitution laws defined in [@Sec:sub-calc]. Now, `(~ₑ σ t≈tᴺ : Tmₑ σ t ~ Tmₑ σ ⌜ tᴺ ⌝Nf)`{.agda}, and the type can be shown to be equal to the goal using `⌜⌝Nf-nat`{.agda}.
 
 The only needed lemma which has no direct counterpart in `ᴺ` is the following:
 
@@ -1106,7 +1111,7 @@ However, this has a disadvantage: the proof terms threaded through add considera
 
 ## Presheaf Refimenent {#sec:presheaf-refinement}
 
-For soundness, one might be tempted to try directly defining another logical relation, and proceeding similarly as in the previous section. That approach would fall short. The reason is that at some point one has to prove naturality for evaluation, quoting and unquoting, i. e. that they commute with embeddings.
+For soundness, one might be tempted to try directly defining another logical relation, and proceeding similarly as in the previous \secname\. That approach would fall short. The reason is that at some point one has to prove naturality for evaluation, quoting and unquoting, i. e. that they commute with embeddings.
 
 ~~~{.agda}
     Tmᴺ-nat : ∀ t σ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)
@@ -1149,11 +1154,11 @@ Note that the action on morphisms was already present in the Kripke model under 
 
 Preordered sets can be viewed as categories with at most a single morphism between any two objects [@preorder]. If $I \leq J$, then there is a morphism between $I$ and $J$, otherwise there is no such morphism. Identity and composition of morphisms comes from reflexivity and transitivity of preordering.
 
-In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the capabilities of Agda and the scope of this thesis.
+In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the capabilities of Agda and the scope of this \workname\.
 
 In the presheaf model, terms are interpreted as morphisms from semantic contexts to semantic types, in other words, natural transformations. Concretely, this means that the evaluation function^[Recall that the evaluation function is the interpretation of terms.] should be mutually defined with the proof that it commutes with embeddings, i. e. its naturality. Similarly, quoting and unquoting are defined mutually with their naturality proofs.
 
-In this section, we do not use the `ᴾ` model - it is described in [@sec:direct-psh-model] in more detail. Instead, the previous definition of normalization using `ᴺ` is kept unchanged, but we shall need additional machinery to prove the necessary naturalities. The solution is the following: first, we define a logical predicate on semantic values which restricts them to natural inhabitants. Then, we give all naturality proofs, using restricted semantic values when required, and also prove that the `Tmᴺ` evaluation function outputs natural values.
+In this \secname\, we do not use the `ᴾ` model - it is described in [@Sec:direct-psh-model] in more detail. Instead, the previous definition of normalization using `ᴺ` is kept unchanged, but we shall need additional machinery to prove the necessary naturalities. The solution is the following: first, we define a logical predicate on semantic values which restricts them to natural inhabitants. Then, we give all naturality proofs, using restricted semantic values when required, and also prove that the `Tmᴺ` evaluation function outputs natural values.
 
 The naturality predicate is defined below. We use superscript `ᴾ` notation for definitions related to this predicate. Here, `ᴾ` means "presheaf refinement", not "presheaf model".
 
@@ -1276,7 +1281,7 @@ Next, we prove the more general lemma expressing that convertible terms are eval
     ~≈ : t ~ t' → Conᴾ Γᴺ → Conᴾ Γᴺ' → Γᴺ ≈ᶜ Γᴺ' → Tmᴺ t Γᴺ ≈ Tmᴺ t' Γᴺ'
 ~~~
 
-This is the bulk of the work. We prove by induction on `(t ~ t')`{.agda}. First, let us consider the constructors for the equivalence closure, namely reflexivity, symmetry and transitivity. The latter two can be proven in general for `_≈_`{.agda} and `_≈ᶜ_`{.agda}:
+This is the bulk of the work. We proceed with induction on `(t ~ t')`{.agda}. First, let us consider the constructors for the equivalence closure, namely reflexivity, symmetry and transitivity. The latter two can be proven in general for `_≈_`{.agda} and `_≈ᶜ_`{.agda}:
 
 ~~~{.agda}
     _≈⁻¹  : t ≈ t' → t' ≈ t
@@ -1300,7 +1305,8 @@ The `app` and `lam` congruences are also straightforward:
 
 ~~~{.agda}
     ~≈ (lam t~t') Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
-      λ ν aᴾ aᴾ' a≈a' → ~≈ t~t' (Conᴾₑ ν Γᴾ , aᴾ) (Conᴾₑ ν Γᴾ' , aᴾ') (≈ᶜₑ ν Γᴺ≈Γᴺ' , a≈a')
+      λ ν aᴾ aᴾ' a≈a' → 
+        ~≈ t~t' (Conᴾₑ ν Γᴾ , aᴾ) (Conᴾₑ ν Γᴾ' , aᴾ') (≈ᶜₑ ν Γᴺ≈Γᴺ' , a≈a')
     ~≈ (app {f = f}{f'}{a = a}{a'} t~t' a~a') Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
       ~≈ t~t' Γᴾ Γᴾ' Γᴺ≈Γᴺ' idₑ (Tmᴾ a Γᴾ) (Tmᴾ a' Γᴾ') (~≈ a~a' Γᴾ Γᴾ' Γᴺ≈Γᴺ')
 ~~~
@@ -1329,7 +1335,7 @@ Hence, we need to rewrite (or coerce) the right hand side of the result type wit
    eq : Tmᴺ (Tmₑ wk t) (Conᴺₑ ν Γᴺ' , a') idₑ a' ≡ Tmᴺ t Γᴺ' ν a'
 ~~~
 
-This should give us a moment of pause. Obviously, we need to prove something about the action of `Tmᴺ` on *embedded terms* such as `(Tmₑ wk t)`{.agda}. However, we haven't even defined an interpretation for embeddings in any model. Embedding and substitution is implicit in our syntax, therefore we are not obliged to interpret them. Note that in the presheaf model in [@sec:presheaf-refinement], we interpreted *types* as presheaves, and for each type we defined its action on embeddings, with embeddings considered as **OPE** morphisms, but that is not the same as interpreting embeddings themselves, considered as **STLC** morphisms.
+This should give us a moment of pause. Obviously, we need to prove something about the action of `Tmᴺ` on *embedded terms* such as `(Tmₑ wk t)`{.agda}. However, we haven't even defined an interpretation for embeddings in any model. Embedding and substitution is implicit in our syntax, therefore we are not obliged to interpret them. Note that in the presheaf model in [@Sec:presheaf-refinement], we interpreted *types* as presheaves, and for each type we defined its action on embeddings, with embeddings considered as **OPE** morphisms, but that is not the same as interpreting embeddings themselves, considered as **STLC** morphisms.
 
 We interpret embeddings as natural transformations between semantic contexts:
 
@@ -1357,6 +1363,8 @@ Now, we can give the action of evaluation on embedded terms:
     ∈ₑᴺ  : ∀ σ v Γᴺ → ∈ᴺ (∈ₑ σ v)   Γᴺ ≡ ∈ᴺ  v (OPEᴺ σ Γᴺ)
     Tmₑᴺ : ∀ σ t Γᴺ → Tmᴺ (Tmₑ σ t) Γᴺ ≡ Tmᴺ t (OPEᴺ σ Γᴺ)
 ~~~
+
+Note that these are essentially *computation* rules, but given as propositional equalities. If the syntax had explicit substitutions (and, by extension, explicit embeddings), these rules would be actual definitional equalities in the evaluation function. It is a trade-off: we forgo these definitional equalities in favor of others stemming from the recursive definition of embedding and substitution, and in favor of the greatly reduced number of conversion rules.
 
 We can turn our attention back to the equality proof required for the $\eta$ case. By informal equational reasoning:
 
@@ -1424,7 +1432,7 @@ Now, `Tmₛᴺ` can used to prove a `_≈_`{.agda} where the right hand side mat
       : Tmᴺ t (Subᴺ idₛ Γᴺ' , Tmᴺ t' Γᴺ') ≈ Tmᴺ (Tmₛ (idₛ , t') t) Γᴺ'
 ~~~
 
-We can use transitivity of `_≈_` and simplify `idₑ` actions, after which the goal becomes
+We can use transitivity of `_≈_` and erase semantic `idₑ` actions, after which the goal becomes
 
 ~~~{.agda}
     Tmᴺ t (Γᴺ , Tmᴺ t' Γᴺ) ≈ Tmᴺ t (Γᴺ' , Tmᴺ t' Γᴺ')
@@ -1437,7 +1445,7 @@ Note that the evaluation context differs on the sides, but the the evaluated ter
       : Tmᴺ t (Γᴺ , Tmᴺ t' Γᴺ) ≈ Tmᴺ t (Γᴺ' , Tmᴺ t' Γᴺ')
 ~~~
 
-After this, quoting, unquoting and soundness itself is easily given.
+After this, quoting, unquoting and soundness is easily given.
 
 ~~~{.agda}
     mutual
@@ -1459,24 +1467,179 @@ After this, quoting, unquoting and soundness itself is easily given.
 
 $\qed$
 
-
 ## Stability {#sec:stability}
 
-TODO
+Stability expresses that normalization has no action on normal terms:
 
-# Variations  {#sec:variations}
+~~~{.agda
+    stable : (n : Ne Γ A) → nf ⌜ n ⌝Nf ≡ n
+~~~
+
+It differs in several ways from the other two correctness properties. First, it is not quite as crucial; failing either soundness or completeness results in something else than a normalization algorithm, but instability is tolerable. A primary goal of normalization is to have a decision procedure for conversion, however, it is achievable without stability:
+
+~~~{.agda}
+    -- decidable Nf equality, given by simple induction
+    Nf≡? : (n n' : Nf Γ A) → (n ≡ n') ⊎ (n ≡ n' → ⊥)
+
+    decidableConversion : (t t' : Tm Γ A) → (t ~ t') ⊎ (t ~ t' → ⊥)
+    decidableConversion t t' with Nf≡? (nf t) (nf t')
+    ... | inj₁ p = 
+      inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝Nf ~ t') & p ⁻¹) (complete t' ~⁻¹))
+    ... | inj₂ p = 
+      inj₂ (λ q → p (sound q))
+~~~
+
+Rather, stability tells us whether a normalization algorithm matches up exactly with a definition of normal forms. In our case, if we leave normalization essentially unchanged, but do not mandate $\eta$-long normal forms as we currently do, there would be $\eta$-short normal forms which are $\eta$-expanded by normalization:
+
+~~~{.agda}
+    t : Tm (ι ⇒ ι) (ι ⇒ ι)
+    t = var vz
+    
+    nf-η-expands : nf t ≡ (lam (app (var (vs vz)) (var vz)))
+    nf-η-expands = refl
+~~~
+
+Here, normalization "thinks" that normal forms are more restricted than they actually are. To regain stability, normalization would have to be modified so that it does not do any $\eta$-conversion and leaves neutral terms unchanged. That said, an unstable algorithm is still fine - it just does "more" than what is required. One could argue that instability should be avoided because unstable algorithms perform unnecessary computation.
+
+Stability is much simpler to prove than previous correctness properties. Simple mutual induction on normal and neutral terms suffices, making use of previously proved naturalities and straightforward equational reasoning.
+
+~~~{.agda}
+    stable∈ : (v : A ∈ Γ) → ∈ᴺ v uᶜᴺ ≡ uᴺ (var v)
+    stable∈ vz     = refl
+    stable∈ (vs v) =
+        ∈ᴺ-nat v wk uᶜᴺ
+      ◾ Tyᴺₑ wk & stable∈ v
+      ◾ uᴺ-nat wk (var v)
+      ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
+    
+    mutual
+      stable : (n : Nf Γ A) → nf ⌜ n ⌝Nf ≡ n
+      stable (ne n)  = stableNe n
+      stable (lam n) = lam & stable n
+    
+      stableNe : (n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
+      stableNe (var v)   = stable∈ v
+      stableNe (app f a) =
+          (λ x → x idₑ (Tmᴺ ⌜ a ⌝Nf uᶜᴺ)) & stableNe f
+        ◾ (λ x → uᴺ (app (Neₑ idₑ f) x)) & stable a
+        ◾ (λ x → uᴺ (app x a)) & Ne-idₑ f
+~~~
+
+$\qed$
+
+# Variations {#sec:variations}
+
+In this \chname\ we look at two alternate variants of the formalization with different design choices. The first one is more compact but includes a less transparent implementation of normalization. The second one contains a more efficient evaluation function at the cost of slightly larger proofs.
 
 ## Direct Presheaf Model {#sec:direct-psh-model}
 
-* Definition, proofs
-* Semantic equality == propositional equality
-* However: funext in definition of nf. Use external canonicity proof or metatheory with funext
+In [@Sec:presheaf-refinement] the presheaf model of STLC was described, but not pursued to its full extent. Going for a full presheaf model lets us dispense with about 150 lines of Agda, which is a significant portion of the roughly 750 lines of the whole development. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe/tree/master](/url)*.
+
+The `ᴺ` model is changed to a presheaf model, therefore it includes all mutually defined naturality proofs. The interpretation of types is now the same as `Tyᴾ` in [@Sec:presheaf-refinement], although here we also use `ᴺ` superscripts for the presheaf model^[It stands for "normalization", which it achieves, but by a different model than previously.].
+
+A benefit of this approach is that the `Tyᴾ` logical predicate for naturality can be entirely dropped, since naturality is already baked into `Tyᴺ`. The drawback is that all functor laws and naturalities must be proven even when defining the evaluation function. We list here the types (only the types, for brevity) of the definitions required to implement normalization, along with brief descriptions of categorical interpretations. Below, `(f : PSh(OPE)(A, B))`{.agda} means that `f` is a natural transformation in `PSh(OPE)` between `A` and `B` presheaves.
+
+~~~{.agda}
+    -- Presheaf.agda
+
+    -- Tyᴺ A : PSh(OPE)
+    ------------------------------------------------------------
+    Tyᴺ  : Ty → Con → Set              -- action on objects
+    Tyᴺₑ : OPE Δ Γ → Tyᴺ A Γ → Tyᴺ A Δ -- action on morphisms
+    
+    Tyᴺ-idₑ : ∀ tᴺ → Tyᴺₑ idₑ tᴺ ≡ tᴺ
+    Tyᴺ-∘ₑ  : ∀ tᴺ σ δ → Tyᴺₑ (σ ∘ₑ δ) tᴺ ≡ Tyᴺₑ δ (Tyᴺₑ σ tᴺ)
+
+    -- Conᴺ Γ : PSh(OPE)
+    ------------------------------------------------------------
+    Conᴺ  : Con → Con → Set               -- action on objects
+    Conᴺₑ : OPE Δ Σ → Conᴺ Γ Σ → Conᴺ Γ Δ -- action on morphisms
+
+    Conᴺ-idₑ : ∀ Γᴺ → Conᴺₑ idₑ Γᴺ ≡ Γᴺ
+    Conᴺ-∘ₑ  : ∀ σ δ Γᴺ → Conᴺₑ (σ ∘ₑ δ) Γᴺ ≡ Conᴺₑ δ (Conᴺₑ σ Γᴺ)
+
+    -- ∈ᴺ {Γ}{A} v : PSh(OPE)(Conᴺ Γ, Tyᴺ A)
+    ------------------------------------------------------------
+    ∈ᴺ     : ∀ {Γ A} → A ∈ Γ → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
+    ∈ᴺ-nat : ∀ (v : A ∈ Γ) σ Γᴺ → ∈ᴺ v (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (∈ᴺ v Γᴺ)
+
+    -- Tmᴺ {Γ}{A} t : PSh(OPE)(Conᴺ Γ, Tyᴺ A)
+    ------------------------------------------------------------
+    Tmᴺ     : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
+    Tmᴺ-nat : ∀ t σ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)
+    
+    -- qᴺ {A} : PSh(OPE)(Tyᴺ A, Nf _ A)
+    ------------------------------------------------------------
+    qᴺ     : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
+    qᴺ-nat : ∀ σ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
+    
+    -- uᴺ {A} : PSh(OPE)(Ne _ A, Tyᴺ A)
+    ------------------------------------------------------------
+    uᴺ     : ∀ {A Γ} → Ne Γ A → Tyᴺ A Γ
+    uᴺ-nat : ∀ σ n → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
+        
+    ------------------------------------------------------------
+    uᶜᴺ : ∀ {Γ} → Conᴺ Γ Γ
+    nf  : ∀ {Γ A} → Tm Γ A → Nf Γ A
+~~~
+
+The proofs for completeness and stability are largely unchanged. For soundness, we again need to interpret embeddings and substitutions and define the action of evaluation on them.
+
+~~~{.agda}
+    -- Presheaf.agda
+
+    -- OPEᴺ {Γ}{Δ} σ : PSh(OPE)(Conᴺ Γ, Conᴺ Δ)
+    ------------------------------------------------------------
+    OPEᴺ     : ∀ {Γ Δ} → OPE Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
+    OPEᴺ-nat : ∀ σ δ Γᴺ → OPEᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (OPEᴺ σ Γᴺ)
+    
+    OPEᴺ-idₑ : ∀ Γᴺ → OPEᴺ idₑ Γᴺ ≡ Γᴺ
+    Tmₑᴺ     : ∀ σ t Γᴺ → Tmᴺ (Tmₑ σ t) Γᴺ ≡ Tmᴺ t (OPEᴺ σ Γᴺ)
+   
+    -- Subᴺ {Γ}{Δ} σ : PSh(OPE)(Conᴺ Γ, Conᴺ Δ)
+    --------------------------------------------------------------------------------
+    Subᴺ     : ∀ {Γ Δ} → Sub Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
+    Subᴺ-nat : ∀ σ δ Γᴺ → Subᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (Subᴺ σ Γᴺ)
+
+    Subᴺ-idₛ : ∀ Γᴺ → Subᴺ idₛ Γᴺ ≡ Γᴺ
+    Subᴺ-ₛ∘ₑ : ∀ σ δ Γᴺ → Subᴺ (σ ₛ∘ₑ δ) Γᴺ ≡ Subᴺ σ (OPEᴺ δ Γᴺ)
+    Tmₛᴺ     : ∀ σ t Γᴺ → Tmᴺ (Tmₛ σ t) Γᴺ ≡ Tmᴺ t (Subᴺ σ Γᴺ)
+~~~
+
+The soundness proof is dramatically simpler this time. The reason is that propositional equality is already right for semantic values, so there is no need for any additional `_≈_` logical relation, and propositional equality is already an equivalence relation which respected by all constructions in the metatheory. Hence, soundness is simply given as follows:
+
+~~~{.agda}
+    -- Soundness.agda
+    ~≈ : ∀ {t t' : Tm Γ A} → t ~ t' → (σ : Conᴺ Γ Δ) → Tmᴺ t σ ≡ Tmᴺ t' σ
+    
+    sound : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
+    sound t~t' = qᴺ & ~≈ t~t' uᶜᴺ
+~~~
+
+Here, the proof for `~≈`{.agda} still makes use of `OPEᴺ` and `Subᴺ`, but it is much simpler than before and altogether takes 11 lines of Agda.
 
 ## More Efficient Evaluation {#sec:more-efficient}
 
-* efficient embedding for semantic contexts
-* Agda benchmarking
-* performance limitations of intrinsic syntax compared to type assignment
+Let us review the definition of `Tmᴺ`:
+
+~~~{.agda}
+    Tmᴺ : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
+    Tmᴺ (var v)   Γᴺ = ∈ᴺ v Γᴺ
+    Tmᴺ (lam t)   Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ)
+    Tmᴺ (app f a) Γᴺ = Tmᴺ f Γᴺ idₑ (Tmᴺ a Γᴺ)
+~~~
+
+Notice the `idₑ` in the `(app f a)`{.agda} case. After each application to `idₑ`, the `Γᴺ` context is changed to `(Conᴺₑ idₑ Γᴺ)`{.agda} during the evaluation of the internal `t` body of `(Tmᴺ f Γᴺ)`{.agda}. This means that every application has an overhead proportional to the size of the current context. Also, recall `Tyᴺₑ` for functions:
+
+~~~{.agda}
+    Tyᴺₑ {A ⇒ B} σ tᴺ = λ δ aᴺ → tᴺ (σ ∘ₑ δ) aᴺ
+~~~
+
+`(Tyᴺₑ idₑ tᴺ)`{.agda} creates a new closure around `tᴺ` which has essentially no effect, and these closures accumulate on the top of semantic functions in `Γᴺ` after each `(app f a)`{.agda} evaluation. This is certainly bad for performance. We would like evaluation to be essentially as efficient for weak reduction as the standard model (as defined in [@Sec:models-intro]). This can be achieved by defining `idₑ` and `Conᴺₑ` in a way such that `(Conᴺₑ idₑ Γᴺ)`{.agda} immediately reduces to `Γᴺ`.
+
+First, `idₑ` needs to be a primitive constructor:
+
+
 
 # Discussion and Future Work {#sec:discussion}
 
