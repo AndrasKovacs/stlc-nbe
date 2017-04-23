@@ -1620,6 +1620,8 @@ Here, the proof for `~≈`{.agda} still makes use of `OPEᴺ` and `Subᴺ`, but 
 
 ## More Efficient Evaluation {#sec:more-efficient}
 
+We describe a more efficient evaluation function in this \secname\. The correctness proofs are also formalized for this version, requiring only minor modifications. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe/blob/efficient-appN](/url)*. 
+
 Let us review the definition of `Tmᴺ`:
 
 ~~~{.agda}
@@ -1639,7 +1641,60 @@ Notice the `idₑ` in the `(app f a)`{.agda} case. After each application to `id
 
 First, `idₑ` needs to be a primitive constructor:
 
+~~~{.agda}
+    -- Embedding.agda
+    data OPE : Con → Con → Set where
+      idₑ  : ∀ {Γ} → OPE Γ Γ
+      drop : ∀ {A Γ Δ} → OPE Γ Δ → OPE (Γ , A) Δ
+      keep : ∀ {A Γ Δ} → OPE Γ Δ → OPE (Γ , A) (Δ , A)
+~~~
 
+This slightly complicates the identity functor law for `(Tm _ A)`{.agda} and `(A ∈ _)`{.agda}, since identity embeddings are not unique anymore. We define a predicate on embeddings which picks out the identities:
+
+~~~{.agda}
+    Id-ish : ∀ {Γ} → OPE Γ Γ → Set
+    Id-ish idₑ      = ⊤
+    Id-ish (drop σ) = ⊥
+    Id-ish (keep σ) = Id-ish σ
+~~~
+
+`Id-ish` embeddings are `idₑ`-s wrapped in zero or more `keep`-s. We prove identity functor laws using `Id-ish`:
+
+~~~{.agda}
+    ∈-idₑ  : ∀ (v : A ∈ Γ ){σ : OPE Γ Γ}{p : Idish σ} → ∈ₑ σ v ≡ v
+    Tm-idₑ : ∀ (t : Tm Γ A){σ : OPE Γ Γ}{p : Idish σ} → Tmₑ σ t ≡ t
+~~~
+
+Secondly, `Conᴺₑ` is redefined as follows:
+
+~~~{.agda}
+    Conᴺₑ : OPE Σ Δ → Conᴺ Γ Δ → Conᴺ Γ Σ
+    Conᴺₑ idₑ      Γᴺ        = Γᴺ
+    Conᴺₑ (drop σ) ∙         = ∙
+    Conᴺₑ (drop σ) (Γᴺ , tᴺ) = (Conᴺₑ (drop σ) Γᴺ) , Tyᴺₑ (drop σ) tᴺ
+    Conᴺₑ (keep σ) ∙         = ∙
+    Conᴺₑ (keep σ) (Γᴺ , tᴺ) = (Conᴺₑ (keep σ) Γᴺ) , (Tyᴺₑ (keep σ) tᴺ)
+~~~
+
+However, with this we lose two definitional equalities we had before, which are quite useful to have. We can resurrect them as propositional equalities:
+
+~~~{.agda}
+    -- PresheafRefinement.agda
+    Conᴺₑ-∙ : ∀ σ → Conᴺₑ σ ∙ ≡ ∙
+    Conᴺₑ-, : ∀ σ Γᴺ tᴺ → Conᴺₑ σ (Γᴺ , tᴺ) ≡ (Conᴺₑ σ Γᴺ , Tyᴺₑ σ tᴺ)
+~~~
+
+We must manually rewrite along these equalities when necessary. It is not a significant burden though. All together, the changes described here result in about 20 additional lines in the formalization.
+
+We eliminated the overhead on the evaluation of application, but what about quoting? It also contains semantic application:
+
+~~~{.agda}
+    qᴺ : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
+    qᴺ {ι}     tᴺ = tᴺ
+    qᴺ {A ⇒ B} tᴺ = lam (qᴺ (tᴺ wk (uᴺ (var vz))))
+~~~
+
+Here, the `(tᴺ wk)` is essential, but it is far less of an overhead than the `idₑ`-s before. Notice that `qᴺ` is *type-directed*, and for each semantic value it is called as many times as there are function arguments in the value's type. Of course, `qᴺ` is applied to various sub-terms of a term during normalization (via `uᴺ`), so the overall number of `qᴺ` calls is likely greater than the number of arguments in a term's type. Still, it is only to be expected that *normalization* is more costly than standard interpretation, since it does more work. *Evaluation* on its own is no less efficient than standard interpretation, with the current optimized implementation.
 
 # Discussion and Future Work {#sec:discussion}
 
@@ -1649,8 +1704,4 @@ First, `idₑ` needs to be a primitive constructor:
 
 * Scaling up the technique
   + With implicit substitution and conversion relation: to System F, probably
-
-
-
-
 
