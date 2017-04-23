@@ -8,7 +8,7 @@ open import Embedding
 open import NormalForm
 
 open import Normalization
-open import PresheafExtension
+open import PresheafRefinement
 
 stab∈ : ∀ {Γ A}(v : A ∈ Γ) → ∈ᴺ v uᶜᴺ ≡ uᴺ (var v)
 stab∈ vz     = refl

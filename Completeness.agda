@@ -9,7 +9,7 @@ open import Normalization
 open import Embedding
 open import Substitution
 open import Conversion
-open import PresheafExtension
+open import PresheafRefinement
 
 _≈_ : ∀ {A Γ} → Tm Γ A → Tyᴺ A Γ → Set
 _≈_ {ι}        t tᴺ = t ~ ⌜ qᴺ tᴺ ⌝

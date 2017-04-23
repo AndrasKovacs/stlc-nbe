@@ -10,7 +10,7 @@ open import Conversion
 open import NormalForm
 
 open import Normalization
-open import PresheafExtension
+open import PresheafRefinement
 
 infix 3 _≈_ _≈ᶜ_
 
