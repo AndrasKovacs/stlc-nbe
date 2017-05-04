@@ -162,7 +162,7 @@ As a notational convention, we shall take cues from the Idris [@brady2013idris] 
     _++_ : Vec A n → Vec A m → Vec A (n + m)
 ~~~
 
-This is not valid Agda, but we shall do this whenever the types and binding status of parameters are obvious. Sometimes we also omit type annotations from bindings when they can be inferred or not relevant for exposition.
+This is not valid Agda, but we shall do this whenever the types and binding status of parameters are obvious. Sometimes we also omit type annotations from bindings when they can be inferred or are not relevant for exposition.
 
 ### Formalization
 
@@ -306,7 +306,7 @@ As an example, the identity function on the base type is represented as:
    id-ι : Tm ∙ (ι ⇒ ι)
    id-ι = lam (var vz) -- with nameful syntax: λ (x : ι) . x
 ~~~
-Th presented syntax is *intrinsic*. In other words, only the well-typed terms are defined. An *extrinsic* definition would first define untyped *preterms* and separately a typing relation on preterms and contexts:
+The presented syntax is *intrinsic*. In other words, only the well-typed terms are defined. An *extrinsic* definition would first define untyped *preterms* and separately a typing relation on preterms and contexts:
 
 ~~~{.agda}
    data Tm : Set where -- omitted constructors
@@ -567,7 +567,7 @@ Adding progressively more structure to models allows us to prove more properties
     consistency t = Tmˢ t tt
 ~~~
 
-*Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specifics things relevant to out interest, and there are many more computations and logical interpretations possible for each class of models.
+*Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specific things relevant to our interest, and there are many more computations and logical interpretations possible for each class of models.
 
 | Model     | Computation            | Proof                       |
 |:----------|:-----------------------|:----------------------------|
@@ -677,7 +677,7 @@ At first, it can be difficult to build a mental model of the operation of the al
 
 In fact, this encapsulation of recursive `Tmᴺ` calls is a crucial detail which makes this whole definition structurally recursive and thus total. In the `(Tmᴺ (lam t) Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ))`{.agda} clause, the recursive `Tmᴺ`{.agda} call is evidently structural, and because it happens under a *metatheoretic* lambda, semantic functions can be applied to *any* value in any definition without compromising structurality.
 
-To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (var vz)))`{.agda} application, the `(uᴺ (var vz))`{.agda} term plays the role of blocking input, but it is not quite entirely blocking. `uᴺ` performs an operation best described as *semantic $\eta$-expansion*: it acts as identity on neutral base terms, and from neutral function it produces semantic function which build up neutral applications from their inputs. Thus, `(uᴺ {ι} (var vz))`{.agda} simply reduces to `(ne (var vz))`{.agda}, while `(uᴺ {ι ⇒ i} (var vz))`{.agda} reduces to `(λ σ aᴺ → ne (app (var (∈ₑ σ vz)) aᴺ))`{.agda}. In short, `uᴺ` returns semantic values which yield properly $\eta$-expanded normal forms when quoted. As convoluted this may seem, it is actually a very elegant solution.
+To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (var vz)))`{.agda} application, the `(uᴺ (var vz))`{.agda} term plays the role of blocking input, but it is not quite entirely blocking. `uᴺ` performs an operation best described as *semantic $\eta$-expansion*: it acts as identity on neutral base terms, and from neutral functions it produces semantic functions which build up neutral applications from their inputs. Thus, `(uᴺ {ι} (var vz))`{.agda} simply reduces to `(ne (var vz))`{.agda}, while `(uᴺ {ι ⇒ i} (var vz))`{.agda} reduces to `(λ σ aᴺ → ne (app (var (∈ₑ σ vz)) aᴺ))`{.agda}. In short, `uᴺ` returns semantic values which yield properly $\eta$-expanded normal forms when quoted. As convoluted this may seem, it is actually a very elegant solution.
 
 ## Kripke Models {#sec:kripke}
 
@@ -973,7 +973,7 @@ In this \secname\ we prove completeness of normalization. It expresses that the 
 
 `nf` refers to the function defined in [@Sec:norm-implementation]. In the return type, the injection `⌜_⌝Nf`{.agda} converts `(Nf Γ A)`{.agda} back to `(Tm Γ A)`{.agda}.
 
-Since `nf` is defined with a Kripke model, it is clear that proving properties about it have to involve similar model structures. The overall structure of the proof is very similar to normalization itself; we will have interpretation of types, contexts, terms, and quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
+Since `nf` is defined with a Kripke model, it is clear that proving properties about it have to involve similar structures; we will have interpretation of types, contexts, terms, quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
 
 ~~~{.agda}
     -- Completeness.agda
@@ -1295,7 +1295,7 @@ This is the bulk of the work. We proceed with induction on `(t ~ t')`{.agda}. Fi
     _≈ᶜ◾_ : σ ≈ᶜ δ → δ ≈ᶜ ν → σ ≈ᶜ ν
 ~~~
 
-Reflexivity is not generally provable, but we only need it on the image of `Tmᴺ`{.agda}, which is already covered by `Tm≈`{.agda}. We can implement the cases for equivalence closure in `~≈`{.agda}:
+Reflexivity is not generally provable, but we only need it on the codomain of `Tmᴺ`{.agda}, which is already covered by `Tm≈`{.agda}. We can implement the cases for equivalence closure in `~≈`{.agda}:
 
 ~~~{.agda}
     ~≈ {t = t} ~refl Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
@@ -1325,7 +1325,7 @@ The real work happens with the $\beta$ and $\eta$ rules. Let us see $\eta$:
 The goal has the following type:
 
 ~~~{.agda}
-   Tmᴺ t Γᴺ ν a ≈ Tmᴺ (Tmₑ wk t) (Conᴺₑ ν Γᴺ' , a') idₑ a'
+    Tmᴺ t Γᴺ ν a ≈ Tmᴺ (Tmₑ wk t) (Conᴺₑ ν Γᴺ' , a') idₑ a'
 ~~~
 
 Making full use of the induction hypothesis gives us the following:
@@ -1337,7 +1337,7 @@ Making full use of the induction hypothesis gives us the following:
 Hence, we need to rewrite (or coerce) the right hand side of the result type with an equality.
 
 ~~~{.agda}
-   eq : Tmᴺ (Tmₑ wk t) (Conᴺₑ ν Γᴺ' , a') idₑ a' ≡ Tmᴺ t Γᴺ' ν a'
+    eq : Tmᴺ (Tmₑ wk t) (Conᴺₑ ν Γᴺ' , a') idₑ a' ≡ Tmᴺ t Γᴺ' ν a'
 ~~~
 
 This should give us a moment of pause. Obviously, we need to prove something about the action of `Tmᴺ` on *embedded terms* such as `(Tmₑ wk t)`{.agda}. However, we haven't even defined an interpretation for embeddings in any model. Embedding and substitution is implicit in our syntax, therefore we are not obliged to interpret them. Note that in the presheaf model in [@Sec:presheaf-refinement], we interpreted *types* as presheaves, and for each type we defined its action on embeddings, with embeddings considered as **OPE** morphisms, but that is not the same as interpreting embeddings themselves, considered as **STLC** morphisms.
@@ -1422,9 +1422,9 @@ Substitutions are also interpreted as natural transformations, however, naturali
    Subᴺ-idₛ : ∀ Γᴺ → Subᴺ idₛ Γᴺ ≡ Γᴺ
 ~~~
 
-There is no deep reason why we need `_ₛ∘ₑ_`{.agda} but not the other variants; only this lemma is needed in the rest of the soundness proof.
+There is no discernible deep reason why we need `_ₛ∘ₑ_`{.agda} but not the other variants; only this lemma is needed in the rest of the soundness proof.
 
-The action of evaluation on substituted terms is a bit more involved. Naturality must be assumed for the input semantic context, or else the proof does not go through - in fact, this is the reason why naturality predicates were introduced. This implies that the action of evaluation cannot be stated as propositional equality, only as `_≈_`, the previously defined equality of semantic values.
+The action of evaluation on substituted terms is a bit more involved. Naturality must be assumed for the input semantic context, or else the proof does not go through - in fact, this is the reason why naturality predicates were introduced. This implies that the action of evaluation cannot be stated as propositional equality, only as `_≈_`{.agda}, the previously defined equality of semantic values.
 
 ~~~{.agda}
     Tmₛᴺ : ∀ σ t Γᴺ → Conᴾ Γᴺ → Γᴺ ≈ᶜ Γᴺ → Tmᴺ (Tmₛ σ t) Γᴺ ≈ Tmᴺ t (Subᴺ σ Γᴺ)
@@ -1437,13 +1437,13 @@ Now, `Tmₛᴺ` can used to prove a `_≈_`{.agda} where the right hand side mat
       : Tmᴺ t (Subᴺ idₛ Γᴺ' , Tmᴺ t' Γᴺ') ≈ Tmᴺ (Tmₛ (idₛ , t') t) Γᴺ'
 ~~~
 
-We can use transitivity of `_≈_` and erase semantic `idₑ` actions, after which the goal becomes
+We can use transitivity of `_≈_`{.agda} and erase semantic `idₑ` actions, after which the goal becomes
 
 ~~~{.agda}
     Tmᴺ t (Γᴺ , Tmᴺ t' Γᴺ) ≈ Tmᴺ t (Γᴺ' , Tmᴺ t' Γᴺ')
 ~~~
 
-Note that the evaluation context differs on the sides, but the the evaluated term is the same. Thus, `Tm≈` can be used to prove the goal, which completes the proof of `∼≈`.
+Note that the evaluation context differs on the sides, but the the evaluated term is the same. Since the evaluation contexts are related by `_≈_`{.agda}, `Tm≈` can be used to prove the goal, which completes the proof of `∼≈`.
 
 ~~~{.agda}
     (Tm≈ t (Γᴾ , Tmᴾ t' Γᴾ) (Γᴾ' , Tmᴾ t' Γᴾ') (σ≈δ , (Tm≈ t' Γᴾ Γᴾ' σ≈δ)))
@@ -1542,7 +1542,7 @@ In [@Sec:presheaf-refinement] the presheaf model of STLC was described, but not 
 
 The `ᴺ` model is changed to a presheaf model, therefore it includes all mutually defined naturality proofs. The interpretation of types is now the same as `Tyᴾ` in [@Sec:presheaf-refinement], although here we also use `ᴺ` superscripts for the presheaf model^[It stands for "normalization", which it achieves, but by a different model than previously.].
 
-A benefit of this approach is that the `Tyᴾ` logical predicate for naturality can be entirely dropped, since naturality is already baked into `Tyᴺ`. The drawback is that all functor laws and naturalities must be proven even when defining the evaluation function. We list here the types (only the types, for brevity) of the definitions required to implement normalization, along with brief descriptions of categorical interpretations. Below, `(f : PSh(OPE)(A, B))`{.agda} means that `f` is a natural transformation in `PSh(OPE)` between `A` and `B` presheaves.
+A benefit of this approach is that the `Tyᴾ` logical predicate for naturality can be entirely dropped, since naturality is already baked into `Tyᴺ`. The drawback is that functor laws and naturalities must be defined mutually with evaluation. We list here the types (only the types, for brevity) of the definitions required to implement normalization, along with brief descriptions of categorical interpretations. Below, `(f : PSh(OPE)(A, B))`{.agda} means that `f` is a natural transformation in `PSh(OPE)` between `A` and `B` presheaves.
 
 ~~~{.agda}
     -- Presheaf.agda
