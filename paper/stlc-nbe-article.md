@@ -1,6 +1,6 @@
  <!--
-pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe.md -o stlc-nbe.latex
-; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex
+pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe-article.md -o stlc-nbe-article.latex
+; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe-article.latex
 -->
 
 ---
@@ -11,14 +11,14 @@ csl: ieee.csl
 lang: en
 
 fontsize: 12pt
-linestretch: 1.5
-margin-left: 3.5cm
-margin-right: 2.5cm
+linestretch: 1.0
+margin-left: 3.0cm
+margin-right: 3.0cm
 margin-top: 2.5cm
 margin-bottom: 2.5cm
 
-secPrefix: chapter
-documentclass: book
+secPrefix: section
+documentclass: article
 classoption: openany
 
 header-includes:
@@ -28,15 +28,12 @@ header-includes:
    - \newtheorem{theorem}{Theorem}
    - \newtheorem{definition}{Definition}
    - \renewenvironment{Shaded}{\setstretch{1.0}}{}
-   
    - \def\secname{section}
    - \def\Secname{Section}
-   - \def\chname{chapter}
-   - \def\Chname{Chapter}
-   - \def\workname{thesis}
-   - \def\Workname{Thesis}
-   
-   - 
+   - \def\chname{section}
+   - \def\Chname{Section}
+   - \def\workname{article}
+   - \def\Workname{Article}
 
 title:
   A Machine-Checked Correctness Proof of Normalization by Evaluation
@@ -45,6 +42,7 @@ author:
 - 'Author: András Kovács'
 - 'Advisor: Ambrus Kaposi'
 date: Budapest, 2017
+abstract: "We implement and prove correct normalization by evaluation for simply typed lambda calculus, using the proof assistant Agda. The correctness proof consists of soundness, completeness and stability with respect to $\\beta\\eta$-conversion. The algorithm uses a Kripke model over the preordered set of order-preserving context embeddings. Completeness is given by a logical relation between the term model and the Kripke model. For soundness and stability, we first need to prove that evaluation, quoting and unquoting all commute with order-preserving embeddings, which amounts to showing that the codomain of the evaluation function can be refined to a presheaf model. Then, soundness is shown by a logical relation on semantic values which fall into the refined model. Stability is proved by induction on normal and neutral terms. Decidability of $\\beta\\eta$-conversion for terms also follows from correctness. The main advantage of the formalization is that normalization has a concise and structurally recursive specification and is presented separately from the correctness proofs. Also, the syntax of terms remains simple, making no use of explicit substitutions or closures. Overall, the technical overhead of the development is relatively light."
 
 ---
 
@@ -1719,4 +1717,6 @@ As to possible extensions and improvements to this work, while it seems that the
 For System $F$ with intrinsic syntax and implicit substitutions, this author has an unpublished mostly-complete formalization of an NbE algorithm [@intrinsic-sysF-nbe], although there are no correctness proofs yet. It seems that System $F_{\omega}$ is about as far as we can take intrinsic syntax with implicit substitutions. With full dependent types, intrinsic syntax only seems feasible with higher-inductive definitions and explicit substitutions. Implicit substitutions remain only feasible with extrinsic syntax. 
 
 Another possible improvement would be proof automation for substitution and embedding laws. A significant part of the development is essentially "boilerplate" related to this. For extrinsic syntax, there are very powerful automation libraries available in the proof assistant Coq [@needle-knot; @autosubst]. For intrinsic syntax, automatic generation of substitution lemmas seems more difficult, but even if we prove categorical lemmas by hand, we could still make use of automation for proving ad hoc term equations. This seems doable in Agda, although the automation facilities of Agda are not as nearly mature as that of Coq.
+
+
 
