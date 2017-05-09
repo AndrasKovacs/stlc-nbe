@@ -1,9 +1,6 @@
- <!--
-pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe-article.md -o stlc-nbe-article.latex
-; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe-article.latex
--->
 
 ---
+build: pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe-article.md -o stlc-nbe-article.latex; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe-article.latex
 monofont: DejaVu Sans Mono
 bibliography: [references.bib, alti.bib, local.bib]
 link-citations: true

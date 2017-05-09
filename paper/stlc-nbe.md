@@ -1,9 +1,6 @@
- <!--
-pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe.md -o stlc-nbe.latex
-; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex
--->
 
 ---
+build: pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe.md -o stlc-nbe.latex ; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex
 monofont: DejaVu Sans Mono
 bibliography: [references.bib, alti.bib, local.bib]
 link-citations: true
@@ -24,27 +21,17 @@ classoption: openany
 header-includes:
    - \setlength\parindent{15pt}
    - \usepackage{amsthm}
+   - \usepackage{graphicx}
    - \usepackage{indentfirst}
    - \newtheorem{theorem}{Theorem}
    - \newtheorem{definition}{Definition}
    - \renewenvironment{Shaded}{\setstretch{1.0}}{}
-   
    - \def\secname{section}
    - \def\Secname{Section}
    - \def\chname{chapter}
    - \def\Chname{Chapter}
    - \def\workname{thesis}
    - \def\Workname{Thesis}
-   
-   - 
-
-title:
-  A Machine-Checked Correctness Proof of Normalization by Evaluation
-  for Simply Typed Lambda Calculus
-author:
-- 'Author: András Kovács'
-- 'Advisor: Ambrus Kaposi'
-date: Budapest, 2017
 
 ---
 
@@ -249,6 +236,7 @@ Furthermore, we use coercion instead of transport (see HoTT book [@hottbook, pp.
 The choice for `coe` is mainly stylistic and rather subjective. `coe (P & eq)` does not look worse than `subst P eq`, but `coe` by itself is used often and is more compact than `subst id`.
 
 In Agda, sometimes an explicit "equational reasoning" syntax is used. For example, commutativity for addition may look like the following:
+\pagebreak
 
 ~~~{.agda}
     +-comm : (m n : ℕ) → m + n ≡ n + m
@@ -285,7 +273,10 @@ The complete definition is the following:
     data Ty : Set where
       ι   : Ty
       _⇒_ : Ty → Ty → Ty
+~~~
+\pagebreak
 
+~~~{.agda}
     data Con : Set where
       ∙   : Con
       _,_ : Con → Ty → Con
@@ -362,6 +353,7 @@ Embeddings have action on variables and terms, reconstructing them in larger con
     Tmₑ σ (app f a) = app (Tmₑ σ f) (Tmₑ σ a)
 ~~~
 
+\pagebreak
 Identity embeddings keep every entry:
 
 ~~~{.agda}
@@ -531,7 +523,10 @@ Clearly, STLC is a small fragment of Agda, so we should be able to interpret the
     Tyˢ : Ty → Set
     Tyˢ ι       = ⊥
     Tyˢ (A ⇒ B) = Tyˢ A → Tyˢ B
+~~~
+\pagebreak
 
+~~~{.agda}
     Conˢ : Con → Set
     Conˢ ∙       = ⊤
     Conˢ (Γ , A) = Conˢ Γ × Tyˢ A
@@ -570,6 +565,7 @@ Adding progressively more structure to models allows us to prove more properties
 ~~~
 
 *Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specific things relevant to our interest, and there are many more computations and logical interpretations possible for each class of models.
+\pagebreak
 
 | Model     | Computation            | Proof                       |
 |:----------|:-----------------------|:----------------------------|
@@ -722,7 +718,10 @@ A Kripke model consists of a preordered set of "worlds", denoted `W`, along with
       Con-mono : w ≤ w' → w ||-Con Γ → w' ||-Con Γ
       Con-mono {∙}     σ p = p
       Con-mono {Γ , A} σ p = Con-mono σ (proj₁ p) , Ty-mono {A} σ (proj₂ p)
+~~~
+\pagebreak
 
+~~~{.agda}
       ||-Tm : Tm Γ A → Γ ||- A
       ||-Tm (var vz)     w (_ , q) = q
       ||-Tm (var (vs v)) w (p , q) = ||-Tm (var v) w p
@@ -923,7 +922,10 @@ There are four different operations of composing embeddings and substitutions, s
     _∘ₑ_  : OPE Δ Σ → OPE Γ Δ → OPE Γ Σ -- defined in 4.3
     _∘ₛ_  : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ -- defined in this section
     _ₛ∘ₑ_ : Sub Δ Σ → OPE Γ Δ → Sub Γ Σ -- defined in 3.2.2
+~~~
+\pagebreak
 
+~~~{.agda}
     _ₑ∘ₛ_ : OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
     ∙      ₑ∘ₛ δ       = δ
     drop σ ₑ∘ₛ (δ , t) = σ ₑ∘ₛ δ
@@ -975,7 +977,7 @@ In this \secname\ we prove completeness of normalization. It expresses that the 
 
 `nf` refers to the function defined in [@Sec:norm-implementation]. In the return type, the injection `⌜_⌝Nf`{.agda} converts `(Nf Γ A)`{.agda} back to `(Tm Γ A)`{.agda}.
 
-Since `nf` is defined with a Kripke model, it is clear that proving properties about it have to involve similar structures; we will have interpretation of types, contexts, terms, quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
+Since `nf` is defined with a Kripke model, it is clear that proving properties about it has to involve similar structures: we will have interpretation of types, contexts, terms, quoting and unquoting. In general, proofs about properties of functions must have the same inductive "shape" as the functions in question. The main difference here is that types are interpreted as *relations*:
 
 ~~~{.agda}
     -- Completeness.agda
@@ -1085,7 +1087,10 @@ Now, quoting, unquoting and completeness can be defined as follows:
       q≈ : ∀ {A} → t ≈ tᴺ → t ~ ⌜ qᴺ tᴺ ⌝Nf
       q≈ {ι}     t≈tᴺ = t≈tᴺ
       q≈ {A ⇒ B} t≈tᴺ = η _ ~◾ lam (q≈ (t≈tᴺ wk (u≈ (var vz))))
+~~~
+\pagebreak
 
+~~~{.agda}
       u≈ : ∀ {A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
       u≈ {ι}     n = ~refl
       u≈ {A ⇒ B} n σ {a} {aᴺ} a≈aᴺ
@@ -1146,7 +1151,10 @@ A *presheaf model* of STLC interprets types and contexts as presheaves. In parti
       Σ (∀ {Δ} → OPE Δ Γ → Tyᴾ A Δ → Tyᴾ B Δ) λ fᴾ →
       ∀ {Δ Σ}(σ : OPE Δ Γ)(δ : OPE Σ Δ) aᴾ
         → fᴾ (σ ∘ₑ δ) (Tyᴾₑ δ aᴾ) ≡ Tyᴾₑ δ (fᴾ σ aᴾ)
+~~~
+\pagebreak
 
+~~~{.agda}
     -- action on morphisms
     Tyᴾₑ    : OPE Δ Γ → Tyᴾ A Γ → Tyᴾ A Δ
 
@@ -1161,7 +1169,7 @@ Note that the action on morphisms was already present in the Kripke model under 
 
 Preordered sets can be viewed as categories with at most a single morphism between any two objects [@preorder]. If $I \leq J$, then there is a morphism between $I$ and $J$, otherwise there is no such morphism. Identity and composition of morphisms comes from reflexivity and transitivity of preordering.
 
-In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the capabilities of Agda and the scope of this \workname\.
+In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the native capabilities of Agda and the scope of this \workname\.
 
 In the presheaf model, terms are interpreted as morphisms from semantic contexts to semantic types, in other words, natural transformations. Concretely, this means that the evaluation function^[Recall that the evaluation function is the interpretation of terms.] should be mutually defined with the proof that it commutes with embeddings, i. e. its naturality. Similarly, quoting and unquoting are defined mutually with their naturality proofs.
 
@@ -1195,6 +1203,7 @@ We extend naturality to semantic contexts and prove that it is preserved by embe
 ~~~
 
 Next are functor laws for types and contexts. These are provable without reference to naturality. However, function extensionality is required.
+\pagebreak
 
 ~~~{.agda}
     Tyᴺ-idₑ : ∀ {A}(tᴺ : Tyᴺ A Γ) → Tyᴺₑ idₑ tᴺ ≡ tᴺ
@@ -1270,7 +1279,10 @@ Next, we prove that evaluating the same term in related semantic contexts yields
 ~~~{.agda}
     -- ∈≈ just looks up a witness, as before.
     ∈≈ : (v : A ∈ Γ) → σ ≈ᶜ δ → ∈ᴺ v σ ≈ ∈ᴺ v δ
+~~~
+\pagebreak
 
+~~~{.agda}
     Tm≈ : (t : Tm Γ A) → Conᴾ Γᴺ → Conᴾ Γᴺ' →  Γᴺ ≈ᶜ Γᴺ' → Tmᴺ t Γᴺ ≈ Tmᴺ t Γᴺ'
     Tm≈ (var v)   Γᴾ Γᴾ' σ≈δ = ∈≈ v σ≈δ
     Tm≈ (lam t)   Γᴾ Γᴾ' σ≈δ =
@@ -1309,6 +1321,7 @@ Reflexivity is not generally provable, but we only need it on the codomain of `T
 ~~~
 
 The `app` and `lam` congruences are also straightforward:
+\pagebreak
 
 ~~~{.agda}
     ~≈ (lam t~t') Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
@@ -1351,7 +1364,10 @@ We interpret embeddings as natural transformations between semantic contexts:
     OPEᴺ ∙        Γᴺ        = δᴺ
     OPEᴺ (drop σ) (Γᴺ , _)  = OPEᴺ σ Γᴺ
     OPEᴺ (keep σ) (Γᴺ , tᴺ) = OPEᴺ σ Γᴺ , tᴺ
+~~~
+\pagebreak
 
+~~~{.agda}
     OPEᴺ-nat : ∀ σ δ Γᴺ → OPEᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (OPEᴺ σ Γᴺ)
     -- proof omitted
 ~~~
@@ -1471,7 +1487,6 @@ After this, quoting, unquoting and soundness is easily given.
     sound : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
     sound t~t' = q≈ (~≈ t~t' uᶜᴾ uᶜᴾ uᶜ≈)
 ~~~
-
 $\qed$
 
 ## Stability {#sec:stability}
@@ -1579,7 +1594,10 @@ A benefit of this approach is that the `Tyᴾ` logical predicate for naturality 
     ------------------------------------------------------------
     qᴺ     : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
     qᴺ-nat : ∀ σ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
-    
+~~~
+\pagebreak
+
+~~~{.agda}
     -- uᴺ {A} : PSh(OPE)(Ne _ A, Tyᴺ A)
     ------------------------------------------------------------
     uᴺ     : ∀ {A Γ} → Ne Γ A → Tyᴺ A Γ
@@ -1614,6 +1632,7 @@ The proofs for completeness and stability are largely unchanged. For soundness, 
 ~~~
 
 The soundness proof is dramatically simpler this time. The reason is that propositional equality is already right for semantic values, so there is no need for any additional `_≈_` logical relation, and propositional equality is already an equivalence relation which is respected by all constructions in the metatheory. Hence, soundness is simply given as follows:
+\pagebreak
 
 ~~~{.agda}
     -- Soundness.agda
