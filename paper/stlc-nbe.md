@@ -999,7 +999,7 @@ We extend `_≈_`{.agda} to a relation between substitutions and semantic contex
       _,_ : σ ≈ᶜ δ → t ≈ t' → (σ , t) ≈ᶜ (δ , t')
 ~~~
 
-Substitutions are list of syntactic terms while semantic context are lists of semantic terms, so they can be elementwise related by `_≈_`{.agda}.
+Substitutions are lists of syntactic terms while semantic context are lists of semantic terms, so they can be elementwise related by `_≈_`{.agda}.
 
 Mirroring `ᴺ`, we need monotonicity for semantic terms and contexts:
 
