@@ -1121,7 +1121,7 @@ Now, since a large part of the proof was just reiterating the structure of `ᴺ`
 
 However, this has a disadvantage: the proof terms threaded through add considerable noise to any subsequent proof about normalization. It is also contrary to our goal of implementing the algorithm as simply as possible.
 
-## Presheaf Refimenent {#sec:presheaf-refinement}
+## Presheaf Refinement {#sec:presheaf-refinement}
 
 For soundness, one might be tempted to try directly defining another logical relation, and proceeding similarly as in the previous \secname\. That approach would fall short. The reason is that at some point one has to prove naturality for evaluation, quoting and unquoting, i. e. that they commute with embeddings.
 
