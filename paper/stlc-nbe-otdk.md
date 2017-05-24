@@ -1,6 +1,6 @@
 
 ---
-build: pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe.md -o stlc-nbe.latex -B before-body.tex ; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe.latex
+build: pandoc -s -N -F pandoc-crossref --toc --latex-engine=xelatex --biblatex stlc-nbe-otdk.md -o stlc-nbe-otdk.latex -B before-body-otdk.tex; latexmk -pdf -xelatex -interaction=nonstopmode stlc-nbe-otdk.latex
 monofont: DejaVu Sans Mono
 bibliography: [references.bib, alti.bib, local.bib]
 link-citations: true
@@ -54,6 +54,8 @@ Additionally, we require stability, which establishes that normalization is alig
 
 * *Stability*: normalization acts as the identity function on normal terms.
 
+The current work offers two main contributions. First, as far as the author is aware, this is the first machine-checked correctness proof of $\beta\eta$-normalization for STLC with implicit substitutions, as all previous formalizations concerned explicit substitution calculi. Second, we manage to significantly cut down on the size of the formalization, partly because of the structurally recursive nature of the algorithm, partly because of our principled utilization of categorical structures.
+
 [@Sec:metatheory] describes the metatheory we work in. In [@Sec:syntax], we formalize the syntax of STLC along with $\beta\eta$-conversion. [@Sec:normalization] presents the normalization function, and [@Sec:correctness] proves its correctness. [@Sec:variations] describes two alternative formalizations, one with more efficient evaluation and one with more concise correctness proofs. We discuss the results and possible future research in the final \chname\.
 
 The Agda formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*.
@@ -66,7 +68,7 @@ Catarina Coquand's work [@coquand2002formalised] is the most closely related to 
 
 Altenkirch and Chapman [@altenkirch2009big] formalize a big-step normalization algorithm in Agda. This development uses an explicit substitution calculus and implements normalization using an environment machine with first-order closures. The algorithm works similarly to ours on the common syntactic fragment, but it is not structurally recursive and hence specifies evaluation as a inductive relation, using the Bove-Capretta method [@bove2005modelling].
 
-Altenkirch and Kaposi [@altenkirch2016normalisation] use a glued presheaf model ("presheaf logical predicate") for NbE for a minimal dependent type theory. This development provided the initial inspiration for the formalization in this \workname\; it seemed plausible that "scaling down" dependently typed NbE to simple type theory would yield a formalization that is more compact than existing ones. This turned to be the case; however the discussion of resulting development is relegated to [@Sec:direct-psh-model], because using a Kripke model has the advantage of clean separation of the actual algorithm and its naturality proofs, which was deemed preferable to the more involved presheaf construction. Also, our work uses a simple presheaf model rather than the glued model used in Ibid. or in the work of Altenkirch, Hoffman and Streicher [@altenkirch1995categorical].
+Altenkirch and Kaposi [@altenkirch2016normalisation] use a glued presheaf model ("presheaf logical predicate") for NbE for a minimal dependent type theory. This development provided the initial inspiration for the formalization in this \workname\; it seemed plausible that "scaling down" dependently typed NbE to simple type theory would yield a formalization that is more compact than existing ones. This turned out to be the case; however the discussion of resulting development is relegated to [@Sec:direct-psh-model], because using a Kripke model has the advantage of clean separation of the actual algorithm and its naturality proofs, which was deemed preferable to the more involved presheaf construction. Also, our work uses a simple presheaf model rather than the glued model used in Ibid. or in the work of Altenkirch, Hoffman and Streicher [@altenkirch1995categorical].
 
 
 # Metatheory {#sec:metatheory}
@@ -75,7 +77,9 @@ In this \chname\ the metatheory used for formalization is presented, first broad
 
 ## Type Theory
 
-The basic system we use is intensional Martin-Löf type theory (MLTT). For an overview and tutorial see the first chapter of the Homotopy Type Theory book [@hottbook]. However, there is no canonical definition of intensional type theory. There are numerous variations concerning type universes and the range of allowed type definitions. Our development uses the following features:
+The basic system we use is intensional Martin-Löf type theory (MLTT). For an overview and tutorial see the first chapter of the Homotopy Type Theory book [@hottbook]. A salient feature of MLTT which is heavily utilized in this work, is its *constructivity*. This means that proofs in MLTT can be viewed as programs: proofs of implications are functions which transform proofs, while proofs of existence are pairs containing a witness and a proof about the witness. This allows us to simultaneously formally specify the normalization algorithm and implement it as an executable function. However, MLTT does not force us to *always* reason constructively; it is consistent to assume classical logical axioms and a number of extensionality axioms. 
+
+Unfortunately, there is no canonical definition of intensional type theory. There are numerous variations concerning type universes and the range of allowed type definitions, so we need to pin down the exact variant used in this work. We use the following features:
 
 * _Strictly positive inductive definitions_. These are required for an intrinsically well-typed syntax. We do not require induction-recursion, induction-induction, higher induction or large inductive types.
 
@@ -189,7 +193,7 @@ Note that the types of `f` and `g` are left implicit above, in accordance with o
 Here the quantification noise is increased by universe indices. Universe polymorphism is only used in `Lib.agda`, but we will henceforth omit universe indices anyway.
 
 
-Our style of equational reasoning deviates from the standard library. First, we use a more compact notation for symmetry and transitivity, inspired by the Homotopy Type Theory book [@hottbook]:
+Our style of equational reasoning deviates from the standard library. First, we use a more compact notation for symmetry and transitivity, adopted from the Homotopy Type Theory book [@hottbook]:
 
 ~~~{.agda}
     _◾_ : x ≡ y → y ≡ z → x ≡ z -- transitivity
@@ -233,10 +237,10 @@ Furthermore, we use coercion instead of transport (see HoTT book [@hottbook, pp.
     subst P eq = coe (P & eq)
 ~~~
 
-The choice for `coe` is mainly stylistic and rather subjective. `coe (P & eq)` does not look worse than `subst P eq`, but `coe` by itself is used often and is more compact than `subst id`.
+The choice for `coe` is mainly stylistic and rather subjective. `coe (P & eq)` does not look less pleasing than `subst P eq`, but `coe` by itself is used often and is more compact than `subst id`.
 
 In Agda, sometimes an explicit "equational reasoning" syntax is used. For example, commutativity for addition may look like the following:
-\pagebreak
+
 
 ~~~{.agda}
     +-comm : (m n : ℕ) → m + n ≡ n + m
@@ -254,7 +258,7 @@ In formal development we do not use this style and instead keep the intermediate
     +-comm (suc m) n = (suc & +-comm n m) ◾ (+-suc n m ⁻¹)
 ~~~
 
-This is because in an interactive environment one can step through the intermediate points fairly easily, and writing them out adds significant visual clutter. However, we will use informal equational reasoning when it aids explanation.
+This is because in an interactive environment one can step through the intermediate points fairly easily, and writing them out adds significant visual clutter. We do, in fact, advise the reader to step through proofs in Agda in this manner, when proof steps are complicated enough. However, we will use informal equational reasoning when it aids explanation.
 
 We also borrow `Σ` (dependent sum), `⊤` (unit type), `⊥` (empty type) and `_⊎_`{.agda} (disjoint union) from the standard library. Elements of `Σ` are constructed as `(a , b)`{.agda} pairs, and the projections are `proj₁` and `proj₂`. `A × B` is defined in terms of `Σ` as the non-dependent pair type. `⊤` has `tt` ("trivially true") as sole element. Injection into disjoint unions is done with `inj₁` and `inj₂`. The *ex falso* principle is named `⊥-elim`, with type `{A : Set} → A → A`{.agda}.
 
@@ -264,9 +268,65 @@ In this \chname\ we present the syntax of simply typed lambda calculus - in our 
 
 [^conversion-in-syntax]: We take the view that the "proper" definition of the syntax would be an initial object in some suitable category of models. In this way, models include conversion as propositional equations, so the syntax is quotiented by conversion as well; see e. g. [@initialCwF] and [@tt-in-tt]. We do not use this definition because quotients are not yet natively supported in Agda, and we find value in developing a conventional presentation first.
 
-## Core Syntax
+## Informal Syntax
 
-The complete definition is the following:
+The simply typed lambda calculus is an important early type theory. First formulated in 1940 by Alonzo Church [@church1940formulation], it served as basis for many further systems. It remains a staple in type systems textbooks (such as [@pierce2002types] and [@harper2016practical]) as a first introduction to typed programming languages. However, the simplicity is somewhat deceptive: STLC is already a theory of arbitrarily higher-order functions, and when extended with natural numbers it acquires the same proof-theoretic strength as Peano arithmetic [@girard1989proofs, chap. 7].
+
+First, let us consider several examples in an informal Church-style syntax. STLC consists of *lambda expressions*, *variables* and *applications*. $\lambda$-bound variables are annotated with types. Types consist of a base type named `ι`{.agda} and function types. Variables are represented by names. 
+
+~~~
+    x      ::= 'x' | 'y' | 'z' | ...
+    type   ::= ι | type ⇒ type
+    term   ::= λ (x : type). term | term term | x
+~~~
+
+Each well-typed term has a unique type which can be determined from the annotations on binders. For example, the identity function on `ι` is represented as follows:
+
+~~~
+    id-ι := λ (x : ι). x
+~~~
+
+More interesting are terms of type `((ι ⇒ ι) ⇒ (ι ⇒ ι))`. The set of such terms is in bijection with the set of natural numbers, since these terms may apply their first argument to the second zero or more times. We give here two such examples.
+
+~~~
+    zero := λ (f : ι ⇒ ι). λ (x : ι). x
+    four := λ (f : ι ⇒ ι). λ (x : ι). f (f (f (f x)))
+~~~
+
+Note that there is no basic construction which inhabits the base type. Hence, there is no closed term (i. e. a term without free variables) which has base type. We do not intend to model the empty type with `ι` (hence we also do not include the eliminator for the empty type), it is just that there needs to be *some* base type, or else function types would not be representable.
+
+Although terms such as the examples above are easy to read, formal definitions usually eschew explicit names. One reason is that named variables make some terms appear distinct, which should really be considered the same:
+\pagebreak
+
+~~~
+   term1 := λ (x : ι). x
+   term2 := λ (y : ι). y
+~~~
+
+Here, `term1` and `term2` are *$\alpha$-convertible*, i. e. one is obtained from the other by consistent renaming of bound variables. In a formal setting the handling of $\alpha$-equivalence can be quite complicated.
+
+Also, named variables greatly complicate *substitution* by the possibility of variable capture. This means that when reducing expressions one needs to sometimes rename bound variables, since otherwise variables which are free in a term may become bound after substitution. Below we use the usual `(t [x ⊢> t'])` notation to denote the operation of replacing each `x` occurrence in `t` with a copy of `t'`.
+
+~~~
+   (λ (y : ι). f y) [f ⊢> λ (z : ι). y]
+   = (λ (y : ι). (λ (z : ι). y) y)
+~~~
+
+But now the previously free `y` in `(λ (z : ι). y)` becomes bound, yielding an incorrect result.
+
+For these reasons it is more common in formal development to use *de Bruijn* indices. This means that instead of names, variables are simply natural numbers which point to the binder situated n+1 binders above the current point of occurrence of the variable. Some previous examples with de Bruijn indices:
+
+~~~
+    id-ι := λ ι. 0
+    zero := λ (ι ⇒ ι). λ ι. 0
+    four := λ (ι ⇒ ι). λ ι. 1 (1 (1 (1 0)))
+~~~
+
+De Bruijn indices are obviously much harder to read, and it requires a non-trivial amount of practice to be able to efficiently parse them mentally. Still, the advantages in formal reasoning are worth it. Sometimes, people use nameful syntax for informal discussion, as an abuse of notation, but assume de Bruijn indices for the "true" underlying representation.
+
+## Core Formal Syntax
+
+We shall turn to the formal syntax now. The complete definition is the following:
 
 ~~~{.agda}
     -- Syntax.agda
@@ -274,7 +334,6 @@ The complete definition is the following:
       ι   : Ty
       _⇒_ : Ty → Ty → Ty
 ~~~
-\pagebreak
 
 ~~~{.agda}
     data Con : Set where
@@ -291,14 +350,28 @@ The complete definition is the following:
       app : Tm Γ (A ⇒ B) → Tm Γ A → Tm Γ B
 ~~~
 
-There is a base type `ι` (Greek iota) and function types. Contexts are just lists of types. `_∈_`{.agda} is an inductively defined membership relation on contexts. It has the same structure as de Bruijn indices; for this reason they are named `vz` for "zero" and `vs` for "suc". Terms are parameterized by a `Γ` context and indexed by a type. `var` picks an entry from the contexts, `lam` is abstraction while `app` is function application.
+As before, there is a base type `ι` (Greek iota) and function types. 
 
-As an example, the identity function on the base type is represented as:
+Contexts are declared as `Con`. They may be either empty or extended with a type - in other words, contexts are singly linked lists of types. Contexts are necessary because terms may have free variables, and since all terms must be known to be well-typed, the types of the free variables must be also known. Contexts records these types.
+
+Variables are declared as `_∈_`{.agda}. As the notation suggests, variables are proofs that a given type is contained in a context. Such constructive membership proofs are essentially natural number indices pointing into a list; this motivates the naming of `vz` (for "zero variable", which points to the first element of the context) and `vs` (for "successor variable"). Hence, variables are de Bruijn indices with additional typing information attached.
+
+Terms are parameterized by a `Γ` context and indexed by a type. `var` picks an entry from the contexts, `lam` is abstraction, while `app` is function application. Note that all term constructors are well typed. In `var` it is ensured that the variable is not pointing out of bounds. In `lam`, the context of the body is extended with the type of the newly bound variable. In `app`, the first term must be a function and the second must have the appropriate input type.
+
+Examples with formal syntax (note that we also specify with `∙`{.agda} that these are closed terms, i. e. terms in the empty context):
 
 ~~~{.agda}
    id-ι : Tm ∙ (ι ⇒ ι)
-   id-ι = lam (var vz) -- with nameful syntax: λ (x : ι) . x
+   id-ι = lam (var vz) 
+   -- with de Bruijn syntax: λ ι. 0
+   -- with nameful syntax:   λ (x : ι) . x
+   
+   two : Tm ∙ ((ι ⇒ ι) ⇒ (ι ⇒ ι))
+   two = lam (lam (app (var (vs vz)) (app (var (vs vz)) (var vz))))
+   -- with de Bruijn syntax: λ (ι ⇒ ι). λ ι. 1 (1 0)
+   -- with nameful syntax:   λ (f : ι ⇒ ι). λ (x : ι). f (f x)
 ~~~
+
 The presented syntax is *intrinsic*. In other words, only the well-typed terms are defined. An *extrinsic* definition would first define untyped *preterms* and separately a typing relation on preterms and contexts:
 
 ~~~{.agda}
@@ -311,11 +384,15 @@ There are advantages and disadvantages to both intrinsic and extrinsic definitio
 
 ## Context Embeddings and Substitutions
 
-In order to specify $\beta$-conversion, we need a notion of substitution. Also, the $\eta$-rule must refer to a notion of *weakening* or *embedding*: it mentions the "same" term under and over a $\lambda$ binder, but the two occurrences cannot be definitionally the same, since they are in different contexts and thus have different types. We need to express the notion that whenever one has a term in a context, one can construct essentially the same term in a larger context. We use *order-preserving-embeddings* for this. Embeddings enable us to state the $\eta$-rule, but we also make use of them for defining substitutions.
+The previously presented syntax, however, is not the complete picture. We also need to define *conversion*, a binary relation on terms which expresses how a term can be converted to another by ways of computation. Any normalization algorithm must respect conversion; otherwise arbitrary well-typed transformations would be possible, most of which cannot be understood as evaluation.
+
+*$\beta$-conversion* specifies that arguments to a $\lambda$ term can be substituted inside the $\lambda$ body. *$\eta$-conversion* informally says that `(λ x. f x)` is convertible to `f`. We will specify these formally at the end of this \chname. In order to do so, we need to first define *substitution* and *embedding*.
+
+Substitution is clearly needed to specify $\beta$-conversion. The $\eta$-rule in turn must refer to a notion of *weakening* or *embedding*: it mentions the "same" term under and over a $\lambda$ binder, but the two occurrences cannot be definitionally the same, since they are in different contexts and thus have different types. We need to express the notion that whenever one has a term in a context, one can construct essentially the same term in a larger context. We use *order-preserving-embeddings* for this. Embeddings enable us to state the $\eta$-rule, but we also make use of them for defining substitutions.
 
 ### Embeddings {#sec:embeddings}
 
-We define order-preserving embeddings the following way:
+We define order-preserving embeddings the following way.
 
 ~~~{.agda}
     -- Embedding.agda
@@ -325,11 +402,21 @@ We define order-preserving embeddings the following way:
       keep : OPE Γ Δ → OPE (Γ , A) (Δ , A)
 ~~~
 
-Elements of `OPE Γ Δ` express that `Δ` can be obtained from `Γ` by dropping zero or more entries in order.
+`OPE` is a binary relation on contexts. The elements of `OPE Γ Δ` express that the `Δ` context can be obtained from the `Γ` context by dropping zero or more entries in order. We will use `OPE` to define the embeddings of terms into larger contexts, and the embeddings of variables as well.
 
-Some choices can be made here. C. Coquand [@coquand1992proof] uses an explicit identity embedding constructor with type `(∀ {Γ} → OPE Γ Γ)`{.agda} instead of our `∙`. This slightly simplifies some proofs and slightly complicates others. It does not have propositionally unique identity embeddings^[Since wrapping the identity embedding with any number of `keep`-s also yields identity embeddings.], but overall the choice between this definition and ours is fairly arbitrary.
+For example, we can express that `(∙ , ι , (ι ⇒ ι))`{.agda} embeds `(∙ , ι)`{.agda} the following way:
 
-An alternative solution is using *renamings*. Renamings are essentially substitutions containing only variables, alternatively definable as functions mapping variables of smaller contexts to variables of larger contexts [@mcbride2015datatypes, pp. 24]:
+~~~{.agda}
+    emb : OPE (∙ , ι , (ι ⇒ ι)) (∙ , ι)
+    emb = drop (keep ∙)
+~~~
+
+We start from the left end with `∙`, then keep the `ι` entry in the left context, then finally drop the `(ι ⇒ ι)`{.agda} entry, and we obtain the right context by this process. Thus, elements of `(OPE Γ Δ)`{.agda} can be seen as instructions on how to obtain `Δ` from `Γ` by dropping zero or more elements. Of course, there can be multiple elements of `(OPE Γ Δ)`{.agda}. For example, an element of `(OPE (∙ , ι , ι) (∙ , ι))`{.agda} can drop either the first or the second `ι` from the left context.
+
+Some choices can be made in the definition of `OPE`. C. Coquand [@coquand1992proof] uses an explicit identity embedding constructor with type `(∀ {Γ} → OPE Γ Γ)`{.agda} instead of our `∙`. This slightly simplifies some proofs and slightly complicates others. It does not have propositionally unique identity embeddings^[Since wrapping the identity embedding with any number of `keep`-s also yields identity embeddings.], but overall the choice between this definition and ours is fairly arbitrary.
+
+An alternative solution is using *renamings*. Renamings are essentially substitutions containing only variables, alternatively definable as functions mapping variables of a context to variables of another context [@mcbride2015datatypes, pp. 24]:
+\pagebreak
 
 ~~~{#lst:ren .agda}
     Ren : Con → Con → Set
@@ -353,7 +440,7 @@ Embeddings have action on variables and terms, reconstructing them in larger con
     Tmₑ σ (app f a) = app (Tmₑ σ f) (Tmₑ σ a)
 ~~~
 
-\pagebreak
+
 Identity embeddings keep every entry:
 
 ~~~{.agda}
@@ -386,7 +473,7 @@ Strictly speaking, stating $\beta$-conversion only requires single substitutions
       _,_ : Sub Γ Δ → Tm Γ A → Sub Γ (Δ , A)
 ~~~
 
-Elements of `Sub Γ Δ` contain a `Tm Γ A` for each `A` type in `Δ`. In other words, an element of `Sub Γ Δ` assigns to each variable in Δ a term in Γ.
+Elements of `(Sub Γ Δ)`{.agda} contain a `(Tm Γ A)`{.agda} for each `A` type in `Δ`. In other words, an element of `(Sub Γ Δ)` assigns to each variable in `Δ` a term in `Γ`. Hence, this is a kind of simultaneous substitution which always substitutes *all free variables*. Substituting only *some* of the variables can be achieved by substituting all other variables with themselves. In particular, the identity substitution replaces all variables with themselves, thereby doing nothing.
 
 Again, there are some choices in defining `Sub`. Identity substitutions (which have the identity action on terms) could be represented as an explicit constructor, as well as `Sub` composition and weakenings. Our `Sub` can be seen as a normal form of substitutions: explicit composition and weakening forms tree-like structures, but we flatten them to just lists of terms. This eliminates redundancy, and allows us to define compositions and identities recursively, which provides us with more definitional equalities.
 
@@ -447,12 +534,12 @@ We note that `keepₛ` is the needed operation for pushing substitutions under b
 
 Single substitution with a `(t : Tm Γ A)`{.agda} term is given by `(idₛ , t)`{.agda}. This assigns the `t` term to the zeroth de Bruijn variable and leaves all other variables unchanged.
 
-
 [^bignote]: The immediate reason for not naming `∈ₛ` simply "lookup" is that we will need several different lookup functions for various purposes. For any sizable formal development, naming schemes eventually emerge, for better or worse. The author has found that uniformly encoding salient information about types of operations in their names is worthwhile to do. It is also not easy to hit the right level of abstraction; too little and we repeat ourselves too much or neglect to include known structures, but too much abstraction may cause the project to be less accessible and often also less convenient to develop in the first place.  Many of the operations and proofs here could be defined explicitly using categorical language, i. e. bundling together functors' actions on objects, morphisms and category laws in records, then projecting out required components. Our choice is to keep the general level of abstraction low for this development.
 
 ## Conversion
 
 The conversion relation is given as:
+\pagebreak
 
 ~~~{.agda}
     -- Conversion.agda
@@ -477,7 +564,10 @@ In this \chname\ we specify normal forms and implement normalization. Then, we d
 
 ## Normal terms
 
+$\beta$-normal terms are terms which cannot be reduced by left-to-right application of the $\beta$ conversion rule. Additionally we require $\eta$-normality as well. Here, there are two choices: normal forms are either *$\eta$-short* or *$\eta$-long*. The former means that terms cannot be rewritten by right-to-left $\eta$-conversion, while the latter is the same with the other direction. $\eta$-short terms may be smaller than $\eta$-long ones. However, $\eta$-long normal terms can be produced more efficiently by evaluation, and they also confer a significant advantage for formal reasoning. Namely, with $\beta$-normal $\eta$-long forms, *every term with a function type is a $\lambda$ term*. This is a rather useful uniqueness property.
+
 Our definition of normal forms is entirely standard: they are either lambdas or *neutral* terms of base type, and neutral terms are variables applied to zero of more normal arguments:
+\pagebreak
 
 ~~~{.agda}
     -- NormalForm.agda
@@ -491,20 +581,20 @@ Our definition of normal forms is entirely standard: they are either lambdas or 
         app : Ne Γ (A ⇒ B) → Nf Γ A → Ne Γ B
 ~~~
 
-Agda allows us to overload `var`, `lam` and `app` for normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function type must in fact be lambdas. Only requiring $\beta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as
+Agda allows us to overload `var`, `lam` and `app` as constructors of normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function type must in fact be lambdas. Dropping $\eta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as
 
 ~~~{.agda}
     data Nf (Γ : Con) : (A : Ty) → Tm Γ A → Set
 ~~~
 
-with the same construction as before except that it is a predicate on general terms, expressing their normality. This definition would be roughly as convenient as the one we use. We also need actions of context embeddings:
+with the same construction as before except that it is a predicate on general terms, expressing their normality. This definition would be overall about as convenient as the one we use, but it is slightly more verbose in implementation of normalization, hence our choice. We also need actions of context embeddings:
 
 ~~~{.agda}
     Nfₑ : OPE Γ Δ → Nf Δ A → Nf Γ A
     Neₑ : OPE Γ Δ → Ne Δ A → Ne Γ A
 ~~~
 
-Normal and neutral terms can be injected back to terms. Also, injection commutes with embedding (i. e. injection is natural).
+Normal and neutral terms can be injected back to terms. Also, injection commutes with embedding (i. e. injection is natural). 
 
 ~~~{.agda}
     ⌜_⌝Nf : Nf Γ A → Tm Γ A
@@ -513,6 +603,8 @@ Normal and neutral terms can be injected back to terms. Also, injection commutes
     ⌜⌝Ne-nat : ∀ σ n → ⌜ Neₑ σ n ⌝Ne ≡ Tmₑ σ ⌜ n ⌝Ne
     ⌜⌝Nf-nat : ∀ σ n → ⌜ Nfₑ σ n ⌝Nf ≡ Tmₑ σ ⌜ n ⌝Nf
 ~~~
+
+These are needed because we only defined conversion for terms, not for normal terms, so we need to inject normal terms back whenever we want to talk about their convertibility.
 
 ## Preliminaries: Models of STLC {#sec:models-intro}
 
@@ -524,7 +616,7 @@ Clearly, STLC is a small fragment of Agda, so we should be able to interpret the
     Tyˢ ι       = ⊥
     Tyˢ (A ⇒ B) = Tyˢ A → Tyˢ B
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
     Conˢ : Con → Set
@@ -565,7 +657,7 @@ Adding progressively more structure to models allows us to prove more properties
 ~~~
 
 *Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specific things relevant to our interest, and there are many more computations and logical interpretations possible for each class of models.
-\pagebreak
+
 
 | Model     | Computation            | Proof                       |
 |:----------|:-----------------------|:----------------------------|
@@ -675,11 +767,13 @@ At first, it can be difficult to build a mental model of the operation of the al
 
 In fact, this encapsulation of recursive `Tmᴺ` calls is a crucial detail which makes this whole definition structurally recursive and thus total. In the `(Tmᴺ (lam t) Γᴺ = λ σ aᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ , aᴺ))`{.agda} clause, the recursive `Tmᴺ`{.agda} call is evidently structural, and because it happens under a *metatheoretic* lambda, semantic functions can be applied to *any* value in any definition without compromising structurality.
 
-To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (var vz)))`{.agda} application, the `(uᴺ (var vz))`{.agda} term plays the role of blocking input, but it is not quite entirely blocking. `uᴺ` performs an operation best described as *semantic $\eta$-expansion*: it acts as identity on neutral base terms, and from neutral functions it produces semantic functions which build up neutral applications from their inputs. Thus, `(uᴺ {ι} (var vz))`{.agda} simply reduces to `(ne (var vz))`{.agda}, while `(uᴺ {ι ⇒ i} (var vz))`{.agda} reduces to `(λ σ aᴺ → ne (app (var (∈ₑ σ vz)) aᴺ))`{.agda}. In short, `uᴺ` returns semantic values which yield properly $\eta$-expanded normal forms when quoted. As convoluted this may seem, it is actually a very elegant solution.
+To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (var vz)))`{.agda} application, the `(uᴺ (var vz))`{.agda} term plays the role of blocking input, but it is not quite entirely blocking. `uᴺ` performs an operation best described as *semantic $\eta$-expansion*: it acts as identity on neutral base terms, and from neutral functions it produces semantic functions which build up neutral applications from their inputs. Thus, `(uᴺ {ι} (var vz))`{.agda} simply reduces to `(ne (var vz))`{.agda}, while `(uᴺ {ι ⇒ i} (var vz))`{.agda} reduces to `(λ σ aᴺ → ne (app (var (∈ₑ σ vz)) aᴺ))`{.agda}. In short, `uᴺ` returns semantic values which yield properly $\eta$-expanded normal forms when quoted. As convoluted this may seem, this is probably the most elegant solution for $\eta$-expansion.
 
 ## Kripke Models {#sec:kripke}
 
-We show now how Kirpke models relate to the above definition of normalization. Following the presentation of Altenkirch [@altenkirch2009normalisation], Kripke models can be defined in Agda for the syntax of STLC as follows (omitting universe polymorphism):
+We show now how Kirpke models relate to the above definition of normalization. We mostly follow Altenkirch [@altenkirch2009normalisation] in this section. Also note Coquand et al. [@coquand1997intuitionistic] for explaining Kripke models for STLC, although they only used it for weak normalization.
+
+Kripke models can be defined in Agda for the syntax of STLC as follows (omitting universe polymorphism):
 
 ~~~{.agda}
     -- Misc/Kripke.agda
@@ -719,7 +813,7 @@ A Kripke model consists of a preordered set of "worlds", denoted `W`, along with
       Con-mono {∙}     σ p = p
       Con-mono {Γ , A} σ p = Con-mono σ (proj₁ p) , Ty-mono {A} σ (proj₂ p)
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
       ||-Tm : Tm Γ A → Γ ||- A
@@ -770,6 +864,7 @@ In this \chname\, we prove completeness, soundness and stability for the algorit
 First, we shall introduce a modest number of concepts from category theory. The prime motivation is that they allow us to compactly describe the contents of our proofs. They also make it easier to mentally keep track of proof obligations, since often a few words of categorical definitions can be unpacked into a dozen lemmas. When proofs align with category theory, that is usually also indicative that one has the right approach. That said, we shall keep category theory to a minimum and only introduce definitions that are directly applicable to our work.
 
 A *category* is defined as follows.
+
 
 ~~~{.agda}
     -- Misc/Category.agda
@@ -858,6 +953,7 @@ Additionally, variables and terms of a given type are presheaves on **OPE**. `(�
 ~~~
 
 Note that the input is a morphism in **OPE**, i. e. a context embedding, and the output is a morphism in **Set**, which is an Agda function. Also note the contravariance: the order of `Γ` and `Δ` is flipped in the output. Functor laws for variables and terms are as follows:
+\pagebreak
 
 ~~~{.agda}
     -- Embedding.agda
@@ -917,13 +1013,14 @@ We aim to establish that **STLC** is a category, and that `(Tm _ A)`{.agda} and 
 The categorical structure of proof obligations is less clear here; although we have clear goals (category and presheaf laws), this author is unaware of a compact and abstract explanation of the process of building **STLC** around **OPE**. In [@benton2012strongly], substitution laws are constructed the same way as here, but the authors of Ibid. also do not provide a semantic explanation. For contrast, see [@altenkirch2016normalisation], where substitutions are given first as part of the syntax, and renamings (an alternative of embeddings) are defined later as a subcategory.
 
 There are four different operations of composing embeddings and substitutions, since there are two choices for both arguments. We define the missing `_ₑ∘ₛ_`{.agda} operation here:
+\pagebreak
 
 ~~~{.agda}
     _∘ₑ_  : OPE Δ Σ → OPE Γ Δ → OPE Γ Σ -- defined in 4.3
     _∘ₛ_  : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ -- defined in this section
     _ₛ∘ₑ_ : Sub Δ Σ → OPE Γ Δ → Sub Γ Σ -- defined in 3.2.2
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
     _ₑ∘ₛ_ : OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
@@ -1088,7 +1185,7 @@ Now, quoting, unquoting and completeness can be defined as follows:
       q≈ {ι}     t≈tᴺ = t≈tᴺ
       q≈ {A ⇒ B} t≈tᴺ = η _ ~◾ lam (q≈ (t≈tᴺ wk (u≈ (var vz))))
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
       u≈ : ∀ {A}(n : Ne Γ A) → ⌜ n ⌝Ne ≈ uᴺ n
@@ -1365,7 +1462,7 @@ We interpret embeddings as natural transformations between semantic contexts:
     OPEᴺ (drop σ) (Γᴺ , _)  = OPEᴺ σ Γᴺ
     OPEᴺ (keep σ) (Γᴺ , tᴺ) = OPEᴺ σ Γᴺ , tᴺ
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
     OPEᴺ-nat : ∀ σ δ Γᴺ → OPEᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (OPEᴺ σ Γᴺ)
@@ -1595,7 +1692,7 @@ A benefit of this approach is that the `Tyᴾ` logical predicate for naturality 
     qᴺ     : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
     qᴺ-nat : ∀ σ tᴺ → Nfₑ σ (qᴺ tᴺ) ≡ qᴺ (Tyᴺₑ σ tᴺ)
 ~~~
-\pagebreak
+
 
 ~~~{.agda}
     -- uᴺ {A} : PSh(OPE)(Ne _ A, Tyᴺ A)
@@ -1632,7 +1729,7 @@ The proofs for completeness and stability are largely unchanged. For soundness, 
 ~~~
 
 The soundness proof is dramatically simpler this time. The reason is that propositional equality is already right for semantic values, so there is no need for any additional `_≈_` logical relation, and propositional equality is already an equivalence relation which is respected by all constructions in the metatheory. Hence, soundness is simply given as follows:
-\pagebreak
+
 
 ~~~{.agda}
     -- Soundness.agda
@@ -1705,6 +1802,7 @@ Secondly, `Conᴺₑ` is redefined as follows:
 ~~~
 
 We get the desired definitional equality, but in turn lose two equalities which are quite useful to have. We can resurrect them as propositional equalities:
+\pagebreak
 
 ~~~{.agda}
     -- PresheafRefinement.agda
@@ -1723,6 +1821,8 @@ We eliminated the overhead on the evaluation of application, but what about quot
 ~~~
 
 Here, the `(tᴺ wk)`{.agda} is essential, but it is far less of an overhead than the `idₑ`-s before. Notice that `qᴺ` is *type-directed*, and for each semantic value it is called as many times as there are function arguments in the value's type. Of course, `qᴺ` is applied to various sub-terms of a term during normalization (via `uᴺ`), so the overall number of `qᴺ` calls is likely greater than the number of arguments in a term's type. Still, it is only to be expected that *normalization* is more costly than standard interpretation, since it does more work. *Evaluation* on its own is no less efficient than standard interpretation, with the current optimized implementation.
+
+However, we must note that intrinsic syntax has a general performance disadvantage when compared to extrinsic syntax, and it seems to be insurmountable. With intrinsic syntax, we cannot state that the same term is valid in multiple contexts, when by *same* we mean *definitional equality*. For instance if `(t : Tm ∙ A)`, then we cannot derive `(t : Tm (∙ , ι) A)`{.agda} for the same `t`. `t` may only have a single type - this is a fundamental property of the metatheory, and it is called the *unicity of typing*. In contrast, if we have extrinsic terms, then we may have a well-typedness proof `(p : Tm ∙ t ι)`{.agda} and a different proof `(p2 : Tm (∙ , ι) t ι)`{.agda}, but both for the same `t` term. `t` can be left unchanged when changing contexts, while with intrinsic types there must be some embedding operation acting on `t`, and it can only be proven *externally* that sometimes this embedding operation is the identity function. This is a general trade-off, and here we choose to trade some performance for ease of formalization.
 
 # Discussion and Future Work {#sec:discussion}
 

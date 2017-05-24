@@ -47,4 +47,3 @@ decidableConversion t t' with Nf≡? (nf t) (nf t')
 ... | inj₁ p = inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝Nf ~ t') & p ⁻¹) (complete t' ~⁻¹))
 ... | inj₂ p = inj₂ (λ q → p (sound q))
 
-
