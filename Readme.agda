@@ -7,6 +7,8 @@ lambda calculus.
 I have written up an MSc thesis from this. 
 You can find the latest pdf version at otdk-archive/stlc-nbe-otdk.pdf
 
+See the "master" branch for a more elegant but somewhat less approachable formalization.
+
 We use function extensionality, but no Axiom K, other postulates,
 holes or unsafe pragmas.
 -}
