@@ -5,6 +5,10 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
+This branch uses a presheaf model over the category of order-preserving embeddings, making 
+the overall formalization shorter but the normalization algorithm harder to read, compared
+to the "separate-PSh" branch.
+
 We use function extensionality and Axiom K, but no other postulates,
 holes or unsafe pragmas. Extensionality doesn't interfere with the normalization
 function, so it computes for all inputs. Also, the use of Axiom K could be eliminated with
