@@ -33,6 +33,8 @@ import Stability
 import Completeness
 import Soundness
 
+-- Optionally, the whole development is mashed together in Everything.agda
+
 -- Main results
 ------------------------------------------------------------
 
