@@ -4,6 +4,9 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
+I have written up an MSc thesis from this. 
+You can find the latest pdf version at otdk-archive/stlc-nbe-otdk.pdf
+
 We use function extensionality, but no Axiom K, other postulates,
 holes or unsafe pragmas.
 -}
