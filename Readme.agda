@@ -9,6 +9,8 @@ This branch uses a presheaf model over the category of order-preserving embeddin
 the overall formalization shorter but the normalization algorithm harder to read, compared
 to the "separate-PSh" branch.
 
+You can find a long writeup on the "separate-PSh" branch at "otdk-archive/stlc-nbe-otdk.pdf".
+
 We use function extensionality and Axiom K, but no other postulates,
 holes or unsafe pragmas. Extensionality doesn't interfere with the normalization
 function, so it computes for all inputs. Also, the use of Axiom K could be eliminated with
