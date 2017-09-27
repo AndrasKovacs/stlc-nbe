@@ -55,7 +55,7 @@ _∘ₛ_ : ∀ {Γ Δ Σ} → Sub Δ Σ → Sub Γ Δ → Sub Γ Σ
 ∙       ∘ₛ δ = ∙
 (σ , t) ∘ₛ δ = σ ∘ₛ δ , Tmₛ δ t
 
--- Sub category laws and functor laws for (Tm _ A) and (A ∈ _).
+-- Sub category laws and functor laws for (Tm _ A).
 -- We need a number of different identity and associativity
 -- lemmas depending on which parameters are embeddings or substitutions
 assₛₑₑ :
@@ -88,7 +88,7 @@ idlₛₑ (keep σ) =
     ◾ assₛₑₑ idₛ σ wk ⁻¹
     ◾ (_ₛ∘ₑ wk) & idlₛₑ σ )
 
-idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ 
+idrₑₛ : ∀ {Γ Δ}(σ : OPE Γ Δ) → σ ₑ∘ₛ idₛ ≡ ⌜ σ ⌝ᵒᵖᵉ
 idrₑₛ ∙        = refl
 idrₑₛ (drop σ) = assₑₛₑ σ idₛ wk ⁻¹ ◾ dropₛ & idrₑₛ σ
 idrₑₛ (keep σ) = (_, var vz) & (assₑₛₑ σ idₛ wk ⁻¹ ◾ (_ₛ∘ₑ wk) & idrₑₛ σ)
@@ -170,4 +170,3 @@ idrₛ (σ , t) = _,_ & idrₛ σ ⊗ Tm-idₛ t
       ◾ assₛₑₛ σ wk ((ν ₑ∘ₛ idₛ) , a) ⁻¹)
   ◾ Tm-∘ₛ (keepₛ σ) (keep ν ₑ∘ₛ (idₛ , a)) t
   ◾ Tm-ₑ∘ₛ (keep ν) (idₛ , a) (Tmₛ (keepₛ σ) t)
-
