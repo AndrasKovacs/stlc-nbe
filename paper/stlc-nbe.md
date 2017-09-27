@@ -155,7 +155,7 @@ This is not valid Agda, but we shall do this whenever the types and binding stat
 
 ### Formalization
 
-The project can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this \workname\ are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. We indicate the names of relevant source files in the examples as Agda comments or in expository text. 
+The project can be found at *[https://github.com/AndrasKovacs/stlc-nbe](/url)*. Most Agda code listings in this \workname\ are also included in the formal development, although the versions here may include syntactic liberties and abbreviations. We indicate the names of relevant source files in the examples as Agda comments or in expository text.
 
 The formalization involves a considerable amount of details. We omit a significant part of them from our explanations; in particular, we often only present the types of definitions and omit the implementations. It may be useful to read the source code and this \workname\ at the same time, and also have an interactive Agda environment at hand.
 
@@ -912,7 +912,7 @@ We also have substitution operations for terms and variables:
     Tmₛ : Sub Γ Δ → Tm Δ A → Tm Γ A
 ~~~
 
-We aim to establish that **STLC** is a category, and that `(Tm _ A)`{.agda} and `(A ∈ _)`{.agda} are presheaves on it. This is significantly more complicated than what we have seen for **OPE**. Identity and composition for substitutions are actually defined using embeddings, thus proving properties of substitution involves a proving a variety of lemmas about their interaction with embedding.
+We aim to establish that **STLC** is a category, and that `(Tm _ A)`{.agda} is a presheaf on it for each `A`{.agda}. `(A ∈ _)`{.agda} are not presheaves this time, since the types do not have the right shape. The obligations are significantly more complicated than what we have seen for **OPE**. Identity and composition for substitutions are actually defined using embeddings, thus proving properties of substitution involves a proving a variety of lemmas about their interaction with embedding.
 
 The categorical structure of proof obligations is less clear here; although we have clear goals (category and presheaf laws), this author is unaware of a compact and abstract explanation of the process of building **STLC** around **OPE**. In [@benton2012strongly], substitution laws are constructed the same way as here, but the authors of Ibid. also do not provide a semantic explanation. For contrast, see [@altenkirch2016normalisation], where substitutions are given first as part of the syntax, and renamings (an alternative of embeddings) are defined later as a subcategory.
 
@@ -923,7 +923,6 @@ There are four different operations of composing embeddings and substitutions, s
     _∘ₛ_  : Sub Δ Σ → Sub Γ Δ → Sub Γ Σ -- defined in this section
     _ₛ∘ₑ_ : Sub Δ Σ → OPE Γ Δ → Sub Γ Σ -- defined in 3.2.2
 ~~~
-\pagebreak
 
 ~~~{.agda}
     _ₑ∘ₛ_ : OPE Δ Σ → Sub Γ Δ → Sub Γ Σ
@@ -1325,7 +1324,7 @@ The `app` and `lam` congruences are also straightforward:
 
 ~~~{.agda}
     ~≈ (lam t~t') Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
-      λ ν aᴾ aᴾ' a≈a' → 
+      λ ν aᴾ aᴾ' a≈a' →
         ~≈ t~t' (Conᴾₑ ν Γᴾ , aᴾ) (Conᴾₑ ν Γᴾ' , aᴾ') (≈ᶜₑ ν Γᴺ≈Γᴺ' , a≈a')
     ~≈ (app {f = f}{f'}{a = a}{a'} t~t' a~a') Γᴾ Γᴾ' Γᴺ≈Γᴺ' =
       ~≈ t~t' Γᴾ Γᴾ' Γᴺ≈Γᴺ' idₑ (Tmᴾ a Γᴾ) (Tmᴾ a' Γᴾ') (~≈ a~a' Γᴾ Γᴾ' Γᴺ≈Γᴺ')
@@ -1505,9 +1504,9 @@ It differs in several ways from the other two correctness properties. First, it 
 
     decidableConversion : (t t' : Tm Γ A) → (t ~ t') ⊎ (t ~ t' → ⊥)
     decidableConversion t t' with Nf≡? (nf t) (nf t')
-    ... | inj₁ p = 
+    ... | inj₁ p =
       inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝Nf ~ t') & p ⁻¹) (complete t' ~⁻¹))
-    ... | inj₂ p = 
+    ... | inj₂ p =
       inj₂ (λ q → p (sound q))
 ~~~
 
@@ -1516,7 +1515,7 @@ Rather, stability tells us whether a normalization algorithm matches up exactly 
 ~~~{.agda}
     t : Tm (ι ⇒ ι) (ι ⇒ ι)
     t = var vz
-    
+
     nf-η-expands : nf t ≡ (lam (app (var (vs vz)) (var vz)))
     nf-η-expands = refl
 ~~~
@@ -1533,12 +1532,12 @@ Stability is much simpler to prove than previous correctness properties. Simple 
       ◾ Tyᴺₑ wk & stable∈ v
       ◾ uᴺ-nat wk (var v)
       ◾ (λ x → uᴺ (var (vs x))) & ∈-idₑ v
-    
+
     mutual
       stable : (n : Nf Γ A) → nf ⌜ n ⌝Nf ≡ n
       stable (ne n)  = stableNe n
       stable (lam n) = lam & stable n
-    
+
       stableNe : (n : Ne Γ A) → Tmᴺ ⌜ n ⌝Ne uᶜᴺ ≡ uᴺ n
       stableNe (var v)   = stable∈ v
       stableNe (app f a) =
@@ -1568,7 +1567,7 @@ A benefit of this approach is that the `Tyᴾ` logical predicate for naturality 
     ------------------------------------------------------------
     Tyᴺ  : Ty → Con → Set              -- action on objects
     Tyᴺₑ : OPE Δ Γ → Tyᴺ A Γ → Tyᴺ A Δ -- action on morphisms
-    
+
     Tyᴺ-idₑ : ∀ tᴺ → Tyᴺₑ idₑ tᴺ ≡ tᴺ
     Tyᴺ-∘ₑ  : ∀ tᴺ σ δ → Tyᴺₑ (σ ∘ₑ δ) tᴺ ≡ Tyᴺₑ δ (Tyᴺₑ σ tᴺ)
 
@@ -1589,7 +1588,7 @@ A benefit of this approach is that the `Tyᴾ` logical predicate for naturality 
     ------------------------------------------------------------
     Tmᴺ     : ∀ {Γ A} → Tm Γ A → ∀ {Δ} → Conᴺ Γ Δ → Tyᴺ A Δ
     Tmᴺ-nat : ∀ t σ Γᴺ → Tmᴺ t (Conᴺₑ σ Γᴺ) ≡ Tyᴺₑ σ (Tmᴺ t Γᴺ)
-    
+
     -- qᴺ {A} : PSh(OPE)(Tyᴺ A, Nf _ A)
     ------------------------------------------------------------
     qᴺ     : ∀ {A Γ} → Tyᴺ A Γ → Nf Γ A
@@ -1602,7 +1601,7 @@ A benefit of this approach is that the `Tyᴾ` logical predicate for naturality 
     ------------------------------------------------------------
     uᴺ     : ∀ {A Γ} → Ne Γ A → Tyᴺ A Γ
     uᴺ-nat : ∀ σ n → Tyᴺₑ σ (uᴺ n) ≡ uᴺ (Neₑ σ n)
-        
+
     ------------------------------------------------------------
     uᶜᴺ : ∀ {Γ} → Conᴺ Γ Γ
     nf  : ∀ {Γ A} → Tm Γ A → Nf Γ A
@@ -1617,10 +1616,10 @@ The proofs for completeness and stability are largely unchanged. For soundness, 
     ------------------------------------------------------------
     OPEᴺ     : ∀ {Γ Δ} → OPE Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
     OPEᴺ-nat : ∀ σ δ Γᴺ → OPEᴺ σ (Conᴺₑ δ Γᴺ) ≡ Conᴺₑ δ (OPEᴺ σ Γᴺ)
-    
+
     OPEᴺ-idₑ : ∀ Γᴺ → OPEᴺ idₑ Γᴺ ≡ Γᴺ
     Tmₑᴺ     : ∀ σ t Γᴺ → Tmᴺ (Tmₑ σ t) Γᴺ ≡ Tmᴺ t (OPEᴺ σ Γᴺ)
-   
+
     -- Subᴺ {Γ}{Δ} σ : PSh(OPE)(Conᴺ Γ, Conᴺ Δ)
     --------------------------------------------------------------------------------
     Subᴺ     : ∀ {Γ Δ} → Sub Γ Δ → ∀ {Σ} → Conᴺ Γ Σ → Conᴺ Δ Σ
@@ -1637,7 +1636,7 @@ The soundness proof is dramatically simpler this time. The reason is that propos
 ~~~{.agda}
     -- Soundness.agda
     ~≈ : ∀ {t t' : Tm Γ A} → t ~ t' → (σ : Conᴺ Γ Δ) → Tmᴺ t σ ≡ Tmᴺ t' σ
-    
+
     sound : ∀ {Γ A}{t t' : Tm Γ A} → t ~ t' → nf t ≡ nf t'
     sound t~t' = qᴺ & ~≈ t~t' uᶜᴺ
 ~~~
@@ -1648,7 +1647,7 @@ There is a slight disadvantage of the direct presheaf model: because normalizati
 
 ## More Efficient Evaluation {#sec:more-efficient}
 
-We describe a more efficient evaluation function in this \secname\. The correctness proofs are also formalized for this version, requiring only minor modifications. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe/blob/efficient-appN](/url)*. 
+We describe a more efficient evaluation function in this \secname\. The correctness proofs are also formalized for this version, requiring only minor modifications. The formalization can be found at *[https://github.com/AndrasKovacs/stlc-nbe/blob/efficient-appN](/url)*.
 
 Let us review the definition of `Tmᴺ`:
 
@@ -1735,7 +1734,6 @@ The primary goal of this development was to formalize $\beta\eta$-normalization 
 
 As to possible extensions and improvements to this work, while it seems that the current approach is uniquely well-suited to STLC and its non-polymorphic extensions, there are complications and rough edges when we attempt to scale to more powerful type theories.
 
-For System $F$ with intrinsic syntax and implicit substitutions, this author has an unpublished mostly-complete formalization of an NbE algorithm [@intrinsic-sysF-nbe], although there are no correctness proofs yet. It seems that System $F_{\omega}$ is about as far as we can take intrinsic syntax with implicit substitutions. With full dependent types, intrinsic syntax only seems feasible with higher-inductive definitions and explicit substitutions. Implicit substitutions remain only feasible with extrinsic syntax. 
+For System $F$ with intrinsic syntax and implicit substitutions, this author has an unpublished mostly-complete formalization of an NbE algorithm [@intrinsic-sysF-nbe], although there are no correctness proofs yet. It seems that System $F_{\omega}$ is about as far as we can take intrinsic syntax with implicit substitutions. With full dependent types, intrinsic syntax only seems feasible with higher-inductive definitions and explicit substitutions. Implicit substitutions remain only feasible with extrinsic syntax.
 
 Another possible improvement would be proof automation for substitution and embedding laws. A significant part of the development is essentially "boilerplate" related to this. For extrinsic syntax, there are very powerful automation libraries available in the proof assistant Coq [@needle-knot; @autosubst]. For intrinsic syntax, automatic generation of substitution lemmas seems more difficult, but even if we prove categorical lemmas by hand, we could still make use of automation for proving ad hoc term equations. This seems doable in Agda, although the automation facilities of Agda are not as nearly mature as that of Coq.
-
