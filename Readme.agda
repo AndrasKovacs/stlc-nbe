@@ -4,7 +4,7 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-I have written up an MSc thesis from this. 
+I have written an MSc thesis from this. 
 You can find the latest pdf version at otdk-archive/stlc-nbe-otdk.pdf
 
 See the "master" branch for a more elegant but somewhat less approachable formalization.
