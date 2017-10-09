@@ -85,7 +85,7 @@ Unfortunately, there is no canonical definition of intensional type theory. Ther
 
 * _Two predicative universes, named `Set₀` and `Set₁`, with large elimination into `Set₀`_. `Set₀` is the base universe in Agda, i. e. the universe of small types. Large elimination is needed for recursive definitions of semantic types, since inductive definitions for them would not be positive and hence would be illegal. We only need `Set₁` to type the large eliminations. In Agda `Set` is a synonym for `Set₀`.
 
-* _Function extensionality as an axiom_. This posits that two functions are equal if they take equal arguments to equal results. We could eschew it by using setoid reasoning with semantic equivalence, as C. Coquand does [@coquand2002formalised]. However, we only use function extensionality in correctness proofs, and the normalization function does not refer to it or to any other postulate. We are content with *logical* as opposed to computational content for correctness proofs. This way, the numerous congruence lemmas needed for setoid reasoning can be skipped. Also, function extensionality has computational interpretation in cubical [@cohen2016cubical] and observational [@altenkirch2007observational] type theories, to which this development could be plausibly ported in the future (when practical implementations of the mentioned theories become available).
+* _Function extensionality as an axiom_. This posits that two functions are equal if they take equal arguments to equal results. We could eschew it, resulting in more setoid reasoning proofs about semantic equivalences, similarly to as in C. Coquand's work [@coquand2002formalised]. However, we only use function extensionality in correctness proofs, and the normalization function does not refer to it or to any other postulate. We are content with *logical* as opposed to computational content for correctness proofs. This way, numerous congruence lemmas needed for setoid reasoning can be skipped. Also, function extensionality has computational interpretation in cubical [@cohen2016cubical] and observational [@altenkirch2007observational] type theories, to which this development could be plausibly ported in the future (when practical implementations of the mentioned theories become available).
 
 In Agda 2.5.2, there is robust support for dependent pattern matching without Streicher's K axiom [@streicher1993investigations]. We use the `--without-K` language option for all of our code in the main development. However, we do use axiom K in [@Sec:direct-psh-model] for the direct presheaf model, but only for technical convenience, as it can be avoided by additional uniqueness proofs for equalities.
 
@@ -113,7 +113,7 @@ Inductive definitions may have *parameters* and *indices*. The former are implic
       cons : {n : ℕ} → A → Vec A n → Vec A (suc n)
 ~~~
 
-In a type constructor declaration, parameters are listed left to the colon, while indices are to the right. `(A : Set)`{.agda} is a parameter, so it is implicitly quantified and is the same in the return types of `nil`{.agda} and `cons`{.agda}. In contrast, the length index is quantified in `cons`. We can use brackets to make parameters implicit; here `cons` has an implicit first parameter, and can be used like `cons zero nil`{.agda} for a value of `Vec ℕ (suc zero)`{.agda}. Implicit arguments are filled in by Agda's unification algorithm. Alternatively, the `∀`{.agda} symbol can be used to leave the types of parameters implicit, and we could define `cons` as follows:
+In a type constructor declaration, parameters are listed left to the colon, while indices are to the right. `(A : Set)`{.agda} is a parameter, so it is implicitly quantified and is the same in the return types of `nil`{.agda} and `cons`{.agda}. In contrast, the length index is quantified in `cons`. We can use curly braces to make parameters implicit; here `cons` has an implicit first parameter, and can be used like `cons zero nil`{.agda} for a value of `Vec ℕ (suc zero)`{.agda}. Implicit arguments are filled in by Agda's unification algorithm. Alternatively, the `∀`{.agda} symbol can be used to leave the types of parameters implicit, and we could define `cons` as follows:
 
 ~~~{.agda}
     cons : ∀ {n} → A → Vec A n → Vec A (suc n)
@@ -182,7 +182,7 @@ We also postulate function extensionality, for functions with both implicit and 
       fexti : (∀ x → f {x} ≡ g {x}) → (λ {x} → f {x}) ≡ (λ {x} → g {x})
 ~~~
 
-Note that the types of `f` and `g` are left implicit above, in accordance with out notational liberties. In full Agda we write:
+Note that the types of `f` and `g` are left implicit above, in accordance with our notational liberties. In full Agda we write:
 
 ~~~{.agda}
     fext :
@@ -388,7 +388,7 @@ The previously presented syntax, however, is not the complete picture. We also n
 
 *$\beta$-conversion* specifies that arguments to a $\lambda$ term can be substituted inside the $\lambda$ body. *$\eta$-conversion* informally says that `(λ x. f x)` is convertible to `f`. We will specify these formally at the end of this \chname. In order to do so, we need to first define *substitution* and *embedding*.
 
-Substitution is clearly needed to specify $\beta$-conversion. The $\eta$-rule in turn must refer to a notion of *weakening* or *embedding*: it mentions the "same" term under and over a $\lambda$ binder, but the two occurrences cannot be definitionally the same, since they are in different contexts and thus have different types. We need to express the notion that whenever one has a term in a context, one can construct essentially the same term in a larger context. We use *order-preserving-embeddings* for this. Embeddings enable us to state the $\eta$-rule, but we also make use of them for defining substitutions.
+Substitution is clearly needed to specify $\beta$-conversion. The $\eta$-rule in turn must refer to a notion of *weakening* or *embedding*: it mentions the "same" term under and over a $\lambda$ binder, but the two occurrences cannot be definitionally the same, since they are in different contexts and thus have different types. We need to express the notion that whenever one has a term in a context, one can construct essentially the same term in a larger context. We use *order-preserving embeddings* for this. Embeddings enable us to state the $\eta$-rule, but we also make use of them for defining substitutions.
 
 ### Embeddings {#sec:embeddings}
 
@@ -566,6 +566,8 @@ In this \chname\ we specify normal forms and implement normalization. Then, we d
 
 $\beta$-normal terms are terms which cannot be reduced by left-to-right application of the $\beta$ conversion rule. Additionally we require $\eta$-normality as well. Here, there are two choices: normal forms are either *$\eta$-short* or *$\eta$-long*. The former means that terms cannot be rewritten by right-to-left $\eta$-conversion, while the latter is the same with the other direction. $\eta$-short terms may be smaller than $\eta$-long ones. However, $\eta$-long normal terms can be produced more efficiently by evaluation, and they also confer a significant advantage for formal reasoning. Namely, with $\beta$-normal $\eta$-long forms, *every term with a function type is a $\lambda$ term*. This is a rather useful uniqueness property.
 
+<!-- TODO: add example for unique lambda construction -->
+
 Our definition of normal forms is entirely standard: they are either lambdas or *neutral* terms of base type, and neutral terms are variables applied to zero of more normal arguments:
 \pagebreak
 
@@ -581,13 +583,13 @@ Our definition of normal forms is entirely standard: they are either lambdas or 
         app : Ne Γ (A ⇒ B) → Nf Γ A → Ne Γ B
 ~~~
 
-Agda allows us to overload `var`, `lam` and `app` as constructors of normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function type must in fact be lambdas. Dropping $\eta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as
+Agda allows us to overload `var`, `lam` and `app` as constructors of normal forms. $\beta$-normality is obvious, since only variables can be applied. Normal forms are also $\eta$-long: since `ne` only injects neutrals of base type, all normal terms of function types must in fact be lambdas. Dropping $\eta$-normality would be as simple as having `(ne : ∀ {A} → Ne Γ A → Nf Γ A)`{.agda}. Alternatively, normal forms can be given as
 
 ~~~{.agda}
     data Nf (Γ : Con) : (A : Ty) → Tm Γ A → Set
 ~~~
 
-with the same construction as before except that it is a predicate on general terms, expressing their normality. This definition would be overall about as convenient as the one we use, but it is slightly more verbose in implementation of normalization, hence our choice. We also need actions of context embeddings:
+with the same construction as before except that it is a predicate on general terms, expressing their normality. This definition would be overall about as convenient as the one we use, but it is slightly more verbose in the implementation of normalization, hence our choice. We also need actions of context embeddings:
 
 ~~~{.agda}
     Nfₑ : OPE Γ Δ → Nf Δ A → Nf Γ A
@@ -656,7 +658,7 @@ Adding progressively more structure to models allows us to prove more properties
     consistency t = Tmˢ t tt
 ~~~
 
-*Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specific things relevant to our interest, and there are many more computations and logical interpretations possible for each class of models.
+*Kripke models* contain slightly more structure than the standard model, allowing us to implement normalization, which is a *completeness* theorem from a logical viewpoint [@coquand1997intuitionistic], as per the Curry-Howard correspondence. Adding yet more structure yields *presheaf models*, which enable correctness proofs for normalization as well; this will be elaborated in [@sec:presheaf-refinement]. We summarize the computational and logical interpretations below. Be mindful though that the the table picks out specific things relevant to our interest, and there are many more computations and logical interpretations possible for each class of models.
 
 
 | Model     | Computation            | Proof                       |
@@ -679,7 +681,7 @@ We denote the model for normalization with `ᴺ` superscripts. The implementatio
     Tyᴺ (A ⇒ B) Γ = ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
 ~~~
 
-Each type is mapped to a `(Con → Set)`{.agda} predicate. Hence, semantic types are not just sets anymore, but families of sets indexed by contexts. The base type is mapped to the family of its normal forms. Functions are mapped to semantic functions which take semantic inputs to semantic outputs in *any context larger than Γ*. The additional `OPE` parameter is the key to the algorithm. As it was noted in [@Sec:models-intro], semantic functions must be able to take blocking variables as inputs. Blocking variables must be necessarily "fresh" with respect to the Γ context of a semantic function. Here, we can apply a semantic function to suitable embedding into a larger context, allowing to subsequently apply it to semantic terms containing variables pointing into that context. In the simplest case (and the only case we will actually use), if we have
+Each type is mapped to a `(Con → Set)`{.agda} predicate. Hence, semantic types are not just sets anymore, but families of sets indexed by contexts. The base type is mapped to the family of its normal forms. Mapping to the family of neutrals would work as well, since the only normal terms of base type are neutrals. Functions are mapped to semantic functions which take semantic inputs to semantic outputs in *any context larger than Γ*. The additional `OPE` parameter is the key to the algorithm. As it was noted in [@Sec:models-intro], semantic functions must be able to take blocking variables as inputs. Blocking variables must be necessarily "fresh" with respect to the Γ context of a semantic function. Here, we can apply a semantic function to suitable embedding into a larger context, allowing to subsequently apply it to semantic terms containing variables pointing into that context. In the simplest case (and the only case we will actually use), if we have
 
 ~~~{.agda}
     fᴺ : ∀ {Δ} → OPE Δ Γ → Tyᴺ A Δ → Tyᴺ B Δ
@@ -771,7 +773,7 @@ To explain the previous scare quotes around "blocking": in the `(tᴺ wk (uᴺ (
 
 ## Kripke Models {#sec:kripke}
 
-We show now how Kirpke models relate to the above definition of normalization. We mostly follow Altenkirch [@altenkirch2009normalisation] in this section. Also note Coquand et al. [@coquand1997intuitionistic] for explaining Kripke models for STLC, although they only used it for weak normalization.
+We show now how Kripke models relate to the above definition of normalization. We mostly follow Altenkirch [@altenkirch2009normalisation] in this section. Also note Coquand et al. [@coquand1997intuitionistic] for explaining Kripke models for STLC, although they only used it for weak normalization.
 
 Kripke models can be defined in Agda for the syntax of STLC as follows (omitting universe polymorphism):
 
@@ -836,7 +838,7 @@ With this, everything up to `Tmᴺ` in our previous implementation can be obtain
       ; ι-mono = Nfₑ }
 ~~~
 
-This is an interesting exercise in abstraction, but what is the deeper significance? STLC can be viewed as a simple intuitionistic propositional logic, with a single atomic propopsition `ι`. What is a right notion of semantics, though? We could abstract out the interpetation of base types from the standard model as given in [@Sec:models-intro], and get another notion of models; would not that suffice? From a logician's point of view, the issue is that it does not give us completeness. Semantics in general is necessary because we use logic to talk about concepts about which we have underlying intuition, but we have no *a priori* reason to believe that syntactic constructions talk meaningfully about any intuitive concept.
+This is an interesting exercise in abstraction, but what is the deeper significance? STLC can be viewed as a simple intuitionistic propositional logic, with a single atomic proposition `ι`. What is a right notion of semantics, though? We could abstract out the interpretation of base types from the standard model as given in [@Sec:models-intro], and get another notion of models; would not that suffice? From a logician's point of view, the issue is that it does not give us completeness. Semantics in general is necessary because we use logic to talk about concepts about which we have underlying intuition, but we have no *a priori* reason to believe that syntactic constructions talk meaningfully about any intuitive concept.
 
 Soundness and completeness together express that syntactic and semantic entailment are logically equivalent; the lack of completeness indicates that there is a mismatch, that semantics is larger than necessary. In Agda, we define soundness and completeness for Kripke models as follows^[Note that these are wholly different from soundness and completeness as defined for a normalization algorithm in [@Sec:overview].]:
 
@@ -883,7 +885,7 @@ In short, categories have a set of objects and sets of morphisms between objects
 
 In written exposition, $obj: C$ expresses that $obj$ is an object of $C$, while $f: C(A, B)$ means that $f$ is a morphism of $C$ from $A$ to $B$.
 
-Most importantly, the syntax of STLC itself forms a category, which is sometimes called the *syntacic category*. We denote it as **STLC**. Its objects are contexts, its morphisms are substitutions with the identity substitution as identity morphism. We have not yet defined composition for substitution, which provides composition for **STLC**, nor the composition laws. Providing these will be a significant part of our proof obligations about substitutions.
+Most importantly, the syntax of STLC itself forms a category, which is sometimes called the *syntactic category*. We denote it as **STLC**. Its objects are contexts, its morphisms are substitutions with the identity substitution as identity morphism. We have not yet defined composition for substitution, which provides composition for **STLC**, nor the composition laws. Providing these will be a significant part of our proof obligations about substitutions.
 
 Another important category is the category of sets, denoted **Set**. In our setting, **Set** has as objects Agda types and functions as morphisms (again, ignoring subtleties).
 
@@ -1264,7 +1266,7 @@ Note that the action on morphisms was already present in the Kripke model under 
 
 Preordered sets can be viewed as categories with at most a single morphism between any two objects [@preorder]. If $I \leq J$, then there is a morphism between $I$ and $J$, otherwise there is no such morphism. Identity and composition of morphisms comes from reflexivity and transitivity of preordering.
 
-In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the native capabilities of Agda and the scope of this \workname\.
+In a Kripke model, functor laws hold by default, since the uniqueness of morphisms implies that identities necessarily map to identities and compositions to compositions. However, our **OPE** as it is defined in Agda is actually not a preorder category. It can be informally considered as such if we only care about the mere existence of an embedding between two contexts. Formally, we could use *propositional truncation* [@hottbook, pp. 117] on the sets of morphisms of **OPE** to get an actual preorder, but that is beyond the native capabilities of Agda and the scope of this \workname\.
 
 In the presheaf model, terms are interpreted as morphisms from semantic contexts to semantic types, in other words, natural transformations. Concretely, this means that the evaluation function^[Recall that the evaluation function is the interpretation of terms.] should be mutually defined with the proof that it commutes with embeddings, i. e. its naturality. Similarly, quoting and unquoting are defined mutually with their naturality proofs.
 

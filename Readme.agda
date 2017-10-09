@@ -4,8 +4,8 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-I have written an MSc thesis from this. 
-You can find the latest pdf version at otdk-archive/stlc-nbe-otdk.pdf
+I have written an MSc thesis from this.
+You can find the latest pdf version at paper/stlc-nbe-otdk.pdf
 
 See the "master" branch for a more elegant but somewhat less approachable formalization.
 
@@ -51,4 +51,3 @@ decidableConversion : ∀ {Γ A}(t t' : Tm Γ A) → Dec (t ~ t')
 decidableConversion t t' with Nf≡? (nf t) (nf t')
 ... | inj₁ p = inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝Nf ~ t') & p ⁻¹) (complete t' ~⁻¹))
 ... | inj₂ p = inj₂ (λ q → p (sound q))
-
