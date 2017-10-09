@@ -5,11 +5,11 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-This branch uses a presheaf model over the category of order-preserving embeddings, making 
+This branch uses a presheaf model over the category of order-preserving embeddings, making
 the overall formalization shorter but the normalization algorithm harder to read, compared
 to the "separate-PSh" branch.
 
-You can find a long writeup on the "separate-PSh" branch at "otdk-archive/stlc-nbe-otdk.pdf".
+You can find a long writeup on the "separate-PSh" branch at "paper/stlc-nbe-otdk.pdf".
 
 We use function extensionality and Axiom K, but no other postulates,
 holes or unsafe pragmas. Extensionality doesn't interfere with the normalization
@@ -55,4 +55,3 @@ soundness = Soundness.sound
 
 completeness : ∀ {Γ A}(t : Tm Γ A) → t ~ ⌜ nf t ⌝
 completeness = Completeness.complete
-
