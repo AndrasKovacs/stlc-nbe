@@ -6,8 +6,6 @@ open import Lib
 open import Syntax
 open import Embedding
 
--- TODO: try to do as much as possible in Sub instead of OPE
-
 infixr 6 _ₑ∘ₛ_ _ₛ∘ₑ_ _∘ₛ_
 
 data Sub (Γ : Con) : Con → Set where
@@ -42,9 +40,17 @@ keepₛ σ = dropₛ σ , var vz
 ∈ₛ (σ  , t)(vs v) = ∈ₛ σ v
 
 Tmₛ : ∀ {A Γ Δ} → Sub Γ Δ → Tm Δ A → Tm Γ A
-Tmₛ σ (var v)   = ∈ₛ σ v
-Tmₛ σ (lam t)   = lam (Tmₛ (keepₛ σ) t)
-Tmₛ σ (app f a) = app (Tmₛ σ f) (Tmₛ σ a)
+Tmₛ σ (var v)      = ∈ₛ σ v
+Tmₛ σ (lam t)      = lam (Tmₛ (keepₛ σ) t)
+Tmₛ σ (app f a)    = app (Tmₛ σ f) (Tmₛ σ a)
+Tmₛ σ tt           = tt
+Tmₛ σ (π₁ t)       = π₁ (Tmₛ σ t)
+Tmₛ σ (π₂ t)       = π₂ (Tmₛ σ t)
+Tmₛ σ (t , u)      = Tmₛ σ t , Tmₛ σ u
+Tmₛ σ (inj₁ t)     = inj₁ (Tmₛ σ t)
+Tmₛ σ (inj₂ t)     = inj₂ (Tmₛ σ t)
+Tmₛ σ (case l r t) = case (Tmₛ (keepₛ σ) l) (Tmₛ (keepₛ σ) r) (Tmₛ σ t)
+Tmₛ σ (⊥-rec t)    = ⊥-rec (Tmₛ σ t)
 
 -- Identity and composition
 idₛ : ∀ {Γ} → Sub Γ Γ
@@ -104,6 +110,18 @@ Tm-ₑ∘ₛ σ δ (var v) = ∈-ₑ∘ₛ σ δ v
 Tm-ₑ∘ₛ σ δ (lam t) =
   lam & ((λ x → Tmₛ (x , var vz) t) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) t)
 Tm-ₑ∘ₛ σ δ (app f a) = app & Tm-ₑ∘ₛ σ δ f ⊗ Tm-ₑ∘ₛ σ δ a
+Tm-ₑ∘ₛ σ δ tt           = refl
+Tm-ₑ∘ₛ σ δ (π₁ t)       = π₁ & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (π₂ t)       = π₂ & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (t , u)      = _,_ & Tm-ₑ∘ₛ σ δ t ⊗ Tm-ₑ∘ₛ σ δ u
+Tm-ₑ∘ₛ σ δ (inj₁ t)     = inj₁ & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (inj₂ t)     = inj₂ & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (case l r t) =
+  case &
+    (((λ x → Tmₛ (x , var vz) l) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) l))
+  ⊗ (((λ x → Tmₛ (x , var vz) r) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) r))
+  ⊗ Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-ₑ∘ₛ σ δ t
 
 ∈-ₛ∘ₑ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : OPE Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₛ∘ₑ δ) v ≡ Tmₑ δ (∈ₛ σ v)
 ∈-ₛ∘ₑ (σ , _) δ vz     = refl
@@ -119,6 +137,22 @@ Tm-ₛ∘ₑ σ δ (lam t)   =
         ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
     ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) t)
 Tm-ₛ∘ₑ σ δ (app f a) = app & Tm-ₛ∘ₑ σ δ f ⊗ Tm-ₛ∘ₑ σ δ a
+Tm-ₛ∘ₑ σ δ tt           = refl
+Tm-ₛ∘ₑ σ δ (π₁ t)       = π₁ & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (π₂ t)       = π₂ & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (t , u)      = _,_ & Tm-ₛ∘ₑ σ δ t ⊗ Tm-ₛ∘ₑ σ δ u
+Tm-ₛ∘ₑ σ δ (inj₁ t)     = inj₁ & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (inj₂ t)     = inj₂ & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (case l r t) = case & (((λ x → Tmₛ (x , var vz) l) &
+          (assₛₑₑ σ δ wk
+        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
+        ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
+    ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) l)) ⊗ (((λ x → Tmₛ (x , var vz) r) &
+          (assₛₑₑ σ δ wk
+        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
+        ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
+    ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) r)) ⊗ Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (⊥-rec t) = ⊥-rec & Tm-ₛ∘ₑ σ δ t
 
 assₛₑₛ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Δ Σ)(ν : Sub Γ Δ)
@@ -145,15 +179,40 @@ Tm-∘ₛ σ δ (lam t)   =
         ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
     ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) t)
 Tm-∘ₛ σ δ (app f a) = app & Tm-∘ₛ σ δ f ⊗ Tm-∘ₛ σ δ a
+Tm-∘ₛ σ δ tt           = refl
+Tm-∘ₛ σ δ (π₁ t)       = π₁ & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (π₂ t)       = π₂ & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (t , u)      = _,_ & Tm-∘ₛ σ δ t ⊗ Tm-∘ₛ σ δ u
+Tm-∘ₛ σ δ (inj₁ t)     = inj₁ & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (inj₂ t)     = inj₂ & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (case l r t) = case &
+    (((λ x → Tmₛ (x , var vz) l) &
+          (assₛₛₑ σ δ wk
+        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
+        ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) l))
+  ⊗ (((λ x → Tmₛ (x , var vz) r) &
+          (assₛₛₑ σ δ wk
+        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
+        ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) r))
+  ⊗ Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-∘ₛ σ δ t
 
 ∈-idₛ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₛ idₛ v ≡ var v
 ∈-idₛ vz     = refl
 ∈-idₛ (vs v) = ∈-ₛ∘ₑ idₛ wk v ◾ Tmₑ wk & ∈-idₛ v ◾ (var ∘ vs) & ∈-idₑ v
 
 Tm-idₛ : ∀ {A Γ}(t : Tm Γ A) → Tmₛ idₛ t ≡ t
-Tm-idₛ (var v)   = ∈-idₛ v
-Tm-idₛ (lam t)   = lam & Tm-idₛ t
-Tm-idₛ (app f a) = app & Tm-idₛ f ⊗ Tm-idₛ a
+Tm-idₛ (var v)      = ∈-idₛ v
+Tm-idₛ (lam t)      = lam & Tm-idₛ t
+Tm-idₛ (app f a)    = app & Tm-idₛ f ⊗ Tm-idₛ a
+Tm-idₛ tt           = refl
+Tm-idₛ (π₁ t)       = π₁ & Tm-idₛ t
+Tm-idₛ (π₂ t)       = π₂ & Tm-idₛ t
+Tm-idₛ (t , u)      = _,_ & Tm-idₛ t ⊗ Tm-idₛ u
+Tm-idₛ (inj₁ t)     = inj₁ & Tm-idₛ t
+Tm-idₛ (inj₂ t)     = inj₂ & Tm-idₛ t
+Tm-idₛ (case l r t) = case & Tm-idₛ l ⊗ Tm-idₛ r ⊗ Tm-idₛ t
+Tm-idₛ (⊥-rec t)    = ⊥-rec & Tm-idₛ t
 
 idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
 idrₛ ∙       = refl
