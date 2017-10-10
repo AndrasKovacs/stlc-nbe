@@ -2,20 +2,11 @@ module Readme where
 
 {-
 
-Full correctness proof of normalization-by-evaluation for simply typed
-lambda calculus.
+Full correctness proof of normalization-by-evaluation for
+simple type theory with finite products and finite weak (i. e. no eta) coproducts.
 
-This branch uses a presheaf model over the category of order-preserving embeddings, making
-the overall formalization shorter but the normalization algorithm harder to read, compared
-to the "separate-PSh" branch.
-
-You can find a long writeup on the "separate-PSh" branch at "paper/stlc-nbe-otdk.pdf".
-
-We use function extensionality and Axiom K, but no other postulates,
-holes or unsafe pragmas. Extensionality doesn't interfere with the normalization
-function, so it computes for all inputs. Also, the use of Axiom K could be eliminated with
-a moderate amount of work.
-
+You can find a long writeup of a simpler formalization without products/coproducts
+on the "separate-PSh" branch at "paper/stlc-nbe-otdk.pdf".
 -}
 
 -- Order in which you probably want to view modules
@@ -32,8 +23,6 @@ import Normalization
 import Stability
 import Completeness
 import Soundness
-
--- Optionally, the whole development is mashed together in Everything.agda
 
 -- Main results
 ------------------------------------------------------------
