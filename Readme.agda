@@ -9,6 +9,8 @@ You can find the latest pdf version at paper/stlc-nbe-otdk.pdf
 
 See the "master" branch for a more elegant but somewhat less approachable formalization.
 
+See the "prod-coprod" branch for an extended formalization with finite products and finite weak coproducts.
+
 We use function extensionality, but no Axiom K, other postulates,
 holes or unsafe pragmas.
 -}
