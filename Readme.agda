@@ -4,8 +4,11 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-We use function extensionality, but no Axiom K, other postulates,
-holes or unsafe pragmas.
+This branch implements a variant of the "separate-PSh" branch with
+more efficient evaluation of applications.
+
+See long writeup in the "separate-PSh" branch at "thesis.pdf".
+
 -}
 
 -- Order in which you probably want to view modules
@@ -46,4 +49,3 @@ decidableConversion : ∀ {Γ A}(t t' : Tm Γ A) → Dec (t ~ t')
 decidableConversion t t' with Nf≡? (nf t) (nf t')
 ... | inj₁ p = inj₁ (complete t ~◾ coe ((λ x → ⌜ x ⌝ ~ t') & p ⁻¹) (complete t' ~⁻¹))
 ... | inj₂ p = inj₂ (λ q → p (sound q))
-
