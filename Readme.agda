@@ -4,10 +4,11 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
-I have written an MSc thesis from this.
-You can find the latest pdf version at paper/stlc-nbe-otdk.pdf
+I have written an MSc thesis from this, you can find it as "thesis.pdf" here.
 
 See the "master" branch for a more elegant but somewhat less approachable formalization.
+
+See the "prod-coprod" branch for an extended formalization with finite products and finite weak coproducts.
 
 We use function extensionality, but no Axiom K, other postulates,
 holes or unsafe pragmas.
