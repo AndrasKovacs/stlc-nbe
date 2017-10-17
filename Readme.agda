@@ -6,7 +6,7 @@ Full correctness proof of normalization-by-evaluation for
 simple type theory with finite products and finite weak (i. e. no eta) coproducts.
 
 You can find a long writeup of a simpler formalization without products/coproducts
-on the "separate-PSh" branch at "paper/stlc-nbe-otdk.pdf".
+on the "separate-PSh" branch at "thesis.pdf".
 -}
 
 -- Order in which you probably want to view modules
