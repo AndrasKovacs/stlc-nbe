@@ -51,6 +51,8 @@ Tmₛ σ (inj₁ t)     = inj₁ (Tmₛ σ t)
 Tmₛ σ (inj₂ t)     = inj₂ (Tmₛ σ t)
 Tmₛ σ (case l r t) = case (Tmₛ (keepₛ σ) l) (Tmₛ (keepₛ σ) r) (Tmₛ σ t)
 Tmₛ σ (⊥-rec t)    = ⊥-rec (Tmₛ σ t)
+Tmₛ σ (con t)      = con (Tmₛ σ t)
+Tmₛ σ (rec t u)    = rec (Tmₛ (keepₛ σ) t) (Tmₛ σ u)
 
 -- Identity and composition
 idₛ : ∀ {Γ} → Sub Γ Γ
@@ -122,6 +124,11 @@ Tm-ₑ∘ₛ σ δ (case l r t) =
   ⊗ (((λ x → Tmₛ (x , var vz) r) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) r))
   ⊗ Tm-ₑ∘ₛ σ δ t
 Tm-ₑ∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (con t)      = con & Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (rec t u)    =
+  rec &
+    (((λ x → Tmₛ (x , var vz) t) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) t))
+    ⊗ Tm-ₑ∘ₛ σ δ u
 
 ∈-ₛ∘ₑ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : OPE Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₛ∘ₑ δ) v ≡ Tmₑ δ (∈ₛ σ v)
 ∈-ₛ∘ₑ (σ , _) δ vz     = refl
@@ -153,6 +160,14 @@ Tm-ₛ∘ₑ σ δ (case l r t) = case & (((λ x → Tmₛ (x , var vz) l) &
         ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
     ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) r)) ⊗ Tm-ₛ∘ₑ σ δ t
 Tm-ₛ∘ₑ σ δ (⊥-rec t) = ⊥-rec & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (con t)   = con & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (rec t u) =
+  rec &    (((λ x → Tmₛ (x , var vz) t) &
+             (assₛₑₑ σ δ wk
+           ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
+           ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
+       ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) t))
+    ⊗ Tm-ₛ∘ₑ σ δ u
 
 assₛₑₛ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Δ Σ)(ν : Sub Γ Δ)
@@ -196,6 +211,11 @@ Tm-∘ₛ σ δ (case l r t) = case &
         ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) r))
   ⊗ Tm-∘ₛ σ δ t
 Tm-∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (con t)      = con & Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (rec t u)    = rec & (((λ x → Tmₛ (x , var vz) t) &
+          (assₛₛₑ σ δ wk
+        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
+    ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) t)) ⊗ Tm-∘ₛ σ δ u
 
 ∈-idₛ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₛ idₛ v ≡ var v
 ∈-idₛ vz     = refl
@@ -213,6 +233,8 @@ Tm-idₛ (inj₁ t)     = inj₁ & Tm-idₛ t
 Tm-idₛ (inj₂ t)     = inj₂ & Tm-idₛ t
 Tm-idₛ (case l r t) = case & Tm-idₛ l ⊗ Tm-idₛ r ⊗ Tm-idₛ t
 Tm-idₛ (⊥-rec t)    = ⊥-rec & Tm-idₛ t
+Tm-idₛ (con t)      = con & Tm-idₛ t
+Tm-idₛ (rec t u)    = rec & Tm-idₛ t ⊗ Tm-idₛ u
 
 idrₛ : ∀ {Γ Δ}(σ : Sub Γ Δ) → σ ∘ₛ idₛ ≡ σ
 idrₛ ∙       = refl

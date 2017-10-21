@@ -77,6 +77,8 @@ Tmₑ σ (inj₁ t)     = inj₁ (Tmₑ σ t)
 Tmₑ σ (inj₂ t)     = inj₂ (Tmₑ σ t)
 Tmₑ σ (case l r t) = case (Tmₑ (keep σ) l) (Tmₑ (keep σ) r) (Tmₑ σ t)
 Tmₑ σ (⊥-rec t)    = ⊥-rec (Tmₑ σ t)
+Tmₑ σ (con t)      = con (Tmₑ σ t)
+Tmₑ σ (rec t u)    = rec (Tmₑ (keep σ) t) (Tmₑ σ u)
 
 Tm-idₑ : ∀ {A Γ}(t : Tm Γ A) → Tmₑ idₑ t ≡ t
 Tm-idₑ (var v)      = var & ∈-idₑ v
@@ -90,6 +92,8 @@ Tm-idₑ (inj₁ t)     = inj₁ & Tm-idₑ t
 Tm-idₑ (inj₂ t)     = inj₂ & Tm-idₑ t
 Tm-idₑ (case l r t) = case & Tm-idₑ l ⊗ Tm-idₑ r ⊗ Tm-idₑ t
 Tm-idₑ (⊥-rec t)    = ⊥-rec & Tm-idₑ t
+Tm-idₑ (con t)      = con & Tm-idₑ t
+Tm-idₑ (rec t u)    = rec & Tm-idₑ t ⊗ Tm-idₑ u
 
 Tm-∘ₑ : ∀ {A Γ Δ Σ}(σ : OPE Δ Σ)(δ : OPE Γ Δ)(t : Tm Σ A) → Tmₑ (σ ∘ₑ δ) t ≡ Tmₑ δ (Tmₑ σ t)
 Tm-∘ₑ σ δ (var v)      = var & ∈-∘ₑ σ δ v
@@ -104,3 +108,5 @@ Tm-∘ₑ σ δ (inj₂ t)     = inj₂ & Tm-∘ₑ σ δ t
 Tm-∘ₑ σ δ (case l r t) =
   case & Tm-∘ₑ (keep σ) (keep δ) l ⊗ Tm-∘ₑ (keep σ) (keep δ) r ⊗ Tm-∘ₑ σ δ t
 Tm-∘ₑ σ δ (⊥-rec t)    = ⊥-rec & Tm-∘ₑ σ δ t
+Tm-∘ₑ σ δ (con t)      = con & Tm-∘ₑ σ δ t
+Tm-∘ₑ σ δ (rec t u)    = rec & Tm-∘ₑ (keep σ) (keep δ) t ⊗ Tm-∘ₑ σ δ u

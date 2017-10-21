@@ -42,6 +42,12 @@ data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
   _~⁻¹  : ∀ {A}{t t' : Tm Γ A}     → t ~ t' → t' ~ t
   _~◾_  : ∀ {A}{t t' t'' : Tm Γ A} → t ~ t' → t' ~ t'' → t ~ t''
 
+  con   : ∀ {F}{t t' : Tm Γ (apF F (μ F))} → t ~ t' → con {_}{F} t ~ con t'
+  rec   : ∀ {F A}{t t' : Tm (Γ , apF F A) A}{u u' : Tm Γ (μ F)}
+          → t ~ t' → u ~ u' → rec t u ~ rec t' u'
+  recβ  : ∀ {F A}(t : Tm (Γ , apF F A) A)(u : Tm Γ (apF F (μ F)))
+          → rec t (con {_}{F} u) ~ {!Tm.lam t!}
+
 infix 3 _~_
 infixl 4 _~◾_
 infix 6 _~⁻¹
