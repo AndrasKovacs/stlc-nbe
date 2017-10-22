@@ -46,8 +46,8 @@ data Tm Γ : Ty → Set where
   _,_   : ∀ {A B} → Tm Γ A → Tm Γ B → Tm Γ (A * B)
   inj₁  : ∀ {A B} → Tm Γ A → Tm Γ (A + B)
   inj₂  : ∀ {A B} → Tm Γ B → Tm Γ (A + B)
-  case  : ∀ {A B C} → Tm (Γ , A) C → Tm (Γ , B) C → Tm Γ (A + B) → Tm Γ C
+  case  : ∀ {A B C} → Tm Γ (A ⇒ C) → Tm Γ (B ⇒ C) → Tm Γ (A + B) → Tm Γ C
   app   : ∀ {A B} → Tm Γ (A ⇒ B) → Tm Γ A → Tm Γ B
   ⊥-rec : ∀ {A} → Tm Γ ⊥ → Tm Γ A
   con   : ∀ {F} → Tm Γ (apF F (μ F)) → Tm Γ (μ F)
-  rec   : ∀ {F A} → Tm (Γ , apF F A) A → Tm Γ (μ F) → Tm Γ A
+  rec   : ∀ {F A} → Tm Γ (apF F A ⇒ A) → Tm Γ (μ F) → Tm Γ A

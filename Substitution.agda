@@ -49,10 +49,10 @@ Tmₛ σ (π₂ t)       = π₂ (Tmₛ σ t)
 Tmₛ σ (t , u)      = Tmₛ σ t , Tmₛ σ u
 Tmₛ σ (inj₁ t)     = inj₁ (Tmₛ σ t)
 Tmₛ σ (inj₂ t)     = inj₂ (Tmₛ σ t)
-Tmₛ σ (case l r t) = case (Tmₛ (keepₛ σ) l) (Tmₛ (keepₛ σ) r) (Tmₛ σ t)
+Tmₛ σ (case l r t) = case (Tmₛ σ l) (Tmₛ σ r) (Tmₛ σ t)
 Tmₛ σ (⊥-rec t)    = ⊥-rec (Tmₛ σ t)
 Tmₛ σ (con t)      = con (Tmₛ σ t)
-Tmₛ σ (rec t u)    = rec (Tmₛ (keepₛ σ) t) (Tmₛ σ u)
+Tmₛ σ (rec t u)    = rec (Tmₛ σ t) (Tmₛ σ u)
 
 -- Identity and composition
 idₛ : ∀ {Γ} → Sub Γ Γ
@@ -118,17 +118,10 @@ Tm-ₑ∘ₛ σ δ (π₂ t)       = π₂ & Tm-ₑ∘ₛ σ δ t
 Tm-ₑ∘ₛ σ δ (t , u)      = _,_ & Tm-ₑ∘ₛ σ δ t ⊗ Tm-ₑ∘ₛ σ δ u
 Tm-ₑ∘ₛ σ δ (inj₁ t)     = inj₁ & Tm-ₑ∘ₛ σ δ t
 Tm-ₑ∘ₛ σ δ (inj₂ t)     = inj₂ & Tm-ₑ∘ₛ σ δ t
-Tm-ₑ∘ₛ σ δ (case l r t) =
-  case &
-    (((λ x → Tmₛ (x , var vz) l) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) l))
-  ⊗ (((λ x → Tmₛ (x , var vz) r) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) r))
-  ⊗ Tm-ₑ∘ₛ σ δ t
+Tm-ₑ∘ₛ σ δ (case l r t) = case & Tm-ₑ∘ₛ σ δ l ⊗ Tm-ₑ∘ₛ σ δ r ⊗ Tm-ₑ∘ₛ σ δ t
 Tm-ₑ∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-ₑ∘ₛ σ δ t
 Tm-ₑ∘ₛ σ δ (con t)      = con & Tm-ₑ∘ₛ σ δ t
-Tm-ₑ∘ₛ σ δ (rec t u)    =
-  rec &
-    (((λ x → Tmₛ (x , var vz) t) & assₑₛₑ σ δ wk ◾ Tm-ₑ∘ₛ (keep σ) (keepₛ δ) t))
-    ⊗ Tm-ₑ∘ₛ σ δ u
+Tm-ₑ∘ₛ σ δ (rec t u)    = rec & Tm-ₑ∘ₛ σ δ t ⊗ Tm-ₑ∘ₛ σ δ u
 
 ∈-ₛ∘ₑ : ∀ {A Γ Δ Σ}(σ : Sub Δ Σ)(δ : OPE Γ Δ)(v : A ∈ Σ) → ∈ₛ (σ ₛ∘ₑ δ) v ≡ Tmₑ δ (∈ₛ σ v)
 ∈-ₛ∘ₑ (σ , _) δ vz     = refl
@@ -150,24 +143,10 @@ Tm-ₛ∘ₑ σ δ (π₂ t)       = π₂ & Tm-ₛ∘ₑ σ δ t
 Tm-ₛ∘ₑ σ δ (t , u)      = _,_ & Tm-ₛ∘ₑ σ δ t ⊗ Tm-ₛ∘ₑ σ δ u
 Tm-ₛ∘ₑ σ δ (inj₁ t)     = inj₁ & Tm-ₛ∘ₑ σ δ t
 Tm-ₛ∘ₑ σ δ (inj₂ t)     = inj₂ & Tm-ₛ∘ₑ σ δ t
-Tm-ₛ∘ₑ σ δ (case l r t) = case & (((λ x → Tmₛ (x , var vz) l) &
-          (assₛₑₑ σ δ wk
-        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
-        ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
-    ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) l)) ⊗ (((λ x → Tmₛ (x , var vz) r) &
-          (assₛₑₑ σ δ wk
-        ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
-        ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
-    ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) r)) ⊗ Tm-ₛ∘ₑ σ δ t
-Tm-ₛ∘ₑ σ δ (⊥-rec t) = ⊥-rec & Tm-ₛ∘ₑ σ δ t
-Tm-ₛ∘ₑ σ δ (con t)   = con & Tm-ₛ∘ₑ σ δ t
-Tm-ₛ∘ₑ σ δ (rec t u) =
-  rec &    (((λ x → Tmₛ (x , var vz) t) &
-             (assₛₑₑ σ δ wk
-           ◾ (σ ₛ∘ₑ_) & (drop & (idrₑ δ ◾ idlₑ δ ⁻¹))
-           ◾ assₛₑₑ σ wk (keep δ) ⁻¹)
-       ◾ Tm-ₛ∘ₑ (keepₛ σ) (keep δ) t))
-    ⊗ Tm-ₛ∘ₑ σ δ u
+Tm-ₛ∘ₑ σ δ (case l r t) = case & Tm-ₛ∘ₑ σ δ l ⊗ Tm-ₛ∘ₑ σ δ r ⊗ Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (⊥-rec t)    = ⊥-rec & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (con t)      = con & Tm-ₛ∘ₑ σ δ t
+Tm-ₛ∘ₑ σ δ (rec t u)    = rec & Tm-ₛ∘ₑ σ δ t ⊗ Tm-ₛ∘ₑ σ δ u
 
 assₛₑₛ :
   ∀ {Γ Δ Σ Ξ}(σ : Sub Σ Ξ)(δ : OPE Δ Σ)(ν : Sub Γ Δ)
@@ -200,22 +179,10 @@ Tm-∘ₛ σ δ (π₂ t)       = π₂ & Tm-∘ₛ σ δ t
 Tm-∘ₛ σ δ (t , u)      = _,_ & Tm-∘ₛ σ δ t ⊗ Tm-∘ₛ σ δ u
 Tm-∘ₛ σ δ (inj₁ t)     = inj₁ & Tm-∘ₛ σ δ t
 Tm-∘ₛ σ δ (inj₂ t)     = inj₂ & Tm-∘ₛ σ δ t
-Tm-∘ₛ σ δ (case l r t) = case &
-    (((λ x → Tmₛ (x , var vz) l) &
-          (assₛₛₑ σ δ wk
-        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
-        ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) l))
-  ⊗ (((λ x → Tmₛ (x , var vz) r) &
-          (assₛₛₑ σ δ wk
-        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
-        ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) r))
-  ⊗ Tm-∘ₛ σ δ t
+Tm-∘ₛ σ δ (case l r t) = case & Tm-∘ₛ σ δ l ⊗ Tm-∘ₛ σ δ r ⊗ Tm-∘ₛ σ δ t
 Tm-∘ₛ σ δ (⊥-rec t)    = ⊥-rec & Tm-∘ₛ σ δ t
 Tm-∘ₛ σ δ (con t)      = con & Tm-∘ₛ σ δ t
-Tm-∘ₛ σ δ (rec t u)    = rec & (((λ x → Tmₛ (x , var vz) t) &
-          (assₛₛₑ σ δ wk
-        ◾ (σ ∘ₛ_) & (idlₑₛ  (dropₛ δ) ⁻¹) ◾ assₛₑₛ σ wk (keepₛ δ) ⁻¹)
-    ◾ Tm-∘ₛ (keepₛ σ) (keepₛ δ) t)) ⊗ Tm-∘ₛ σ δ u
+Tm-∘ₛ σ δ (rec t u)    = rec & Tm-∘ₛ σ δ t ⊗ Tm-∘ₛ σ δ u
 
 ∈-idₛ : ∀ {A Γ}(v : A ∈ Γ) → ∈ₛ idₛ v ≡ var v
 ∈-idₛ vz     = refl

@@ -24,13 +24,13 @@ data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
   inj₁   : ∀ {A B}{t t' : Tm Γ A} → t ~ t' → inj₁ {B = B} t ~ inj₁ t'
   inj₂   : ∀ {A B}{t t' : Tm Γ B} → t ~ t' → inj₂ {A = A} t ~ inj₂ t'
   case₁β :
-    ∀ {A B C}(l : Tm (Γ , A) C)(r : Tm (Γ , B) C)(t : Tm Γ A)
-    → case l r (inj₁ t) ~ Tmₛ (idₛ , t) l
+    ∀ {A B C}(l : Tm Γ (A ⇒ C))(r : Tm Γ (B ⇒ C))(t : Tm Γ A)
+    → case l r (inj₁ t) ~ app l t
   case₂β :
-    ∀ {A B C}(l : Tm (Γ , A) C)(r : Tm (Γ , B) C)(t : Tm Γ B)
-    → case l r (inj₂ t) ~ Tmₛ (idₛ , t) r
+    ∀ {A B C}(l : Tm Γ (A ⇒ C))(r : Tm Γ (B ⇒ C))(t : Tm Γ B)
+    → case l r (inj₂ t) ~ app r t
   case :
-    ∀ {A B C}{l l' : Tm (Γ , A) C}{r r' : Tm (Γ , B) C}{t t' : Tm Γ (A + B)}
+    ∀ {A B C}{l l' : Tm Γ (A ⇒ C)}{r r' : Tm Γ (B ⇒ C)}{t t' : Tm Γ (A + B)}
     → l ~ l' → r ~ r' → t ~ t'
     → case l r t ~ case l' r' t'
 
@@ -43,10 +43,10 @@ data _~_ {Γ} : ∀ {A} → Tm Γ A → Tm Γ A → Set where
   _~◾_  : ∀ {A}{t t' t'' : Tm Γ A} → t ~ t' → t' ~ t'' → t ~ t''
 
   con   : ∀ {F}{t t' : Tm Γ (apF F (μ F))} → t ~ t' → con {_}{F} t ~ con t'
-  rec   : ∀ {F A}{t t' : Tm (Γ , apF F A) A}{u u' : Tm Γ (μ F)}
+  rec   : ∀ {F A}{t t' : Tm Γ (apF F A ⇒ A)}{u u' : Tm Γ (μ F)}
           → t ~ t' → u ~ u' → rec t u ~ rec t' u'
-  recβ  : ∀ {F A}(t : Tm (Γ , apF F A) A)(u : Tm Γ (apF F (μ F)))
-          → rec t (con {_}{F} u) ~ {!Tm.lam t!}
+  recβ  : ∀ {F A}(t : Tm Γ (apF F A ⇒ A))(u : Tm Γ (apF F (μ F)))
+          → rec t (con {_}{F} u) ~ {!!}
 
 infix 3 _~_
 infixl 4 _~◾_
@@ -79,20 +79,13 @@ infix 6 _~⁻¹
 ~ₑ σ (π₂ t) = π₂ (~ₑ σ t)
 ~ₑ σ (inj₁ t) = inj₁ (~ₑ σ t)
 ~ₑ σ (inj₂ t) = inj₂ (~ₑ σ t)
-~ₑ σ (case₁β l r t) =
-  coe ((case (Tmₑ (keep σ) l) (Tmₑ (keep σ) r) (inj₁ (Tmₑ σ t)) ~_)
-        & (Tm-ₑ∘ₛ (keep σ) (idₛ , Tmₑ σ t) l ⁻¹
-        ◾ (λ x → Tmₛ (x , Tmₑ σ t) l) & (idrₑₛ σ ◾ idlₛₑ σ ⁻¹)
-        ◾ Tm-ₛ∘ₑ (idₛ , t) σ l))
-    (case₁β (Tmₑ (keep σ) l) (Tmₑ (keep σ) r) (Tmₑ σ t))
-~ₑ σ (case₂β l r t) =
-  coe ((case (Tmₑ (keep σ) l) (Tmₑ (keep σ) r) (inj₂ (Tmₑ σ t)) ~_)
-        & (Tm-ₑ∘ₛ (keep σ) (idₛ , Tmₑ σ t) r ⁻¹
-        ◾ (λ x → Tmₛ (x , Tmₑ σ t) r) & (idrₑₛ σ ◾ idlₛₑ σ ⁻¹)
-        ◾ Tm-ₛ∘ₑ (idₛ , t) σ r))
-    (case₂β (Tmₑ (keep σ) l) (Tmₑ (keep σ) r) (Tmₑ σ t))
+~ₑ σ (case₁β l r t) = case₁β (Tmₑ σ l) (Tmₑ σ r) (Tmₑ σ t)
+~ₑ σ (case₂β l r t) = case₂β (Tmₑ σ l) (Tmₑ σ r) (Tmₑ σ t)
 ~ₑ σ (πη t) = πη (Tmₑ σ t)
-~ₑ σ (case l r t) = case (~ₑ (keep σ) l) (~ₑ (keep σ) r) (~ₑ σ t)
+~ₑ σ (case l r t) = case (~ₑ σ l) (~ₑ σ r) (~ₑ σ t)
 ~ₑ σ (⊥-rec t) = ⊥-rec (~ₑ σ t)
 ~ₑ σ (⊤η t)    = ⊤η (Tmₑ σ t)
 ~ₑ σ (t , u)   = ~ₑ σ t , ~ₑ σ u
+~ₑ σ (con t)    = con (~ₑ σ t)
+~ₑ σ (rec t u)  = rec (~ₑ σ t) (~ₑ σ u)
+~ₑ σ (recβ t u) = {!!}
