@@ -4,6 +4,8 @@ module Readme where
 Full correctness proof of normalization-by-evaluation for simply typed
 lambda calculus.
 
+This repository has been checked with Agda 2.5.3.
+
 I have written an MSc thesis from this, you can find it as "thesis.pdf" here.
 
 See the "master" branch for a more elegant but somewhat less approachable formalization.
